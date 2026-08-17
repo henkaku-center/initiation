@@ -39,7 +39,7 @@
     "eslint-config-next": "16.3.0",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.23.11",
-    "typescript": "6.0.3",
+    "typescript": "7.0.2",
     "vitepress": "^1.6.4",
     "vitest": "^4.1.10"
   }
