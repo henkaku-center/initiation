@@ -1899,7 +1899,7 @@ git commit -m "docs: manual operations runbook for approval and distribution"
 - Supabase 本番プロジェクトを作成し `npx supabase db push` で migration 適用
 - Vercel に環境変数を設定(`SESSION_PASSWORD` / `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` / `ADMIN_ADDRESSES` / `NEXT_PUBLIC_HENKAKU_TOKEN_*`)
 - デプロイ後、本番 URL で Step 1 のシナリオを通す(配布は実トークンなので少額 or テスト運用ルールに従う)
-- **公開前チェック**: `docs/privacy-policy.md` の初版が公開され、保存期間・削除依頼・問い合わせの運用担当が確認できていること
+- **公開前チェック**: `docs/privacy-policy.md` の初版が公開され、掲載内容が実際の運用と一致していること
 
 - [ ] **Step 3: 完了記録を書いてコミット**
 
