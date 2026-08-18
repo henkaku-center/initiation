@@ -24,7 +24,7 @@
 - **Initiation の質問・クエストの本文**: Task 6 に仮コンテンツを定義するが、公開前にコミュニティで確定した本文に差し替える(データファイル `lib/initiation/content.ts` の書き換えのみで済む構造にする)。
 - **管理者アドレス一覧**: `ADMIN_ADDRESSES` に設定する実アドレス。
 - **HENKAKU トークンのコントラクトアドレス**: `NEXT_PUBLIC_HENKAKU_TOKEN_ADDRESS`。
-- **プライバシー方針**(開発計画の未決定事項): データ収集開始(=本番公開)前に確定。実装は Task 11 の運用文書に反映する。
+- **プライバシー方針**: MVP-1の方針は `docs/privacy-policy.md` と Issue #36 の決定記録に従う。質問箱、外部公開ビュー、AI機能は導入前に方針を更新する。
 
 ---
 
@@ -1899,7 +1899,7 @@ git commit -m "docs: manual operations runbook for approval and distribution"
 - Supabase 本番プロジェクトを作成し `npx supabase db push` で migration 適用
 - Vercel に環境変数を設定(`SESSION_PASSWORD` / `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` / `ADMIN_ADDRESSES` / `NEXT_PUBLIC_HENKAKU_TOKEN_*`)
 - デプロイ後、本番 URL で Step 1 のシナリオを通す(配布は実トークンなので少額 or テスト運用ルールに従う)
-- **公開前チェック**: プライバシー方針が確定していること(未確定なら公開せず、確定を待つ。開発計画の「データ収集開始前に決める」に従う)
+- **公開前チェック**: `docs/privacy-policy.md` の初版が公開され、保存期間・削除依頼・問い合わせの運用担当が確認できていること
 
 - [ ] **Step 3: 完了記録を書いてコミット**
 
@@ -1915,5 +1915,5 @@ git commit -m "docs: phase 1 completion notes and deploy record"
 ## Self-Review 結果(計画作成時に確認済み)
 
 - **スコープ対応**: MVP-1 の5項目(SIWE 認証 / セットアップ導線 / Initiation 画面+進捗 / チェックイン / 申請+承認画面)と「手動運用フローの文書化」はそれぞれ Task 3・5 / 5 / 6〜7 / 8 / 9〜10 / 11 が対応。質問箱(`questions`/`answers`)と `ai_usage` テーブルはフェーズ2/3 スコープのため意図的に migration から除外。
-- **人の決定待ち**: Initiation 本文(Task 6)、承認基準と Allowlist 実手順(Task 11)、プライバシー方針(Task 12 の公開ゲート)。実装は進められるが、公開はこれらの確定が条件。
+- **人の決定待ち**: Initiation 本文(Task 6)、承認基準と Allowlist 実手順(Task 11)。実装は進められるが、公開はこれらの確定が条件。
 - **型整合**: `getRepositories()` / `requireMember()` / `validateTransition()` / `isInitiationComplete()` の署名は定義タスクと利用タスクで一致していることを確認済み。
