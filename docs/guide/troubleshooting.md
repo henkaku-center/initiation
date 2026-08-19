@@ -34,7 +34,7 @@ Error: SUPABASE_SERVICE_ROLE_KEY を設定してください(supabase status で
 npx supabase status
 ```
 
-起動していない場合は `npx supabase start` を実行し、表示された `API_URL` と `SERVICE_ROLE_KEY` を `.env.local` の `SUPABASE_URL` と `SUPABASE_SERVICE_ROLE_KEY` へ設定します。
+起動していない場合は `npx supabase start` を実行し、表示された `Project URL` と `Secret` を `.env.local` の `SUPABASE_URL` と `SUPABASE_SERVICE_ROLE_KEY` へ設定します。`Publishable` は使用しません。
 
 統合テストは `.env.local` を自動で読み込むため、設定後は `npm test` をそのまま実行できます。
 

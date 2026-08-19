@@ -120,7 +120,7 @@
 
 ### Supabase と Repository
 
-Supabaseはホスティングされた PostgreSQL です。アプリはサーバー側から `service_role` キーで接続します。
+Supabaseはホスティングされた PostgreSQL です。アプリはサーバー側から `Secret` キー（従来の `service_role` キーの後継）で接続します。
 
 **画面やServer Actionは、Supabaseを直接触りません。** 必ず `lib/repositories/` の契約（インターフェース）を経由します。
 

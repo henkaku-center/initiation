@@ -60,8 +60,10 @@ SIWE_ALLOWED_DOMAINS=localhost:3000
 
 | `supabase status` の項目 | 設定先 |
 | --- | --- |
-| `API_URL` | `SUPABASE_URL` |
-| `SERVICE_ROLE_KEY` | `SUPABASE_SERVICE_ROLE_KEY` |
+| `Project URL` | `SUPABASE_URL` |
+| `Secret` | `SUPABASE_SERVICE_ROLE_KEY` |
+
+`Secret` は従来の `service_role` キーの後継です。このリポジトリでは既存の環境変数名 `SUPABASE_SERVICE_ROLE_KEY` に設定します。`Publishable` はサーバー側Repositoryの接続には使用しません。
 
 ### ADMIN_ADDRESSES
 

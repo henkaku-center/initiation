@@ -138,15 +138,21 @@ Docker Desktopが起動していることを確認してから実行します。
 npx supabase start
 ```
 
-初回はDockerイメージのダウンロードが走るため数分かかります。成功時は接続情報がJSONで表示されます。
+初回はDockerイメージのダウンロードが走るため数分かかります。成功時は接続情報が表示されます。次は出力の一部です。
 
 ```
 Applying migration 20260806000001_core_tables.sql...
-{"DB_URL":"postgresql://...","API_URL":"http://127.0.0.1:54321", ... }
+
+Authentication Keys
+Publishable  sb_publishable_...
+Secret       sb_secret_...
+
+APIs
+Project URL  http://127.0.0.1:54321
 ```
 
 ::: danger この出力にはキーが含まれます
-`supabase start` と `supabase status` の出力には `SERVICE_ROLE_KEY` が含まれます。この実行結果をそのままIssueやチャットへ貼らないでください。
+`supabase start` と `supabase status` の出力には `Secret` が含まれます。この実行結果をそのままIssueやチャットへ貼らないでください。
 :::
 
 ### 接続情報を .env.local へ設定する
@@ -159,8 +165,10 @@ npx supabase status
 
 | `supabase status` の項目 | `.env.local` の変数 |
 | --- | --- |
-| `API_URL` | `SUPABASE_URL` |
-| `SERVICE_ROLE_KEY` | `SUPABASE_SERVICE_ROLE_KEY` |
+| `Project URL` | `SUPABASE_URL` |
+| `Secret` | `SUPABASE_SERVICE_ROLE_KEY` |
+
+`Secret` は従来の `service_role` キーの後継で、サーバー側の処理にだけ使用します。このリポジトリでは既存の環境変数名 `SUPABASE_SERVICE_ROLE_KEY` に設定してください。`Publishable` はこのRepository接続には使用しません。詳しくは[Supabase公式のAPIキー解説](https://supabase.com/docs/guides/getting-started/api-keys)を参照してください。
 
 ### スキーマを適用する
 

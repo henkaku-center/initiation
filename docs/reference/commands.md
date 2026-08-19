@@ -61,7 +61,7 @@ npx supabase stop     # 停止
 ```
 
 ::: danger 出力の扱い
-`supabase start` と `supabase status` の出力には `SERVICE_ROLE_KEY` が含まれます。実行結果をそのままIssueやチャットへ貼らないでください。
+`supabase start` と `supabase status` の出力には `Secret` が含まれます。実行結果をそのままIssueやチャットへ貼らないでください。
 :::
 
 Supabase Studio は `http://127.0.0.1:54323` で開けます。

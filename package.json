@@ -17,14 +17,14 @@
     "docs:preview": "vitepress preview docs"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.112.2",
+    "@supabase/supabase-js": "^2.112.3",
     "@tanstack/react-query": "^5.101.4",
     "iron-session": "^8.0.4",
-    "next": "16.3.0",
+    "next": "16.3.1",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "siwe": "^3.0.0",
-    "viem": "^2.55.11",
+    "viem": "^2.55.16",
     "wagmi": "^3.7.6"
   },
   "devDependencies": {
@@ -37,10 +37,10 @@
     "@vitest/coverage-v8": "^4.1.10",
     "dotenv": "^17.4.2",
     "eslint": "^10",
-    "eslint-config-next": "16.3.0",
+    "eslint-config-next": "16.3.1",
     "tailwindcss": "^4.3.3",
     "tone": "^15.1.22",
-    "tsx": "^4.23.11",
+    "tsx": "^4.23.12",
     "typescript": "6.0.3",
     "vitepress": "^1.6.4",
     "vitest": "^4.1.10"

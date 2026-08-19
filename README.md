@@ -72,7 +72,7 @@ npx supabase status
 npx supabase db reset
 ```
 
-`supabase status` で確認したローカルAPI URLとservice role keyを、値がログに残らないように `.env.local` へ設定します。統合テストはローカルSupabaseが起動している状態で実行してください。
+`supabase status` で確認した `Project URL` と `Secret` を、値がログに残らないように `.env.local` の `SUPABASE_URL` と `SUPABASE_SERVICE_ROLE_KEY` へ設定します。`Publishable` はこの接続には使用しません。統合テストはローカルSupabaseが起動している状態で実行してください。
 
 ### 開発サーバー
 
