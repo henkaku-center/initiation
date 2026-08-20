@@ -78,7 +78,7 @@ const parseArgs = (argv: readonly string[]): CliOptions => {
   const input = positional[0];
   if (!input) {
     throw new Error(
-      "使い方: npx tsx scripts/midi/mid-to-tonejs.ts <input.mid> [-o out.json] [--title '曲名'] [--artist 名義] [--license 'CC BY 4.0'] [--quantize 1/16] [--bars 29] [--loop-bars 28] [--name '808=drums'] [--percussion 808] [--trim-clip-overlap]",
+      "使い方: npx tsx scripts/midi/mid-to-tonejs.ts <input.mid> [-o out.json] [--title '曲名'] [--artist 名義] [--license 'CC BY 4.0'] [--quantize 1/16] [--bars N] [--loop-bars N] [--name '808=drums'] [--percussion 808] [--trim-clip-overlap]",
     );
   }
   return {

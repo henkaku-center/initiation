@@ -32,7 +32,7 @@ npx tsx scripts/midi/mid-to-tonejs.ts <input.mid> --verify-only
 | `--artist` | なし | 制作者の名義。**CC BY 4.0 の帰属表示に必要** |
 | `--license` | なし | ライセンス表記。**CC BY 4.0 の帰属表示に必要** |
 | `--quantize 1/16` | なし | ノートの開始位置だけをグリッドに丸める。**この曲では不要**(下記) |
-| `--bars N` | 最後のノート開始位置から算出 | 素材全体の長さ |
+| `--bars N` | 最後のノート終了位置から算出 | 素材全体の長さ |
 | `--loop-bars N` | `--bars` と同じ | ループの折り返し位置 |
 | `--name 'source=logical'` | `808=drums` | 音源名から論理トラック名への読み替え |
 | `--percussion <source>` | `808` | GM ドラムマップとして扱う音源 |
@@ -50,8 +50,8 @@ npx tsx scripts/midi/mid-to-tonejs.ts <input.mid> --verify-only
   "timeSignature": [4, 4],
   "toneTimeSignature": 4,   // Tone.getTransport().timeSignature に渡す値
   "ppq": 480,
-  "lengthBars": 29,          // 素材の長さ(最後の解決和音を含む)
-  "loopBars": 28,            // ループの折り返し位置
+  "lengthBars": 28,          // 素材の長さ。最後のノートが終わる小節まで
+  "loopBars": 28,            // ループの折り返し位置。既定は lengthBars と同じ
   "loop": { "start": "0:0:0", "end": "28:0:0" },
   "tracks": [
     {
