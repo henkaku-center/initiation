@@ -70,15 +70,22 @@ export const verifyToneSong = (
     }
   });
 
+  // 開始位置ではなく終了位置と比べる。--bars で短く指定された場合もここで気づける。
   const lengthTicks = song.lengthBars * ticksPerBar(song.ppq, timeSignature);
-  const lastStart = Math.max(
+  const lastEnd = Math.max(
     0,
     ...song.tracks.flatMap((track) =>
-      track.events.map((event) => barsBeatsSixteenthsToTicks(event.time, song.ppq, timeSignature)),
+      track.events.map(
+        (event) =>
+          barsBeatsSixteenthsToTicks(event.time, song.ppq, timeSignature) +
+          barsBeatsSixteenthsToTicks(event.duration, song.ppq, timeSignature),
+      ),
     ),
   );
-  if (lengthTicks <= lastStart) {
-    issues.push(`lengthBars ${song.lengthBars} が最後のノート開始位置より前です`);
+  if (lengthTicks < lastEnd) {
+    issues.push(
+      `lengthBars ${song.lengthBars} が最後のノート終了位置(tick ${lastEnd})より前です`,
+    );
   }
   if (song.loopBars > song.lengthBars) {
     issues.push(`loopBars ${song.loopBars} が素材の長さ ${song.lengthBars} を超えています`);

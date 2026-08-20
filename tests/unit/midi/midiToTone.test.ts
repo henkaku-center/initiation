@@ -288,3 +288,53 @@ describe("collectNotesBySource", () => {
     expect(grouped.get("bass")!.length).toBe(126);
   });
 });
+
+describe("小節をまたぐノートと素材長", () => {
+  /** 指定した位置と長さのノート1つだけを持つ .mid を組み立てる。 */
+  const songWithSingleNote = (ticks: number, durationTicks: number, lengthBars?: number) => {
+    const built = new Midi();
+    built.addTrack().addNote({ midi: 60, ticks, durationTicks });
+    const bytes = Buffer.from(built.toArray());
+    const source = new Midi(bytes);
+    const rawTracks = readRawTracks(bytes).tracks;
+    return {
+      song: convertToToneSong(source, rawTracks, {
+        title: "crossing",
+        source: "crossing.mid",
+        ...(lengthBars === undefined ? {} : { lengthBars }),
+      }),
+      source,
+      rawTracks,
+    };
+  };
+
+  it("小節の終わり近くで始まる長いノートの終了位置まで素材を伸ばす", () => {
+    // 480ppq・4/4 で tick 1800 から 1440 続くノートは、tick 3240(2小節目の途中)で終わる。
+    const { song: crossing } = songWithSingleNote(1800, 1440);
+    expect(crossing.lengthBars).toBe(2);
+  });
+
+  it("素材の秒数がノートの終了より前で切れない", () => {
+    const { song: crossing } = songWithSingleNote(1800, 1440);
+    const endSeconds = (3240 / crossing.ppq) * (60 / crossing.bpm);
+    expect(crossing.durationSeconds).toBeGreaterThanOrEqual(endSeconds);
+  });
+
+  it("小節線ちょうどで終わるノートは次の小節を足さない", () => {
+    const { song: exact } = songWithSingleNote(0, 1920);
+    expect(exact.lengthBars).toBe(1);
+  });
+
+  it("lengthBars を明示してノートが切れる場合は検証で見つける", () => {
+    const { song: cut, source, rawTracks } = songWithSingleNote(1800, 1440, 1);
+    expect(cut.lengthBars).toBe(1);
+    expect(verifyToneSong(cut, source, rawTracks)).toContain(
+      "lengthBars 1 が最後のノート終了位置(tick 3240)より前です",
+    );
+  });
+
+  it("十分な lengthBars を明示した場合は検証を通す", () => {
+    const { song: kept, source, rawTracks } = songWithSingleNote(1800, 1440, 2);
+    expect(verifyToneSong(kept, source, rawTracks)).toEqual([]);
+  });
+});

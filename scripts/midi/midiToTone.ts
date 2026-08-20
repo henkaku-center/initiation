@@ -244,13 +244,16 @@ export const convertToToneSong = (
     trimClipOverlap: options.trimClipOverlap,
   });
 
+  const startTicksOf = (note: { ticks: number }): number =>
+    gridTicks ? quantizeTicks(note.ticks, gridTicks) : note.ticks;
+  /** JSON に書き出す長さと同じ値。0 の長さは 1 tick として扱う。 */
+  const endTicksOf = (note: { ticks: number; durationTicks: number }): number =>
+    startTicksOf(note) + Math.max(note.durationTicks, 1);
+
   const tracks: ToneTrack[] = [...grouped]
     .map(([sourceName, notes]) => {
       const events = notes
-        .map((note) => ({
-          note,
-          ticks: gridTicks ? quantizeTicks(note.ticks, gridTicks) : note.ticks,
-        }))
+        .map((note) => ({ note, ticks: startTicksOf(note) }))
         .sort((a, b) => a.ticks - b.ticks || a.note.midi - b.note.midi)
         .map(({ note, ticks }) => ({
           time: ticksToBarsBeatsSixteenths(ticks, ppq, timeSignature),
@@ -274,13 +277,12 @@ export const convertToToneSong = (
     })
     .sort((a, b) => a.name.localeCompare(b.name));
 
-  const lastNoteStart = Math.max(
+  // 開始位置だけで測ると、小節の終わり近くで始まる長いノートが素材長からはみ出す。
+  const lastNoteEnd = Math.max(
     0,
-    ...[...grouped.values()].flatMap((notes) =>
-      notes.map((note) => (gridTicks ? quantizeTicks(note.ticks, gridTicks) : note.ticks)),
-    ),
+    ...[...grouped.values()].flatMap((notes) => notes.map(endTicksOf)),
   );
-  const lengthBars = options.lengthBars ?? Math.ceil((lastNoteStart + 1) / barTicks);
+  const lengthBars = options.lengthBars ?? Math.max(1, Math.ceil(lastNoteEnd / barTicks));
   const loopBars = options.loopBars ?? lengthBars;
 
   return {
