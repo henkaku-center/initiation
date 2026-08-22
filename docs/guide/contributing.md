@@ -5,10 +5,11 @@ Issueを選んでからPull Requestを出すまでの流れです。[30分セッ
 ## 全体の流れ
 
 1. Issueで目的と変更範囲を共有する
-2. `main` から作業ブランチを作る
-3. テストを先に追加する
-4. 実装して検証コマンドを実行する
-5. Pull Requestを出す
+2. 初回だけGitの名前とメールを設定する
+3. `main` から作業ブランチを作る
+4. テストを先に追加する
+5. 実装して検証コマンドを実行する
+6. Pull Requestを出す
 
 ## 1. Issueを選ぶ
 
@@ -24,7 +25,23 @@ Issueがない変更を提案したい場合は、先にIssueを立てて目的�
 記録は `docs/decisions/` に**1つの決定につき1ファイル**を `YYYY-MM-DD-短い識別子.md` という名前で追加します（既存のファイルへ追記はしません）。こうしておくと、複数のPull Requestが同時に決定を追加しても衝突しません。
 :::
 
-## 2. 作業ブランチを作る
+## 2. 初回だけGitの名前とメールを設定する
+
+コミットには作成者の名前とメールアドレスが記録されます。まだ設定していない場合は、`YOUR_GITHUB_NAME` を自分のGitHubユーザー名へ置き換えます。
+
+```bash
+git config --global user.name "YOUR_GITHUB_NAME"
+```
+
+普段のメールアドレスをコミットへ載せたくない場合は、[GitHubのEmails設定](https://github.com/settings/emails)で `Keep my email addresses private` をオンにし、表示される `noreply` アドレスを設定します。
+
+```bash
+git config --global user.email "YOUR_NOREPLY_EMAIL"
+```
+
+詳しくは[GitHub公式のコミットメール設定](https://docs.github.com/account-and-profile/how-tos/email-preferences/setting-your-commit-email-address)を確認してください。すでに設定済みの場合、この手順は不要です。
+
+## 3. 作業ブランチを作る
 
 `main` から分岐します。
 
@@ -36,7 +53,7 @@ git checkout -b agent/navigation-readme
 
 ブランチ名は変更内容が分かるものにしてください（例: `agent/navigation-readme`、`fix/apply-status-label`）。
 
-## 3. テストを先に追加する
+## 4. テストを先に追加する
 
 このプロジェクトは**テストを先に書く**方針です。まず失敗するテストを追加し、それから実装します。
 
@@ -63,7 +80,7 @@ ls tests/unit/app/admin/
 ls tests/integration/
 ```
 
-## 4. 実装して検証する
+## 5. 実装して検証する
 
 実装したら、次を順に実行します。
 
@@ -80,7 +97,7 @@ npm run lint
 `Cannot find name 'LayoutProps'` は `npm run build` を先に実行すれば解消します。統合テストが `SUPABASE_SERVICE_ROLE_KEY` で失敗する場合は、ローカルSupabaseが起動しているか確認してください。→ [トラブルシューティング](/guide/troubleshooting)
 :::
 
-## 5. Pull Requestを出す
+## 6. Pull Requestを出す
 
 forkへpushしてからPull Requestを作成します。
 

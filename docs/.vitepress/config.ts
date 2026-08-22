@@ -51,6 +51,8 @@ export default defineConfig({
   head: [["meta", { name: "theme-color", content: "#0f172a" }]],
 
   themeConfig: {
+    siteTitle: "HENKAKU Initiation",
+
     nav: [
       { text: "はじめに", link: "/guide/introduction" },
       { text: "30分セットアップ", link: "/guide/setup" },
@@ -72,6 +74,13 @@ export default defineConfig({
         items: [
           { text: "プロジェクトの構成", link: "/guide/architecture" },
           { text: "トラブルシューティング", link: "/guide/troubleshooting" },
+        ],
+      },
+      {
+        text: "環境別ガイド",
+        collapsed: true,
+        items: [
+          { text: "Windowsでゼロから始める", link: "/guide/setup-windows" },
         ],
       },
       {

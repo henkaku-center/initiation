@@ -2,6 +2,10 @@
 
 手元で開発画面を表示するまでの手順です。各ステップに、実行するコマンドと**成功したときに表示されるもの**を書いています。表示が違う場合は[トラブルシューティング](/guide/troubleshooting)を見てください。
 
+::: info Windowsで前提ツールを初めて入れる場合
+この30分は、Git、Node.js、npm、Docker Desktopがすでに動く状態からの目安です。WindowsでGitやターミナルを初めて使う場合は、先に[Windowsでゼロから始める](/guide/setup-windows)を進めてください。準備完了チェックを通過したところから、このコースへ戻ります。
+:::
+
 ::: warning 秘密情報の扱い
 このページで作る `.env.local` には秘密情報が入ります。コミット、Issue、Pull Request、チャットへ貼り付けないでください。`.gitignore` で除外されていますが、コマンドの実行結果を貼るときも値が含まれていないか確認してください。
 :::
@@ -51,13 +55,13 @@ git --version
 
 ### ローカルSupabaseを使う場合に必要
 
-このプロジェクトはデータの保存にSupabase（PostgreSQL）を使います。手元で動かすには **Docker Desktop** が必要です。
+このプロジェクトはデータの保存にSupabase（PostgreSQL）を使います。ローカルSupabaseを使うフル動作確認と統合テストには **Docker Desktop** が必要です。ドキュメント作業や単体テストだけなら不要です。
 
 ```bash
-docker info
+docker version
 ```
 
-成功時は、サーバー情報が表示されます。`Cannot connect to the Docker daemon` と出る場合はDocker Desktopを起動してください。
+成功時は、`Client` と `Server` の両方が表示されます。`Server` がなく接続エラーになる場合はDocker Desktopを起動してください。WindowsのWSL2環境で初めて準備する場合は、[Windows向けDocker手順](/guide/setup-windows#windows-docker-setup)を確認してください。
 
 Supabase CLIは `npx` 経由で使うため、事前インストールは不要です。
 
@@ -165,10 +169,10 @@ npx supabase status
 
 | `supabase status` の項目 | `.env.local` の変数 |
 | --- | --- |
-| `Project URL` | `SUPABASE_URL` |
-| `Secret` | `SUPABASE_SERVICE_ROLE_KEY` |
+| `APIs` の `Project URL` | `SUPABASE_URL` |
+| `Authentication Keys` の `Secret` | `SUPABASE_SERVICE_ROLE_KEY` |
 
-`Secret` は従来の `service_role` キーの後継で、サーバー側の処理にだけ使用します。このリポジトリでは既存の環境変数名 `SUPABASE_SERVICE_ROLE_KEY` に設定してください。`Publishable` はこのRepository接続には使用しません。詳しくは[Supabase公式のAPIキー解説](https://supabase.com/docs/guides/getting-started/api-keys)を参照してください。
+`Authentication Keys` の `Secret` は従来の `service_role` キーの後継で、サーバー側の処理にだけ使用します。`Storage (S3)` の `Secret Key` ではありません。このリポジトリでは既存の環境変数名 `SUPABASE_SERVICE_ROLE_KEY` に設定してください。`Publishable` はこのRepository接続には使用しません。詳しくは[Supabase公式のAPIキー解説](https://supabase.com/docs/guides/getting-started/api-keys)を参照してください。
 
 ### スキーマを適用する
 
@@ -205,6 +209,8 @@ npm run dev -- --port 3000
 ```
 
 `- Environments: .env.local` が出ていれば、環境変数が読み込まれています。
+
+このコマンドは開発サーバーを起動し続けるため、ターミナルはログ表示に使われます。後のテストは、同じリポジトリを開いた別のターミナルで実行するか、このターミナルで `Ctrl+C` を押してサーバーを止めてから実行してください。
 
 ::: warning ウォレット確認には Local URL を使う
 Next.js の出力に `Network: http://<LAN内IP>:3000` も表示される場合がありますが、標準の動作確認では **`Local: http://localhost:3000`** を開いてください。

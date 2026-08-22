@@ -48,6 +48,8 @@ npx vitest run tests/unit
 
 ## Docker / Supabase が起動しない
 
+WindowsでWSL2やDocker Desktopを初めて準備している場合は、先に[Windows向けのDocker切り分け](/guide/setup-windows#windows-docker-troubleshooting)を確認してください。
+
 ```
 Cannot connect to the Docker daemon
 ```
@@ -91,10 +93,10 @@ initdb: error: could not create directory "/var/lib/postgresql/data/pg_wal": No 
 
 ```bash
 docker system df       # 使用量と回収可能な容量を確認する
-docker system prune -f # 停止中のコンテナ・未使用イメージを削除する
+docker system prune    # 確認後、停止中のコンテナ・未使用イメージを削除する
 ```
 
-`docker system prune` は**動いていないコンテナと、どこからも使われていないイメージを消します。** 他のプロジェクトで使っているイメージも再取得が必要になる場合があるため、表示される確認内容を読んでから実行してください。
+`docker system prune` は**動いていないコンテナと、どこからも使われていないイメージを消します。** 他のプロジェクトで使っているイメージも再取得が必要になる場合があるため、削除対象と確認メッセージを読んでから `y` を入力してください。
 
 ## `SESSION_PASSWORD must be at least 32 characters`
 
