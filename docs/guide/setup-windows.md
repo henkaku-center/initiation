@@ -18,7 +18,7 @@ Gitやターミナルを初めて使うWindows利用者が、[30分セットア�
 | 場所 | 見分け方 | このコースで行うこと |
 | --- | --- | --- |
 | Windows | PowerShellは `PS C:\...>` と表示される | WSL2の導入、Docker Desktopの画面操作、ブラウザ |
-| Ubuntu（WSL2） | `名前@PC名:~$` のように表示される | Git、Node.js、npm、Supabase CLI、開発コマンド |
+| Ubuntu（WSL2） | `名前@PC名:~$` のように表示される | Git、GitHub CLI、Node.js、npm、Supabase CLI、開発コマンド |
 | インターネット | `github.com` など | fork、ソースコードの取得、公式ドキュメント |
 | 自分のPCだけ | `localhost`、`127.0.0.1` | 開発中のアプリとローカルSupabase |
 
@@ -152,6 +152,52 @@ git config --global --get user.email
 
 詳しい手順は[GitHub公式のコミットメール設定](https://docs.github.com/account-and-profile/how-tos/email-preferences/setting-your-commit-email-address)にあります。
 
+### Ubuntu: GitHubへサインインする
+
+GitHubから公開リポジトリをcloneするだけならサインインは不要ですが、自分のforkへ `git push` するには認証が必要です。GitHubのパスワードはGit操作に使えないため、このコースではGitHub CLIのブラウザ認証を使います。
+
+[GitHub CLI公式のDebian・Ubuntu向け手順](https://github.com/cli/cli/blob/trunk/docs/install_linux.md)に従い、公式パッケージをインストールします。次のコード欄は、改行を含めて1つのコマンドです。
+
+```bash
+(type -p wget >/dev/null || (sudo apt update && sudo apt install wget -y)) \
+  && sudo mkdir -p -m 755 /etc/apt/keyrings \
+  && gh_keyring_file=$(mktemp) \
+  && wget -nv -O"$gh_keyring_file" https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+  && sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg < "$gh_keyring_file" > /dev/null \
+  && sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+  && sudo mkdir -p -m 755 /etc/apt/sources.list.d \
+  && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+    | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+  && sudo apt update \
+  && sudo apt install gh -y
+```
+
+インストールできたことを確認します。
+
+```bash
+gh --version
+```
+
+続けて、GitHubのブラウザ認証を開始します。
+
+```bash
+gh auth login --hostname github.com --git-protocol https --web
+```
+
+画面に表示される一時コードを使ってブラウザで認証します。ブラウザが自動で開かない場合は、ターミナルに表示されたURLを自分で開いてください。パスワードやPersonal Access Tokenをターミナルへ貼る必要はありません。
+
+認証後、UbuntuのGitがGitHub CLI経由で認証できるように設定します。
+
+```bash
+gh auth setup-git
+```
+
+```bash
+gh auth status
+```
+
+`Logged in to github.com` と自分のGitHubユーザー名が表示されれば成功です。認証情報の保存先が表示されても、そのファイルの内容をIssue、チャット、AIへ貼り付けないでください。詳しい動作は[GitHub CLI公式のログイン手順](https://cli.github.com/manual/gh_auth_login)と[`gh auth setup-git`の説明](https://cli.github.com/manual/gh_auth_setup-git)にあります。
+
 ## 4. UbuntuへNode.jsとnpmを入れる
 
 Node.jsは、このプロジェクトと開発ツールを動かす実行環境です。npmは必要なライブラリをインストールします。このコースでは、Node.jsのバージョンを切り替えられる `nvm` を使います。
@@ -233,9 +279,9 @@ Dockerは、アプリ本体ではなく**ローカルSupabase**を動かすた�
 
 Docker Desktopで次を確認します。
 
-1. `Settings` → `General` → `Use WSL 2 based engine` が有効
+1. `Settings` → `General` に `Use WSL 2 based engine` が表示される場合は有効にする。WSL2対応環境では既定で有効になり、この項目自体が表示されない場合があります。その場合は正常なので次へ進む
 2. `Settings` → `Resources` → `WSL Integration` で `Ubuntu` が有効
-3. `Apply` または `Apply & restart` を押す
+3. 設定を変更した場合は `Apply` または `Apply & restart` を押す
 
 `WSL Integration` が表示されない場合は、Docker DesktopがWindowsコンテナモードになっていないか確認し、Linuxコンテナへ切り替えます。公式手順は[Docker Desktop WSL2 backend](https://docs.docker.com/desktop/features/wsl/)にあります。
 
@@ -343,6 +389,10 @@ git --version
 ```
 
 ```bash
+gh auth status
+```
+
+```bash
 node -v
 ```
 
@@ -354,6 +404,6 @@ npm -v
 docker version
 ```
 
-`docker version` に `Client` と `Server` の両方が表示されたら準備完了です。Ubuntuで `~/projects` に移動した状態から、メインの手順へ進みます。
+`gh auth status` に自分のGitHubユーザー名、`docker version` に `Client` と `Server` の両方が表示されたら準備完了です。Ubuntuで `~/projects` に移動した状態から、メインの手順へ進みます。
 
 → [30分セットアップを始める](/guide/setup)
