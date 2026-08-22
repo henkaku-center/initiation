@@ -191,6 +191,23 @@ npm run dev -- --port 3001
 
 ## ウォレット接続・Polygon切り替え・SIWEに失敗する
 
+### LAN内IPでは画面が表示されるのにウォレット接続が動かない {#wallet-connection-lan-ip}
+
+ブラウザのアドレスが `http://192.168.x.x:3000` などのLAN内IPで、コンソールに次のようなエラーが出ている場合が該当します。
+
+```
+GET http://<LAN内IP>:3000/_next/static/chunks/... 403 (Forbidden)
+WebSocket connection to 'ws://<LAN内IP>:3000/_next/hmr...' failed
+```
+
+**原因**: Next.js 開発サーバーのオリジン制限により、画面を動かすJavaScriptやHMR接続が拒否されています。HTMLだけは表示されることがあるため、MetaMaskやwagmiの問題に見えますが、ウォレット接続処理が読み込まれる前の失敗です。
+
+**対処**: 同じPCのブラウザで `http://localhost:3000/setup` を開き直してください。Next.js の起動メッセージでは `Network` ではなく `Local` と表示されたURLを使います。
+
+固定のLAN内IPだけを `allowedDevOrigins` に追加しても、SIWEの許可ドメインである `SIWE_ALLOWED_DOMAINS` との整合が別途必要です。LAN経由の確認は標準のローカルセットアップ手順では扱わないため、どちらか一方だけを変更しないでください。
+
+### ウォレット側で操作を拒否した、または設定が不足している
+
 **接続を拒否した場合**: ウォレットの拡張機能を開き、接続を承認してからもう一度試します。
 
 **Polygonが登録されていない場合**: アプリからネットワークの追加を求められます。ウォレット側で承認してください。
