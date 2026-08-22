@@ -220,7 +220,7 @@ Network URL では、Next.js の開発用JavaScriptが `403 Forbidden` になり
 
 ブラウザで `http://localhost:3000` を開きます。トップページが表示されたら、`http://localhost:3000/setup` でウォレット接続ボタンが動作することも確認します。
 
-LAN内IPで開いて画面は表示されるのにウォレット接続が動かない場合は、[ウォレット接続・Polygon切り替え・SIWEに失敗する](/guide/troubleshooting#ウォレット接続polygon切り替えsiweに失敗する)を確認してください。
+LAN内IPで開いて画面は表示されるのにウォレット接続が動かない場合は、[LAN内IPでは画面が表示されるのにウォレット接続が動かない](/guide/troubleshooting#lan内ipでは画面が表示されるのにウォレット接続が動かない)を確認してください。
 
 続いて、テストが通ることを確認します。
 
