@@ -1,0 +1,143 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Breeze Zero preview</title>
+<!-- ABOUTME: 生成した JSON を Tone.js で鳴らし、音程・タイミング・長さを耳で確認するための検証ページ。 -->
+<!-- ABOUTME: 本番用ではないので scripts/ に置き、リポジトリのルートを静的配信して開く。 -->
+<style>
+  /* 色はサイト本体(app/globals.css)のダークパレットに合わせる。 */
+  html { color-scheme: dark; }
+  body { font: 15px/1.6 system-ui, sans-serif; margin: 2rem auto; max-width: 44rem; padding: 0 1rem;
+         background: #0f172a; color: #e2e8f0; }
+  button { font: inherit; padding: .5rem 1rem; margin-right: .5rem; }
+  table { border-collapse: collapse; margin-top: 1rem; width: 100%; }
+  th, td { border-bottom: 1px solid #334155; padding: .35rem .5rem; text-align: left; }
+  td:not(:first-child), th:not(:first-child) { text-align: right; }
+  code { background: #1e293b; padding: .1rem .3rem; }
+  #position { font-variant-numeric: tabular-nums; }
+</style>
+<h1>Tone.js preview</h1>
+<p>
+  ルートで <code>python3 -m http.server 4173</code> を実行し、
+  <code>http://localhost:4173/scripts/midi/preview.html</code> を開く。
+</p>
+<p>
+  <button id="play">再生</button>
+  <button id="stop">停止</button>
+  <label><input id="loop" type="checkbox" checked /> ループ</label>
+  <span id="position">0:0:0</span>
+</p>
+<div id="summary"></div>
+
+<script src="/node_modules/tone/build/Tone.js"></script>
+<script type="module">
+  const SONG_URL = "/public/music/karawapo-breeze-zero.json";
+  const song = await (await fetch(SONG_URL)).json();
+
+  Tone.getTransport().bpm.value = song.bpm;
+  Tone.getTransport().timeSignature = song.toneTimeSignature;
+  Tone.getTransport().loop = true;
+  Tone.getTransport().loopStart = song.loop.start;
+  Tone.getTransport().loopEnd = song.loop.end;
+
+  // 本番の音源ではなく、譜面の確認用に割り当てた素朴な音色。
+  const pitchedVoices = {
+    ePiano: () =>
+      new Tone.PolySynth(Tone.Synth, {
+        oscillator: { type: "triangle" },
+        envelope: { attack: 0.005, decay: 0.3, sustain: 0.1, release: 0.4 },
+        volume: -14,
+      }),
+    lead: () =>
+      new Tone.PolySynth(Tone.Synth, {
+        oscillator: { type: "sawtooth" },
+        envelope: { attack: 0.02, decay: 0.2, sustain: 0.5, release: 0.3 },
+        volume: -16,
+      }),
+    bass: () =>
+      new Tone.PolySynth(Tone.Synth, {
+        oscillator: { type: "square" },
+        envelope: { attack: 0.01, decay: 0.2, sustain: 0.6, release: 0.2 },
+        volume: -14,
+      }),
+  };
+  const defaultVoice = () => new Tone.PolySynth(Tone.Synth, { volume: -16 });
+
+  // ドラムは音程ではなく打楽器の指定なので、drumMap の音色名で鳴らし分ける。
+  const createDrumKit = () => {
+    const membrane = new Tone.MembraneSynth({ volume: -6 }).toDestination();
+    const noise = () =>
+      new Tone.NoiseSynth({
+        noise: { type: "white" },
+        envelope: { attack: 0.001, decay: 0.12, sustain: 0 },
+        volume: -18,
+      }).toDestination();
+    const snare = noise();
+    const hat = new Tone.NoiseSynth({
+      noise: { type: "white" },
+      envelope: { attack: 0.001, decay: 0.04, sustain: 0 },
+      volume: -26,
+    }).toDestination();
+    const cymbal = new Tone.MetalSynth({ volume: -30 }).toDestination();
+    const tom = new Tone.MembraneSynth({ octaves: 3, volume: -12 }).toDestination();
+    return (instrument, time, velocity) => {
+      if (instrument.endsWith("BassDrum") || instrument === "bassDrum")
+        return membrane.triggerAttackRelease("C1", "8n", time, velocity);
+      if (instrument.endsWith("Snare") || instrument === "handClap")
+        return snare.triggerAttackRelease("16n", time, velocity);
+      if (instrument.endsWith("HiHat")) return hat.triggerAttackRelease("32n", time, velocity);
+      if (instrument.includes("Cymbal") || instrument === "rideBell")
+        return cymbal.triggerAttackRelease("8n", time, velocity * 0.5);
+      if (instrument.includes("Tom")) return tom.triggerAttackRelease("G2", "8n", time, velocity);
+      return snare.triggerAttackRelease("16n", time, velocity * 0.6);
+    };
+  };
+
+  const parts = song.tracks.map((track) => {
+    if (track.isPercussion) {
+      const play = createDrumKit();
+      return new Tone.Part((time, event) => {
+        play(track.drumMap[event.note] ?? "unknown", time, event.velocity);
+      }, track.events).start(0);
+    }
+    const synth = (pitchedVoices[track.name] ?? defaultVoice)().toDestination();
+    return new Tone.Part((time, event) => {
+      synth.triggerAttackRelease(event.note, event.duration, time, event.velocity);
+    }, track.events).start(0);
+  });
+
+  document.querySelector("#play").addEventListener("click", async () => {
+    await Tone.start();
+    Tone.getTransport().start();
+  });
+  document.querySelector("#stop").addEventListener("click", () => {
+    Tone.getTransport().stop();
+  });
+  document.querySelector("#loop").addEventListener("change", (event) => {
+    Tone.getTransport().loop = event.target.checked;
+  });
+  setInterval(() => {
+    document.querySelector("#position").textContent = Tone.getTransport().position
+      .split(":")
+      .map((part) => Math.floor(Number(part)))
+      .join(":");
+  }, 100);
+
+  document.querySelector("#summary").innerHTML = `
+    <p><strong>${song.title}</strong>${song.artist ? ` / ${song.artist}` : ""}${
+      song.license ? ` / ${song.license}` : ""
+    } — ${song.bpm} BPM / ${song.timeSignature.join("/")} /
+      素材 ${song.lengthBars} 小節 / ループ ${song.loop.start}–${song.loop.end} /
+      量子化 ${song.quantize ?? "なし"}</p>
+    <table>
+      <tr><th>track</th><th>notes</th><th>種別</th><th>最初</th><th>最後</th></tr>
+      ${song.tracks
+        .map(
+          (track) => `<tr><td>${track.name}</td><td>${track.noteCount}</td>
+            <td>${track.isPercussion ? "percussion" : "pitched"}</td>
+            <td>${track.events[0].time}</td>
+            <td>${track.events[track.events.length - 1].time}</td></tr>`,
+        )
+        .join("")}
+    </table>`;
+  void parts;
+</script>
