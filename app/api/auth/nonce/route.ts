@@ -1,5 +1,5 @@
 // ABOUTME: SIWE 署名に使う一回限りの nonce を Cookie セッションへ発行する。
-// ABOUTME: nonce 自体は秘密ではないが、サーバー側のセッション状態と組み合わせて再利用を防ぐ。
+// ABOUTME: nonce は封緘 Cookie にだけ保存し、サーバー側ストアは持たない(単回性の扱いは docs/decisions/2026-08-24-siwe-nonce-single-use.md)。
 import { generateNonce } from "siwe";
 import { getSession } from "@/lib/session";
 
