@@ -1,11 +1,12 @@
 // ABOUTME: SIWE サインイン。Polygon 以外へ切り替えたらサーバーセッションを破棄する。
-// ABOUTME: MetaMask の署名拒否は再試行できる画面エラーとして扱う。
+// ABOUTME: 破棄したときは理由と次の操作を画面に残す(Issue #67)。署名拒否も画面エラーにする。
 "use client";
 
 import { useEffect, useState } from "react";
 import { SiweMessage } from "siwe";
 import { useAccount, useSignMessage } from "wagmi";
 import { polygon } from "wagmi/chains";
+import { shouldDiscardSessionForChain, signInBlockedByChain } from "@/lib/domain/walletSession";
 import { buttonStyles } from "@/lib/ui";
 import { useRefreshSession, useSession, useSignOut } from "@/lib/useSession";
 
@@ -29,10 +30,18 @@ export function SignInWithEthereum() {
   // SessionStatus が全ページで見ている(Issue #44)。両方で見ると、
   // /setup を開いている間だけ logout が二重に飛ぶ。
   useEffect(() => {
-    if (!connectedMatchesSession) return;
-    if (chainId === polygon.id) return;
+    if (
+      !shouldDiscardSessionForChain({
+        signedInAs,
+        connectedAddress: address,
+        connectedChainId: chainId,
+        requiredChainId: polygon.id,
+      })
+    ) {
+      return;
+    }
     void signOut();
-  }, [connectedMatchesSession, chainId, signOut]);
+  }, [signedInAs, address, chainId, signOut]);
 
   async function signIn() {
     setError(null);
@@ -80,6 +89,17 @@ export function SignInWithEthereum() {
 
   return (
     <div className="space-y-3">
+      {/* 署名しても直後にセッションが破棄される状態を、黙って通さずに説明する
+          (Issue #67)。Polygon へ切り替えれば消える。 */}
+      {signInBlockedByChain({ connectedChainId: chainId, requiredChainId: polygon.id }) && (
+        <p
+          className="rounded-lg bg-amber-50 px-3 py-2 text-sm leading-6 font-semibold text-amber-900 dark:bg-amber-950/30 dark:text-amber-200"
+          role="alert"
+        >
+          Polygon以外のネットワークにつながっています。このまま署名してもサインインは完了しません。
+          「03 PolygonとHENKAKU」でPolygonに切り替えてから、署名してください。
+        </p>
+      )}
       <button className={buttonStyles.primary} type="button" onClick={signIn}>
         署名してサインイン
       </button>
