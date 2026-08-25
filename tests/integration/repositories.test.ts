@@ -25,6 +25,28 @@ describe("repositories (local supabase)", () => {
     expect(second.walletAddress).toBe(ADDR);
   });
 
+  it("stores and overwrites a member display name", async () => {
+    // 保存経路がないまま /admin の表示だけがあった状態を、テストで固定する(Issue #72)。
+    const { members } = getRepositories();
+    const m = await members.upsertByAddress(ADDR);
+    expect(m.displayName).toBeNull();
+    await members.updateDisplayName(m.id, "さくら");
+    await members.updateDisplayName(m.id, "さくら(改名)");
+    const found = await members.findByAddress(ADDR);
+    expect(found?.displayName).toBe("さくら(改名)");
+  });
+
+  it("keeps the display name when the member is upserted again", async () => {
+    // サインインのたびに upsertByAddress が走る。ここで表示名が消えると、
+    // 保存しても次のサインインで失われる。
+    const { members } = getRepositories();
+    const m = await members.upsertByAddress(ADDR);
+    await members.updateDisplayName(m.id, "さくら");
+    await members.upsertByAddress(ADDR);
+    const found = await members.findByAddress(ADDR);
+    expect(found?.displayName).toBe("さくら");
+  });
+
   it("saves and overwrites progress per step", async () => {
     const { members, progress } = getRepositories();
     const m = await members.upsertByAddress(ADDR);
