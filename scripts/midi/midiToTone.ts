@@ -136,14 +136,16 @@ const clipLengthOf = (orderedClips: readonly ClipNotes[]): number | null => {
 /**
  * そのクリップの音を残す上限。次のクリップがあればその頭、
  * 最後のクリップは推定したクリップ長から算出する(最後のクリップにも同じはみ出しがあるため)。
+ *
+ * 最後の境界は必ず「そのクリップ自身の頭 + クリップ長」で求める。前のクリップから
+ * 推定すると、クリップの間隔が不規則な曲(途中に空白があるなど)で境界が手前にずれ、
+ * 最後のクリップの頭を消してしまう。クリップ長はあくまで推定値である点は変わらない。
  */
 const boundaryOf = (orderedClips: readonly ClipNotes[], index: number): number | null => {
   const next = orderedClips[index + 1];
   if (next) return startOf(next);
   const length = clipLengthOf(orderedClips);
-  if (length === null) return null;
-  const previous = orderedClips[index - 1];
-  return previous ? startOf(previous) + 2 * length : startOf(orderedClips[index]) + length;
+  return length === null ? null : startOf(orderedClips[index]) + length;
 };
 
 /**

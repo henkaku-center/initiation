@@ -338,3 +338,34 @@ describe("小節をまたぐノートと素材長", () => {
     expect(verifyToneSong(kept, source, rawTracks)).toEqual([]);
   });
 });
+
+describe("間隔が不規則なクリップのトリム", () => {
+  /** 同じ楽器名の複数クリップ(1クリップ=1トラック)を持つ .mid を組み立てる。 */
+  const midiWithClips = (clips: readonly (readonly number[])[]) => {
+    const built = new Midi();
+    clips.forEach((ticksInClip) => {
+      const track = built.addTrack();
+      track.name = "pad";
+      ticksInClip.forEach((ticks) => track.addNote({ midi: 60, ticks, durationTicks: 240 }));
+    });
+    const bytes = Buffer.from(built.toArray());
+    return { source: new Midi(bytes), rawTracks: readRawTracks(bytes).tracks };
+  };
+
+  // クリップ長 1920 tick。3つ目と4つ目のあいだに1クリップ分の空白があるため、
+  // 最後の間隔(3840)だけが他(1920)と違う。
+  const IRREGULAR = [[1800], [3720], [5640], [9480]] as const;
+
+  it("最後のクリップの頭を、前のクリップからの推定で消さない", () => {
+    const { source, rawTracks } = midiWithClips(IRREGULAR);
+    const trimmed = collectNotesBySource(source, rawTracks, { trimClipOverlap: true });
+    expect(trimmed.get("pad")!.map((note) => note.ticks)).toEqual([1800, 3720, 5640, 9480]);
+  });
+
+  it("最後のクリップからはみ出した音は、間隔が不規則でも削る", () => {
+    const { source, rawTracks } = midiWithClips([[1800], [3720], [5640], [9480, 11500]]);
+    const trimmed = collectNotesBySource(source, rawTracks, { trimClipOverlap: true });
+    // 最後のクリップの上限は 9480 + 1920 = 11400。11500 はそれを越える。
+    expect(trimmed.get("pad")!.map((note) => note.ticks)).toEqual([1800, 3720, 5640, 9480]);
+  });
+});
