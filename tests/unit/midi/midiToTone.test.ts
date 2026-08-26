@@ -369,3 +369,17 @@ describe("間隔が不規則なクリップのトリム", () => {
     expect(trimmed.get("pad")!.map((note) => note.ticks)).toEqual([1800, 3720, 5640, 9480]);
   });
 });
+
+describe("有限でない小節数の検出", () => {
+  it("lengthBars が NaN の JSON を検証で弾く", () => {
+    const broken = { ...song, lengthBars: Number.NaN };
+    expect(verifyToneSong(broken, midi, raw.tracks)).toContain(
+      `小節数が有限の数値ではありません (lengthBars NaN / loopBars ${song.loopBars})`,
+    );
+  });
+
+  it("loopBars が Infinity の JSON を検証で弾く", () => {
+    const broken = { ...song, loopBars: Number.POSITIVE_INFINITY };
+    expect(verifyToneSong(broken, midi, raw.tracks).join("\n")).toContain("小節数が有限の数値ではありません");
+  });
+});

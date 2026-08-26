@@ -70,6 +70,13 @@ export const verifyToneSong = (
     }
   });
 
+  // NaN や Infinity は以下の比較がすべて偽になり、検査をすり抜けてしまう。
+  if (!Number.isFinite(song.lengthBars) || !Number.isFinite(song.loopBars)) {
+    issues.push(
+      `小節数が有限の数値ではありません (lengthBars ${song.lengthBars} / loopBars ${song.loopBars})`,
+    );
+  }
+
   // 開始位置ではなく終了位置と比べる。--bars で短く指定された場合もここで気づける。
   const lengthTicks = song.lengthBars * ticksPerBar(song.ppq, timeSignature);
   const lastEnd = Math.max(

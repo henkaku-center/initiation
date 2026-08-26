@@ -62,3 +62,17 @@ export const divisionToTicks = (division: string, ppq: number): number => {
 
 export const quantizeTicks = (ticks: number, gridTicks: number): number =>
   Math.round(ticks / gridTicks) * gridTicks;
+
+/**
+ * "--bars 29" のような小節数の指定を読む。
+ *
+ * NaN・Infinity・負数・小数をここで弾く。素通しすると比較がすべて偽になって検証を
+ * すり抜け、JSON.stringify が NaN を null にするため、Tone.js が読めない JSON になる。
+ */
+export const parseBarCount = (value: string, label: string, minimum = 1): number => {
+  const bars = Number(value);
+  if (!Number.isInteger(bars) || bars < minimum) {
+    throw new Error(`${label} には ${minimum} 以上の整数を指定してください: ${value}`);
+  }
+  return bars;
+};

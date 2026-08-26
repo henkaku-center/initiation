@@ -4,6 +4,7 @@ import {
   barsBeatsSixteenthsToTicks,
   beatsPerBar,
   divisionToTicks,
+  parseBarCount,
   quantizeTicks,
   ticksPerBar,
   ticksToBarsBeatsSixteenths,
@@ -71,5 +72,25 @@ describe("quantizeTicks", () => {
     expect(quantizeTicks(113, 120)).toBe(120);
     expect(quantizeTicks(45, 120)).toBe(0);
     expect(quantizeTicks(7680, 120)).toBe(7680);
+  });
+});
+
+describe("parseBarCount", () => {
+  it("小節数として使える整数を読む", () => {
+    expect(parseBarCount("28", "--bars")).toBe(28);
+    expect(parseBarCount("0", "--loop-bars", 0)).toBe(0);
+  });
+
+  it("JSON を壊す値を弾く", () => {
+    expect(() => parseBarCount("NaN", "--bars")).toThrow("--bars");
+    expect(() => parseBarCount("Infinity", "--bars")).toThrow("--bars");
+    expect(() => parseBarCount("-1", "--bars")).toThrow("--bars");
+    expect(() => parseBarCount("1.5", "--bars")).toThrow("--bars");
+    expect(() => parseBarCount("", "--bars")).toThrow("--bars");
+  });
+
+  it("最小値は指定で変えられる", () => {
+    expect(() => parseBarCount("0", "--bars")).toThrow("1 以上");
+    expect(() => parseBarCount("-1", "--loop-bars", 0)).toThrow("0 以上");
   });
 });

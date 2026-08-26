@@ -6,6 +6,7 @@ import { readFileSync, mkdirSync, writeFileSync } from "node:fs";
 import { basename, dirname, extname } from "node:path";
 import midiPackage from "@tonejs/midi";
 import { readRawTracks } from "./midiMeta";
+import { parseBarCount } from "./musicalTime";
 import {
   collectDiscardedEvents,
   convertToToneSong,
@@ -62,8 +63,8 @@ const parseArgs = (argv: readonly string[]): CliOptions => {
     else if (arg === "--artist") options.artist = next();
     else if (arg === "--license") options.license = next();
     else if (arg === "--quantize") options.quantize = next();
-    else if (arg === "--bars") options.lengthBars = Number(next());
-    else if (arg === "--loop-bars") options.loopBars = Number(next());
+    else if (arg === "--bars") options.lengthBars = parseBarCount(next(), arg);
+    else if (arg === "--loop-bars") options.loopBars = parseBarCount(next(), arg, 0);
     else if (arg === "--verify-only") options.verifyOnly = true;
     else if (arg === "--trim-clip-overlap") options.trimClipOverlap = true;
     else if (arg === "--percussion") options.percussionSources.push(next());
