@@ -27,6 +27,7 @@ export const verifyToneSong = (
   const expected = new Map<string, number>();
   collectNotesBySource(midi, rawTracks, {
     trimClipOverlap: song.trimClipOverlap,
+    gridTicks,
   }).forEach((notes, sourceName) => {
     notes.forEach((note) => {
       const ticks = gridTicks ? quantizeTicks(note.ticks, gridTicks) : note.ticks;

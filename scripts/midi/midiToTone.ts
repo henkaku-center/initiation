@@ -122,6 +122,18 @@ export const toLogicalName = (
 ): string => aliases[sourceName] ?? camelCase(sourceName) ?? sourceName;
 
 type ClipNotes = Track["notes"][number][];
+/**
+ * ノートの開始位置。量子化を指定した場合は丸めたあとの位置を返す。
+ *
+ * どのノートを残すかは、JSON に書き出すのと同じ位置で判定する必要がある。元の位置で
+ * 切ってから丸めると、境界の手前にあった音が丸めで境界へ戻り、取り除いたはずの重なりが
+ * 復活する。一方、クリップの境界そのものは元の tick で測る。丸めた位置で測ると、
+ * 近接したクリップの頭が同じ位置に潰れて長さの推定が壊れる。
+ */
+const startTicksWith =
+  (gridTicks: number | null) =>
+  (note: { readonly ticks: number }): number =>
+    gridTicks ? quantizeTicks(note.ticks, gridTicks) : note.ticks;
 
 const startOf = (clip: ClipNotes): number => Math.min(...clip.map((note) => note.ticks));
 
@@ -159,8 +171,9 @@ const boundaryOf = (orderedClips: readonly ClipNotes[], index: number): number |
 export const collectNotesBySource = (
   midi: Midi,
   rawTracks: readonly RawTrackMeta[],
-  options: { readonly trimClipOverlap?: boolean } = {},
+  options: { readonly trimClipOverlap?: boolean; readonly gridTicks?: number | null } = {},
 ): Map<string, ClipNotes> => {
+  const startTicks = startTicksWith(options.gridTicks ?? null);
   const rawByTrack = alignInstrumentNames(rawTracks, midi.tracks);
   const clipsBySource = new Map<string, ClipNotes[]>();
   midi.tracks.forEach((track, index) => {
@@ -180,7 +193,7 @@ export const collectNotesBySource = (
       const notes = ordered.flatMap((clip, index) => {
         if (!options.trimClipOverlap) return clip;
         const boundary = boundaryOf(ordered, index);
-        return boundary === null ? clip : clip.filter((note) => note.ticks < boundary);
+        return boundary === null ? clip : clip.filter((note) => startTicks(note) < boundary);
       });
       return [sourceName, notes] as const;
     }),
@@ -244,10 +257,10 @@ export const convertToToneSong = (
 
   const grouped = collectNotesBySource(midi, rawTracks, {
     trimClipOverlap: options.trimClipOverlap,
+    gridTicks,
   });
 
-  const startTicksOf = (note: { ticks: number }): number =>
-    gridTicks ? quantizeTicks(note.ticks, gridTicks) : note.ticks;
+  const startTicksOf = startTicksWith(gridTicks);
   /** JSON に書き出す長さと同じ値。0 の長さは 1 tick として扱う。 */
   const endTicksOf = (note: { ticks: number; durationTicks: number }): number =>
     startTicksOf(note) + Math.max(note.durationTicks, 1);

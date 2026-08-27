@@ -383,3 +383,45 @@ describe("有限でない小節数の検出", () => {
     expect(verifyToneSong(broken, midi, raw.tracks).join("\n")).toContain("小節数が有限の数値ではありません");
   });
 });
+
+describe("量子化とクリップのトリムの組み合わせ", () => {
+  /** 境界の直前と、次のクリップの頭にノートを置いた .mid を組み立てる。 */
+  const midiAcrossBoundary = () => {
+    const built = new Midi();
+    [1910, 1920].forEach((ticks) => {
+      const track = built.addTrack();
+      track.name = "pad";
+      track.addNote({ midi: 60, ticks, durationTicks: 240 });
+    });
+    const bytes = Buffer.from(built.toArray());
+    return { source: new Midi(bytes), rawTracks: readRawTracks(bytes).tracks };
+  };
+
+  it("量子化で境界へ戻る音は、トリムの対象になる", () => {
+    const { source, rawTracks } = midiAcrossBoundary();
+    const trimmed = collectNotesBySource(source, rawTracks, {
+      trimClipOverlap: true,
+      gridTicks: 120, // 1/16 @ 480ppq
+    });
+    // 1910 は丸めると 1920 になり、次のクリップの頭と重なるため残さない。
+    expect(trimmed.get("pad")!.map((note) => note.ticks)).toEqual([1920]);
+  });
+
+  it("同じ入力でも量子化しなければ、境界の手前の音は残る", () => {
+    const { source, rawTracks } = midiAcrossBoundary();
+    const kept = collectNotesBySource(source, rawTracks, { trimClipOverlap: true });
+    expect(kept.get("pad")!.map((note) => note.ticks)).toEqual([1910, 1920]);
+  });
+
+  it("量子化とトリムを同時に指定しても、同じ時刻に音が重ならない", () => {
+    const { source, rawTracks } = midiAcrossBoundary();
+    const song = convertToToneSong(source, rawTracks, {
+      title: "boundary",
+      source: "boundary.mid",
+      trimClipOverlap: true,
+      quantize: "1/16",
+    });
+    const times = song.tracks.flatMap((track) => track.events.map((event) => event.time));
+    expect(times).toEqual([...new Set(times)]);
+  });
+});
