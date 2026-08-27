@@ -78,7 +78,7 @@ describe("quantizeTicks", () => {
 describe("parseBarCount", () => {
   it("小節数として使える整数を読む", () => {
     expect(parseBarCount("28", "--bars")).toBe(28);
-    expect(parseBarCount("0", "--loop-bars", 0)).toBe(0);
+    expect(parseBarCount("1", "--loop-bars")).toBe(1);
   });
 
   it("JSON を壊す値を弾く", () => {
@@ -89,8 +89,21 @@ describe("parseBarCount", () => {
     expect(() => parseBarCount("", "--bars")).toThrow("--bars");
   });
 
-  it("最小値は指定で変えられる", () => {
+  it("0 は受け取らない(長さ0のループは再生できないため)", () => {
     expect(() => parseBarCount("0", "--bars")).toThrow("1 以上");
-    expect(() => parseBarCount("-1", "--loop-bars", 0)).toThrow("0 以上");
+    expect(() => parseBarCount("0", "--loop-bars")).toThrow("1 以上");
+  });
+});
+
+describe("divisionToTicks の分母", () => {
+  it("分母が0の指定を入力エラーにする", () => {
+    // 素通しすると Infinity になり、開始 tick が NaN になって解析例外で落ちる。
+    expect(() => divisionToTicks("1/0", 480)).toThrow("分割表記");
+    expect(() => divisionToTicks("1/0t", 480)).toThrow("分割表記");
+  });
+
+  it("有限の tick になる指定は通す", () => {
+    expect(divisionToTicks("1/16", 480)).toBe(120);
+    expect(Number.isFinite(divisionToTicks("1/8t", 480))).toBe(true);
   });
 });

@@ -53,10 +53,11 @@ export const barsBeatsSixteenthsToTicks = (
 /** "1/16" のような分割表記を tick 数にする。 */
 export const divisionToTicks = (division: string, ppq: number): number => {
   const match = /^1\/(\d+)(t)?$/.exec(division);
-  if (!match) {
+  const denominator = match ? Number(match[1]) : 0;
+  if (!match || denominator === 0) {
     throw new Error(`分割表記は 1/4, 1/16, 1/8t の形式で指定してください: ${division}`);
   }
-  const straight = (ppq * 4) / Number(match[1]);
+  const straight = (ppq * 4) / denominator;
   return match[2] ? (straight * 2) / 3 : straight;
 };
 
@@ -68,6 +69,8 @@ export const quantizeTicks = (ticks: number, gridTicks: number): number =>
  *
  * NaN・Infinity・負数・小数をここで弾く。素通しすると比較がすべて偽になって検証を
  * すり抜け、JSON.stringify が NaN を null にするため、Tone.js が読めない JSON になる。
+ * 0 も受け取らない。長さ0のループは Tone.js の Transport が時刻を進められず、
+ * 曲が再生できなくなる。
  */
 export const parseBarCount = (value: string, label: string, minimum = 1): number => {
   const bars = Number(value);
