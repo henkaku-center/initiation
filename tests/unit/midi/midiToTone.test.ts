@@ -425,3 +425,33 @@ describe("量子化とクリップのトリムの組み合わせ", () => {
     expect(times).toEqual([...new Set(times)]);
   });
 });
+
+describe("先頭にないテンポ・拍子メタ", () => {
+  /** tick 0 ではない位置にだけメタイベントを持つ .mid を組み立てる。 */
+  const midiWithLateMeta = (meta: "tempo" | "timeSignature") => {
+    const built = new Midi();
+    built.addTrack().addNote({ midi: 60, ticks: 0, durationTicks: 240 });
+    if (meta === "tempo") built.header.tempos = [{ bpm: 90, ticks: 1920, time: 0 }];
+    else built.header.timeSignatures = [{ timeSignature: [3, 4], ticks: 1920, measures: 1 }];
+    const bytes = Buffer.from(built.toArray());
+    return { source: new Midi(bytes), rawTracks: readRawTracks(bytes).tracks };
+  };
+
+  const convert = (meta: "tempo" | "timeSignature") => {
+    const { source, rawTracks } = midiWithLateMeta(meta);
+    return () => convertToToneSong(source, rawTracks, { title: "late", source: "late.mid" });
+  };
+
+  it("tick 0 にテンポがない MIDI を、その値で全体に適用せず拒否する", () => {
+    expect(convert("tempo")).toThrow("テンポが曲の先頭");
+  });
+
+  it("tick 0 に拍子がない MIDI も拒否する", () => {
+    expect(convert("timeSignature")).toThrow("拍子が曲の先頭");
+  });
+
+  it("先頭にメタがある通常の MIDI は変換できる", () => {
+    expect(song.bpm).toBe(134);
+    expect(song.timeSignature).toEqual([4, 4]);
+  });
+});

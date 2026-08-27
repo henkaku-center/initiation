@@ -200,9 +200,27 @@ export const collectNotesBySource = (
   );
 };
 
+/**
+ * 最初のメタイベントが tick 0 にあることを確かめる。
+ *
+ * MIDI では最初のイベントより前が暗黙の 120 BPM・4/4 になる。tick 0 より後にしか
+ * イベントがない曲は、途中で値が変わるのと同じで、全体へ適用すると先頭がずれる。
+ * テンポ・拍子の変化を未対応としている以上、ここも受け取らずに止める。
+ */
+const requireEventAtZero = (ticks: readonly number[], label: string): void => {
+  if (ticks.length === 0) return;
+  const first = Math.min(...ticks);
+  if (first !== 0) {
+    throw new Error(
+      `${label}が曲の先頭(tick 0)にありません(最初は tick ${first})。先頭から一定の${label}を持つ MIDI にのみ対応しています`,
+    );
+  }
+};
+
 const resolveTempo = (midi: Midi): number => {
   const tempos = midi.header.tempos;
   if (tempos.length === 0) return 120;
+  requireEventAtZero(tempos.map((tempo) => tempo.ticks), "テンポ");
   const rounded = tempos.map((tempo) => Number(tempo.bpm.toFixed(3)));
   const distinct = [...new Set(rounded)];
   if (distinct.length > 1) {
@@ -216,6 +234,7 @@ const resolveTempo = (midi: Midi): number => {
 const resolveTimeSignature = (midi: Midi): TimeSignature => {
   const signatures = midi.header.timeSignatures;
   if (signatures.length === 0) return [4, 4];
+  requireEventAtZero(signatures.map((signature) => signature.ticks), "拍子");
   const distinct = [...new Set(signatures.map((s) => s.timeSignature.join("/")))];
   if (distinct.length > 1) {
     throw new Error(`拍子変化がある MIDI には未対応です(検出: ${distinct.join(", ")})`);
