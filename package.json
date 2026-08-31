@@ -17,15 +17,15 @@
     "docs:preview": "vitepress preview docs"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.112.3",
-    "@tanstack/react-query": "^5.101.4",
+    "@supabase/supabase-js": "^2.112.4",
+    "@tanstack/react-query": "^5.102.8",
     "iron-session": "^8.0.4",
-    "next": "16.3.1",
+    "next": "16.3.3",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "siwe": "^3.0.0",
-    "viem": "^2.55.19",
-    "wagmi": "^3.7.6"
+    "viem": "^2.56.0",
+    "wagmi": "^3.7.7"
   },
   "devDependencies": {
     "@eslint/compat": "^2.1.0",
