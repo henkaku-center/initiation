@@ -37,7 +37,7 @@
     "@vitest/coverage-v8": "^4.1.11",
     "dotenv": "^17.4.2",
     "eslint": "^10",
-    "eslint-config-next": "16.3.1",
+    "eslint-config-next": "16.3.3",
     "tailwindcss": "^4.3.3",
     "tone": "^15.1.22",
     "tsx": "^4.23.12",
