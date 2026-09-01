@@ -39,6 +39,11 @@ updates:
       # (docs/decisions/2026-08-18-typescript-major-hold.md)。
       - dependency-name: typescript
         update-types: [version-update:semver-major]
+      # @types/nodeは最低対応Nodeのmajorに合わせる。新しいmajorの型を先に入れると、
+      # 最低対応ランタイムにないAPIを型検査が許してしまう
+      # (docs/decisions/2026-09-01-types-node-major-hold.md)。
+      - dependency-name: "@types/node"
+        update-types: [version-update:semver-major]
 
   - package-ecosystem: github-actions
     directory: /
