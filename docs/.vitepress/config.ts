@@ -88,6 +88,7 @@ export default defineConfig({
         items: [
           { text: "検証コマンド一覧", link: "/reference/commands" },
           { text: "環境変数一覧", link: "/reference/environment" },
+          { text: "プライバシーポリシー", link: "/privacy-policy" },
           { text: "開発計画", link: "/development-plan" },
           { text: "決定事項の読み方", link: "/decisions" },
           { text: "手動運用Runbook", link: "/runbook-manual-operations" },

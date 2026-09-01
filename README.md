@@ -128,7 +128,7 @@ npx tsc --noEmit
 - 質問箱は未実装です。まず人だけで質問・回答のループを検証し、その後AIを検討します
 - AIはフェーズ3で回答案と参考情報を作る補助役として導入し、最終回答は人が確認します
 - Vercel / Supabase本番環境へのデプロイは延期中です
-- 本番公開前にプライバシー方針を確定してください（ライセンスは確定済みです。コードとドキュメントはMIT、創作物はCC BY 4.0）
+- MVP-1で扱う情報と公開範囲は[プライバシーポリシー](https://henkaku-center.github.io/initiation/privacy-policy)に記載しています。質問箱、外部公開ビュー、AI機能を導入する前に更新します
 
 全体計画は [docs/development-plan.md](docs/development-plan.md)、実装計画は [docs/superpowers/plans/2026-08-06-phase1-initiation-mvp1.md](docs/superpowers/plans/2026-08-06-phase1-initiation-mvp1.md)、決定事項は [docs/decisions.md](docs/decisions.md) から参照できます。
 
