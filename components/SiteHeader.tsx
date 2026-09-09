@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { SessionStatus } from "@/components/SessionStatus";
 import { mainNavigation } from "@/lib/navigation";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export function SiteHeader() {
   return (
@@ -40,6 +41,7 @@ export function SiteHeader() {
             <SessionStatus />
           </ul>
         </nav>
+        <ThemeToggle />
       </div>
     </header>
   );

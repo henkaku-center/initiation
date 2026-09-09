@@ -1,5 +1,30 @@
 # Portal layout checks
 
+## Podcast previews, personal history and Issue cards — 2026-09-09
+
+`podcast-layout.mjs` exports `auditPodcastLayout`, a read-only geometry check for the homepage iframe's `body`. Run at 360×800, 390×844, 768×1024, 844×390, and 1440×900 on the parent viewport, selecting both appearance modes. Confirm the actual parent dimensions after applying each viewport override. Frequency shows one browser-local mock history, with no membership-tier selector.
+
+The pre-implementation run failed for missing podcast scenes and listening-history entries. Checks cover four player frames of at least 200×200px, separation of title/description and player/caption, captions fitting inside a pinned viewport, four history cards and the development note without horizontal overflow, and the podcast strip reaching both viewport edges. The vertical-to-horizontal scroll transform must remain enabled on short screens too (except reduced motion). The short-screen heading layout was corrected so hiding its chapter number does not place the heading into the narrow number column.
+
+Final geometry result: **10 cases passed** (5 sizes × 2 appearances), with the actual parent dimensions checked on every size change. The linked dialogue scenes, the personal history and four upstream Issue cards were visually previewed. The catalog uses @joiito's **Joi Ito's Podcast (VIDEO)** playlist, not the static-art audio editions. No unit/integration tests, standalone lint, or standalone type check were run. The user approved the local preview and requested a push to their own repository after making the initial video state paused.
+
+Wide-screen follow-up: when two players remained more than half visible, the old selection kept playing the same card. Selection now follows the scroll progress through the four card indices. At 1440×900, a manual responsive playback check confirmed the first, later, final and preceding card became active as the viewport moved forward and backward. Only one player remained active. The full-width strip also moved when scrolling from either side of the screen.
+
+## Shared shell and appearance — 2026-09-09
+
+`shared-shell.mjs` adds `auditSharedShellLayout` for the parent page and `auditHomeContentLayout` for the homepage iframe's `body`. Run these read-only functions through the connected browser at 360×800, 390×844, 768×1024, 844×390, and 1440×900.
+
+1. Dismiss the intro, select ライト in the shared header, and visit `#home`, `#community`, `#journey`, `#passport`, and `#setup`.
+2. On each screen run `auditSharedShellLayout` and the existing `auditPortalLayout`. On home also run `auditHomeContentLayout` with a frame-scoped `body.evaluate`.
+3. Repeat with ダーク and at each viewport. The checks cover shared header/footer presence, 44px controls, navigation/control overlap, content separation, horizontal overflow, and removal of the duplicate iframe header/footer.
+4. Replay the intro at desktop and mobile sizes. Run `auditPortalLayout` and `auditIntroComparisonControls` while the modal is open. Dismiss it and confirm that the common shell is available again.
+
+Results: the pre-implementation check failed with missing shared header, shared footer, and theme control. After implementation, all 60 shell/home checks and 50 existing page-layout checks passed across five sizes and both appearances. Four additional desktop/mobile intro-layout checks passed. The home shell also passed after reloading with the selected dark appearance.
+
+The only tests run for this revision were responsive layout checks. No unit/integration suite, standalone type check, or lint was run. The local demo was compiled by the development server for preview; nothing was pushed or deployed.
+
+## Earlier portal checks
+
 `portal-layout.mjs` exports read-only geometry checks for a connected browser. They are separate from Vitest's backend/domain suite and require a rendered page, not Node's DOM mocks.
 
 1. Start `npm run dev:demo -- --port 3000` and open `http://localhost:3000/#home`. Use `localhost` consistently: Next's development-origin protection rejects some script requests through `127.0.0.1`.

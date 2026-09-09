@@ -13,6 +13,7 @@ import { DemoPassport } from "./DemoPassport";
 import { DemoCommunity } from "./DemoCommunity";
 import { DemoDialog } from "./DemoDialog";
 import { ReferenceGateway } from "./ReferenceGatewayView";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import "./portal-demo.css";
 import "./experience.css";
 import "./reference-gateway.css";
@@ -101,7 +102,6 @@ export function PortalDemo() {
     <div
       className={
         "portal-demo " +
-        (screen === "journey" ? "pd-dark " : "") +
         (still ? "pd-still" : "") + (screen === "home" ? " pd-reference-home" : "")
       }
     >
@@ -149,9 +149,10 @@ export function PortalDemo() {
             My passport <span>↗</span>
           </a>
         </nav>
+        <ThemeToggle />
       </header>
       <main id="demo-main" tabIndex={-1}>
-        {screen === "home" && <ReferenceGateway />}
+        {screen === "home" && <ReferenceGateway paused={still} />}
         {screen === "setup" && <DemoWallet state={state} notify={setMessage} />}
         {screen === "journey" && (
           <DemoJourney

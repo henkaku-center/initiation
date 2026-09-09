@@ -75,12 +75,6 @@
 .pd-home-community .pd-signal-art {
   opacity: 0.88;
 }
-.pd-dialog {
-  --pd-ink: #12141a;
-  --pd-muted: #626773;
-  --pd-line: #dcded9;
-  --pd-blue: #263df5;
-}
 [data-gateway-reveal] {
   transition:
     opacity 0.65s ease,

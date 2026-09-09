@@ -1,7 +1,26 @@
 <!doctype html>
 <!-- The four source chapters form the homepage; the multiple-bubble intro lives in bubble-multi.html. -->
-<html lang="ja"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<html lang="ja" data-theme="light"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <meta name="robots" content="noindex,nofollow"/><title>HENKAKU Community</title>
+<script>// The portal owns theme selection; apply its choice before the iframe paints.
+(() => {
+  const applyTheme = (theme) => {
+    if (theme !== "light" && theme !== "dark") return;
+    document.documentElement.dataset.theme = theme;
+  };
+
+  try {
+    applyTheme(window.parent.document.documentElement.dataset.theme);
+  } catch {
+    // Standalone or cross-origin embeds keep the document's light default.
+  }
+
+  window.addEventListener("message", (event) => {
+    if (event.origin !== location.origin || event.source !== window.parent) return;
+    if (event.data?.type === "henkaku:theme") applyTheme(event.data.theme);
+  });
+})();
+</script>
 <style>
   :root {
     --paper: #f4f4f0;
@@ -974,29 +993,65 @@
 a.placeholder-card:hover,a.placeholder-card:focus-visible { color:var(--accent); outline-offset:4px; }
 [data-pulse-list] .placeholder-card { opacity:calc(.18 + var(--card-progress,0)*.82); transform:translateX(calc((1 - var(--card-progress,0))*60px)); transition:opacity .16s linear,transform .16s linear; }
 [data-pulse-list] .placeholder-card:focus-visible { opacity:1; transform:none; }
-[data-track-list] .placeholder-card { position:relative; padding-left:68px; min-height:82px; }
-[data-track-list] .placeholder-card::before { content:""; position:absolute; left:0; top:18px; width:48px; height:48px; border:1px solid #2228; background:repeating-linear-gradient(135deg,#1737ff 0 2px,transparent 2px 10px),#e3dcd0; }
-[data-track-list] [data-abstract="02"]::before { background:radial-gradient(circle,#eee5d8 18%,#141414 19% 36%,#cab8a2 37% 44%,#141414 45%); }
-[data-track-list] [data-abstract="03"]::before { background:conic-gradient(from 45deg,#1737ff,#f7f2e8,#141414,#f7f2e8,#1737ff); }
-[data-track-list] [data-abstract="04"]::before { background:repeating-linear-gradient(0deg,#111 0 1px,transparent 1px 8px),repeating-linear-gradient(90deg,#111 0 1px,#dbd7ce 1px 8px); }
 @media(prefers-reduced-motion:reduce){[data-pulse-list] .placeholder-card{opacity:1;transform:none}}
 @media(max-width:820px){.pulse-grid .placeholder-list{grid-template-columns:1fr;gap:6px}}
 </style><style>/* Keep the four source chapters; make them a practical, responsive homepage. */
-body { background:#141414;color:#f9f9f2; }
-.home-header { display:flex;align-items:center;justify-content:space-between;gap:22px;flex-wrap:wrap;padding:24px clamp(18px,5vw,72px);border-bottom:1px solid #ffffff2a; }
-.home-brand { display:inline-flex;align-items:center;gap:13px;color:#f7f6ed;text-decoration:none;font-weight:800;letter-spacing:-.04em;line-height:1.15;font-size:22px; }
-.home-brand svg { width:26px;height:33px; }.home-brand small { display:block;font:9px/1.8 var(--font-mono);letter-spacing:.22em;margin-top:3px; }
-.home-navigation { display:flex;gap:24px;align-items:center;flex-wrap:wrap; }
-.home-navigation a { text-decoration:none;font-size:13px;color:#e0e4eb; }.home-navigation a:hover { color:#a7b5ff; }
-.home-replay { font:10px/1.5 var(--font-mono);border:1px solid #ffffff55;background:transparent;color:#c9d2ec;padding:9px 13px;cursor:pointer; }
-.home-intro { display:flex;justify-content:space-between;gap:20px;align-items:center;padding:27px clamp(18px,5vw,72px) 0;font-size:13px;color:#aab2bd; }
-.home-intro p { margin:0; }.home-intro span { font:9px/1.5 var(--font-mono);letter-spacing:.13em;white-space:nowrap; }
+html[data-theme="light"] {
+  color-scheme:light;
+  --paper:#f6f6f2;
+  --ink:#12141a;
+  --muted:#626773;
+  --blue:#263df5;
+  --line:#dcded9;
+  --surface:#fff;
+  --surface-subtle:#eff0eb;
+  --accent-bg:#e8ebff;
+}
+html[data-theme="dark"] {
+  color-scheme:dark;
+  --paper:#13171f;
+  --ink:#f2f3f6;
+  --muted:#a5adba;
+  --blue:#a4b0ff;
+  --line:#35404d;
+  --surface:#1b232d;
+  --surface-subtle:#232d39;
+  --accent-bg:#202b49;
+}
+html,body { background:var(--paper);color:var(--ink); }
+body { font-family:Arial,"Helvetica Neue","Noto Sans JP",sans-serif; }
+.home-replay { flex:none;min-height:44px;font:12px/1.5 var(--font-mono);border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:10px 15px;cursor:pointer; }
+.home-replay:hover { border-color:var(--blue);color:var(--blue); }
+.home-intro { display:flex;flex-wrap:wrap;justify-content:space-between;gap:14px 20px;align-items:center;padding:27px clamp(18px,5vw,72px) 0;font-size:13px;color:var(--muted); }
+.home-intro p { flex:1 1 260px;margin:0; }.home-intro span { font:10px/1.5 var(--font-mono);letter-spacing:.13em; }
+.placeholder-section[data-gateway-section],.threshold-section {
+  --accent:var(--blue);
+  background:var(--paper);
+  color:var(--ink);
+}
+.chapter-body,.placeholder-card { border-color:var(--line); }
+.chapter-number,.kicker { color:var(--muted); }
+.placeholder-section[data-gateway-section="01-community-pulse"] .placeholder-panel::after { background:var(--blue); }
+.voices-sticky-panel::before,.voices-ascii,.voices-scene-title,.voices-gate-mark span { color:var(--ink); }
+.voices-scene::before { background:linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0 / 11vw 100%,linear-gradient(var(--line) 1px,transparent 1px) 0 0 / 100% 18%; }
+.voices-observed-lines { background:linear-gradient(90deg,transparent 0 18%,var(--line) 18% 18.35%,transparent 18.35% 58%,var(--line) 58% 58.2%,transparent 58.2%),linear-gradient(0deg,transparent 0 36%,var(--line) 36% 36.25%,transparent 36.25% 72%,var(--line) 72% 72.18%,transparent 72.18%); }
+html[data-theme="dark"] .voices-fragment,html[data-theme="dark"] .voices-observed { mix-blend-mode:screen; }
+.gate { --gate-line:var(--line);--gate-blue:var(--blue);background:var(--surface); }
+.gate:hover { border-color:var(--blue);background-color:var(--accent-bg); }
+.gate:hover .gate-frame { color:var(--blue); }
+.gate-head,.gate-path,.button-secondary { color:var(--muted); }
+.gate-head span:last-child { color:var(--blue); }
+.button-primary,.button-secondary:hover { color:var(--ink); }
+.button-secondary { border-color:var(--line); }
+.button-primary:focus-visible,.button-secondary:focus-visible,.home-replay:focus-visible { outline:3px solid #f58442;outline-offset:5px; }
 .placeholder-section { min-height:128svh;margin-top:-6svh; }
 .placeholder-section[data-gateway-section="01-community-pulse"] { min-height:122svh; }
 .chapter { padding-top:clamp(36px,5vw,68px);padding-bottom:clamp(38px,5vw,70px); }
 .section-title { font-size:clamp(38px,calc(6.4vw + var(--section-progress)*1.5vw),112px); }
 .placeholder-grid { margin-top:clamp(24px,4vw,48px); }
 .pulse-grid { overflow:clip; }
+.pulse-development-note { max-width:640px;margin:24px 0 0;color:var(--muted);font:13px/1.8 var(--font-sans); }
+.pulse-development-note small { display:block;margin-top:6px;font-size:11px; }
 .pulse-grid .placeholder-list { gap:20px 34px; }
 .placeholder-card { padding:14px 0 18px; }
 .placeholder-card strong { font-size:clamp(20px,2.2vw,30px);line-height:1.25; }
@@ -1005,18 +1060,14 @@ body { background:#141414;color:#f9f9f2; }
 .voices-sticky-wrap { min-height:225svh; }
 [data-podcast-card] .placeholder-card strong { text-transform:none; }
 [data-podcast-card] .placeholder-card { transform:none;opacity:1; }
-[data-podcast-card] .placeholder-card > span:last-child { font-family:var(--font-sans);font-size:14px;letter-spacing:0;line-height:1.9;text-transform:none;color:#f4f6ff; }
+[data-podcast-card] .placeholder-card > span:last-child { font-family:var(--font-sans);font-size:14px;letter-spacing:0;line-height:1.9;text-transform:none;color:var(--muted); }
 .podcast-source { max-width:460px;margin:20px 0 0 auto;display:grid;gap:14px; }
 .podcast-source a { color:inherit;text-decoration:underline;text-underline-offset:5px;font-size:13px; }
-.podcast-source span { font-size:10px;color:#d8dfff; }
+.podcast-source span { font-size:10px;color:var(--muted); }
 .threshold-section { min-height:128svh;margin-top:-6svh; }
-.home-navigation a:focus-visible,.home-replay:focus-visible { outline:2px solid #9caeff;outline-offset:5px; }
 @media(max-width:820px) {
-  .home-header { gap:20px 12px;padding:19px 18px; }
-  .home-brand { font-size:20px; }.home-brand svg { width:23px;height:29px; }
-  .home-navigation { order:3;width:100%;gap:14px 22px;justify-content:space-between; }
-  .home-navigation a { font-size:12px; }.home-replay { margin-left:auto;font-size:9px;padding:8px 10px; }
-  .home-intro { padding:22px 18px 0;align-items:start;font-size:12px; }.home-intro span { font-size:8px; }
+  .home-intro { padding:22px 18px 0;font-size:12px;gap:12px; }
+  .home-intro p { flex-basis:100%; }.home-intro span { flex:1 1 140px; }
   .chapter { padding:35px 18px 38px;gap:10px; }
   .section-title { font-size:clamp(34px,9vw,68px);transform:none;margin-bottom:10px; }
   .microcopy { font-size:13px;line-height:1.8;margin-top:18px; }
@@ -1039,13 +1090,81 @@ body { background:#141414;color:#f9f9f2; }
   .placeholder-section,.placeholder-section[data-gateway-section="01-community-pulse"],.voices-sticky-wrap,.threshold-section { min-height:auto;margin-top:0; }
   .placeholder-panel { position:static;min-height:auto; }.voices-scene { min-height:280px; }
 }
+</style><style>/* The official player stays unobscured; the title and link sit below it. */
+.voices-sticky-panel .chapter { padding-top:24px; }
+.voices-sticky-panel .chapter-body { padding-top:18px; }
+.voices-sticky-panel .section-title { font-size:clamp(32px,4vw,60px);line-height:1.05;transform:none;margin:10px 0 0; }
+.voices-sticky-panel .microcopy { max-width:none;margin:14px 0 0;font-size:14px; }
+.podcast-toolbar { display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 20px;margin:20px 0 12px; }
+.podcast-toolbar > span { font:10px/1.6 var(--font-mono);letter-spacing:.08em;color:var(--muted); }
+.podcast-toolbar button { min-width:44px;min-height:44px;padding:10px 14px;font:12px/1.5 var(--font-sans);border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer; }
+.podcast-toolbar button:hover { border-color:var(--blue); }
+.podcast-toolbar button:focus-visible,.podcast-scene a:focus-visible,.frequency-link:focus-visible { outline:3px solid #f58442;outline-offset:4px; }
+.voices-photo-stage { left:auto;width:100%;margin-left:0;min-height:0;padding-bottom:22px; }
+.voices-photo-track { align-items:flex-start;min-width:0;width:max-content;padding:0;gap:clamp(24px,4vw,64px); }
+.podcast-scene { --podcast-max-width:min(72vw,760px);margin:0;min-height:0;flex:0 0 clamp(280px,calc((100svh - 400px) * 16 / 9),var(--podcast-max-width));transform:none; }
+.podcast-scene::before,.podcast-scene::after { display:none; }
+.podcast-screen { width:100%;aspect-ratio:16/9;min-height:200px;background:#101116; }
+.podcast-screen > div,.podcast-screen iframe { display:block;width:100%;height:100%;min-height:200px;border:0; }
+.podcast-screen > div { display:grid;place-items:center;color:#d5d9e2; }
+.podcast-screen > img { display:block;width:100%;height:100%;object-fit:contain; }
+.podcast-scene figcaption { padding-top:15px; }
+.podcast-scene-label { margin:0 0 7px;font:10px/1.6 var(--font-mono);letter-spacing:.1em;color:var(--muted); }
+.podcast-scene a { display:inline-block;min-height:44px;color:var(--ink);font:600 clamp(17px,1.7vw,24px)/1.5 var(--font-sans);text-decoration:none;overflow-wrap:anywhere; }
+.podcast-scene a:hover { color:var(--blue); }
+.podcast-status { margin:5px 0 0;font:11px/1.6 var(--font-sans);color:var(--muted); }
+[data-gateway-section="03-frequency"] { min-height:0;margin-top:0; }
+[data-gateway-section="03-frequency"] > .placeholder-panel { position:relative;min-height:0; }
+.frequency-summary,.frequency-disclaimer { font:12px/1.8 var(--font-sans);color:var(--muted); }
+.frequency-summary { display:flex;flex-wrap:wrap;gap:10px 24px;margin:30px 0 22px; }
+.frequency-summary span { font:9px/2.4 var(--font-mono);letter-spacing:.08em; }
+.frequency-list { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 30px;list-style:none;margin:0;padding:0; }
+.frequency-entry { min-width:0;border-top:1px solid var(--line); }
+.frequency-link { display:grid;grid-template-columns:112px minmax(0,1fr);align-items:start;gap:16px;padding:22px 0;min-width:0;color:var(--ink);text-decoration:none; }
+.frequency-link:hover .frequency-title { color:var(--blue); }
+.frequency-art { aspect-ratio:16/9;background:var(--surface-subtle);overflow:hidden; }
+.frequency-art img { display:block;width:100%;height:100%;object-fit:cover; }
+.frequency-art img[hidden] { display:none; }
+.frequency-copy { min-width:0;display:grid;gap:7px; }
+.frequency-meta { font:10px/1.6 var(--font-mono);color:var(--muted); }
+.frequency-title { font:600 17px/1.55 var(--font-sans);overflow-wrap:anywhere; }
+.frequency-guest { font:11px/1.7 var(--font-sans);color:var(--muted); }
+.frequency-progress { height:3px;background:var(--line);margin:7px 0 1px; }
+.frequency-progress > span { display:block;height:100%;background:var(--blue); }
+.frequency-disclaimer { margin:22px 0 0; }
+@media(max-width:1100px) { .frequency-list { grid-template-columns:1fr; }.frequency-link { grid-template-columns:140px minmax(0,1fr); } }
+@media(max-width:820px) {
+  .podcast-scene { --podcast-max-width:84vw;min-height:0; }
+  .voices-photo-stage { min-height:0; }
+  .podcast-toolbar { margin-top:16px; }
+  .frequency-link { grid-template-columns:100px minmax(0,1fr);gap:14px;padding:20px 0; }
+  .frequency-title { font-size:16px; }
+}
+@media(max-width:380px) { .frequency-link { grid-template-columns:80px minmax(0,1fr);gap:12px; } }
+@media(max-height:600px) {
+  .voices-photo-stage { padding-bottom:16px; }
+  .voices-sticky-panel .section-title { font-size:34px; }
+  .voices-sticky-panel .chapter { display:block;padding-top:10px; }
+  .voices-sticky-panel .chapter-number { display:none; }
+  .voices-sticky-panel .microcopy { font-size:12px;margin-top:12px; }
+  .voices-sticky-panel .chapter-body { padding-top:8px; }
+  .voices-sticky-panel .kicker { display:none; }
+  .podcast-toolbar { margin-top:10px;margin-bottom:8px; }
+  .podcast-scene figcaption { padding-top:8px; }
+  .podcast-scene a { font-size:16px; }
+  .podcast-scene-label { font-size:9px;margin-bottom:4px; }
+  .podcast-status { font-size:10px;margin-top:2px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .podcast-scene { min-height:0; }
+  .voices-photo-track { gap:30px;width:auto; }
+  .podcast-scene { width:auto; }
+}
 </style></head><body>
-<header class="home-header" id="home-top">
-  <a class="home-brand" href="#home-top"><svg viewBox="0 0 48 60" aria-hidden="true"><path d="M0 0 L48 37 L19 37 L0 60 Z" fill="currentColor" /></svg><span>HENKAKU<small>COMMUNITY</small></span></a>
-  <nav class="home-navigation" aria-label="メインメニュー"><a href="/#community" target="_top">Community</a><a href="/#journey" target="_top">Initiation</a><a href="/#passport" target="_top">My passport</a><a href="/#setup" target="_top">Setup</a></nav>
+<div class="home-intro">
+  <p>いま、コミュニティで動いていること。</p><span>COMMUNITY GATEWAY / DEMO</span>
   <button type="button" class="home-replay">イントロを再生</button>
-</header>
-<div class="home-intro"><p>いま、コミュニティで動いていること。</p><span>COMMUNITY GATEWAY / DEMO</span></div>
+</div>
 <main aria-label="HENKAKU トップページ">  <section class="gateway-section placeholder-section" data-gateway-section="01-community-pulse" aria-labelledby="pulse-title">
     <div class="gateway-panel placeholder-panel reveal-once" data-panel-label="PULSE">
       <div class="chapter">
@@ -1053,8 +1172,8 @@ body { background:#141414;color:#f9f9f2; }
         <div class="chapter-body">
           <p class="kicker">Community Pulse</p>
           <h1 class="section-title" id="pulse-title">COMMUNITY PULSE</h1>
-          <p class="microcopy">プロジェクト、投稿、クエスト、Check-in。コミュニティの動きを、短いカードで。</p>
-          <div class="placeholder-grid pulse-grid" aria-label="最近のプロジェクト、投稿、クエスト、Check-in">
+          <p class="microcopy">コミュニティの入口を、みんなでつくる。</p>
+          <p class="pulse-development-note">開発中のため、本家リポジトリの未解決Issueから4件を紹介しています。<small>2026年9月9日確認 · 検討・検証中の内容を含みます。</small></p><div class="placeholder-grid pulse-grid" aria-label="本家リポジトリの重要な未解決Issue">
             <div class="placeholder-list" data-pulse-list></div>
           </div>
         </div>
@@ -1070,52 +1189,45 @@ body { background:#141414;color:#f9f9f2; }
           <div class="chapter-body">
             <p class="kicker">Voices / Podcast</p>
             <h2 class="section-title" id="voices-title">VOICES / PODCAST</h2>
-            <p class="microcopy">縦スクロールの途中で、場面だけが横へ流れる比較用セクションです。音声の自動再生は行いません。</p>
-            <div class="voices-photo-stage" aria-label="Voices horizontal scene strip">
+            <p class="microcopy">Joi Itoとゲストの対話から、ランダムな一場面。映像は無音で流れます。</p>
+            <div class="podcast-toolbar"><span>JOI ITO’S PODCAST · SOUND OFF</span><button type="button" data-podcast-toggle aria-pressed="true">映像を無音で再開</button></div></div>
+        </div>
+        <div class="voices-photo-stage" aria-label="Joi Itoのポッドキャスト・無音プレビュー">
               <div class="voices-photo-track" data-photo-strip>
-                <div class="voices-scene" aria-label="Scene 1 ASCII signal">
-                  <pre class="voices-ascii" aria-hidden="true">
-          H E N K A K U
-        +---------------+
-   -----|  . . . . . .  |-----
-        |  .  VOICE  .  |
-        |  .  ROOM   .  |
-   -----|  . . . . . .  |-----
-        +---------------+
-             //  //  //
-                  </pre>
-                  <p class="voices-scene-title">LISTENING ROOM</p>
-                </div>
-                <div class="voices-scene" aria-label="Scene 2 fragmented image">
-                  <div class="voices-fragments" aria-hidden="true">
-                    <div class="voices-fragment"><img src="thumbs/riso.png" alt="" loading="lazy" /></div>
-                    <div class="voices-fragment"><img src="thumbs/hero.png" alt="" loading="lazy" /></div>
-                    <div class="voices-fragment"><img src="thumbs/liquid.png" alt="" loading="lazy" /></div>
-                  </div>
-                  <p class="voices-scene-title">FRAGMENTS</p>
-                </div>
-                <div class="voices-scene" aria-label="Scene 3 observed image">
-                  <div class="voices-observed" aria-hidden="true">
-                    <img src="thumbs/hero.png" alt="" loading="lazy" />
-                    <div class="voices-observed-lines"></div>
-                  </div>
-                  <pre class="voices-ascii" aria-hidden="true">
-OBSERVE: 02
-SIGNAL:  ACTIVE
-LINES:   COMMUNITY / VOICE / TRACE
-                  </pre>
-                  <p class="voices-scene-title">OBSERVED</p>
-                </div>
-                <div class="voices-scene" aria-label="Scene 4 initiation entrance">
-                  <div class="voices-gate" aria-hidden="true">
-                    <div class="voices-gate-mark"><span>next signal<br />initiation threshold</span></div>
-                  </div>
-                  <p class="voices-scene-title">ENTER</p>
-                </div>
+                <figure class="voices-scene podcast-scene" data-podcast-scene aria-label="ポッドキャストの場面 1">
+                  <div class="podcast-screen"><div data-podcast-player></div></div>
+                  <figcaption>
+                    <p class="podcast-scene-label" data-podcast-label>JOI ITO’S PODCAST</p>
+                    <a data-podcast-link href="https://www.youtube.com/@joiito/podcasts" target="_blank" rel="noopener noreferrer">YouTubeでこの回を見る ↗</a>
+                    <p class="podcast-status" data-podcast-status>無音プレビューを準備しています</p>
+                  </figcaption>
+                </figure>
+                <figure class="voices-scene podcast-scene" data-podcast-scene aria-label="ポッドキャストの場面 2">
+                  <div class="podcast-screen"><div data-podcast-player></div></div>
+                  <figcaption>
+                    <p class="podcast-scene-label" data-podcast-label>JOI ITO’S PODCAST</p>
+                    <a data-podcast-link href="https://www.youtube.com/@joiito/podcasts" target="_blank" rel="noopener noreferrer">YouTubeでこの回を見る ↗</a>
+                    <p class="podcast-status" data-podcast-status>無音プレビューを準備しています</p>
+                  </figcaption>
+                </figure>
+                <figure class="voices-scene podcast-scene" data-podcast-scene aria-label="ポッドキャストの場面 3">
+                  <div class="podcast-screen"><div data-podcast-player></div></div>
+                  <figcaption>
+                    <p class="podcast-scene-label" data-podcast-label>JOI ITO’S PODCAST</p>
+                    <a data-podcast-link href="https://www.youtube.com/@joiito/podcasts" target="_blank" rel="noopener noreferrer">YouTubeでこの回を見る ↗</a>
+                    <p class="podcast-status" data-podcast-status>無音プレビューを準備しています</p>
+                  </figcaption>
+                </figure>
+                <figure class="voices-scene podcast-scene" data-podcast-scene aria-label="ポッドキャストの場面 4">
+                  <div class="podcast-screen"><div data-podcast-player></div></div>
+                  <figcaption>
+                    <p class="podcast-scene-label" data-podcast-label>JOI ITO’S PODCAST</p>
+                    <a data-podcast-link href="https://www.youtube.com/@joiito/podcasts" target="_blank" rel="noopener noreferrer">YouTubeでこの回を見る ↗</a>
+                    <p class="podcast-status" data-podcast-status>無音プレビューを準備しています</p>
+                  </figcaption>
+                </figure>
               </div>
             </div>
-          </div>
-        </div>
       </div>
     </div>
     <div class="voices-flow-copy" aria-label="Joi Itoのポッドキャスト紹介">
@@ -1130,11 +1242,10 @@ LINES:   COMMUNITY / VOICE / TRACE
         <div class="chapter-body">
           <p class="kicker">Frequency / Recently Played</p>
           <h2 class="section-title" id="frequency-title">FREQUENCY</h2>
-          <p class="microcopy">4つの音のしるし。権利確認前の抽象プレースホルダーと、個人情報を含まない仮の再生ログです。</p>
-          <div class="placeholder-grid" aria-label="個人情報を含まない4件の仮再生ログ">
-            <div class="media-block" aria-hidden="true"></div>
-            <div class="placeholder-list" data-track-list></div>
-          </div>
+          <p class="microcopy">Joi Itoのポッドキャストを、あなたのペースで。最近聴いた回の続きを、ここから。</p>
+          <p class="frequency-summary">あなたの最近聴いた回 <span>MOCK LISTENING HISTORY</span></p>
+          <ol class="frequency-list" data-track-list aria-label="最近聴いたJoi Itoのポッドキャスト"></ol>
+          <p class="frequency-disclaimer">日時・進捗はデモ用のサンプルです。</p>
         </div>
       </div>
     </div>
@@ -1171,11 +1282,10 @@ LINES:   COMMUNITY / VOICE / TRACE
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const narrow = window.matchMedia("(max-width: 820px)");
 
-  function card({ label, title, detail, href, abstract }) {
+  function card({ label, title, detail, href }) {
     const item = document.createElement(href ? "a" : "div");
     if (href) { item.href = href; item.target = href.startsWith("/#") ? "_top" : "_blank"; item.rel = "noopener noreferrer"; }
     item.className = "placeholder-card";
-    if (abstract) item.dataset.abstract = abstract;
     item.innerHTML = `<span>${label}</span><strong>${title}</strong><span>${detail}</span>`;
     return item;
   }
@@ -1192,13 +1302,6 @@ LINES:   COMMUNITY / VOICE / TRACE
       detail: window.gatewayMock.podcast.summary,
     }));
 
-    const trackList = document.querySelector("[data-track-list]");
-    window.gatewayMock.tracks.forEach((track) => trackList.append(card({
-      label: track.time,
-      title: track.title,
-      detail: track.detail,
-      abstract: track.abstract,
-    })));
   }
 
   function progressFor(section) {
@@ -1312,4 +1415,4 @@ reduceMotion.addEventListener('change', updatePulseCards);
 updatePulseCards();
 
 document.querySelector('.home-replay').addEventListener('click', () => window.parent.postMessage({ type:'henkaku:intro:replay' }, location.origin));
-</script></body></html>
+</script><script src="./listening-history.js"></script><script src="./podcast-preview.js"></script></body></html>

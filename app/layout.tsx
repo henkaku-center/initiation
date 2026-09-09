@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Providers } from "./providers";
+import { themeInitializationScript } from "@/lib/theme";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,10 +23,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   if (process.env.HENKAKU_DEMO_ONLY === "1") {
-    return <html lang="ja" className={`${geistSans.variable} ${geistMono.variable}`}><body>{children}</body></html>;
+    return <html lang="ja" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable}`}><head><script dangerouslySetInnerHTML={{ __html: themeInitializationScript }} /></head><body>{children}</body></html>;
   }
   return (
-    <html lang="ja" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="ja" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable}`}>
+      <head><script dangerouslySetInnerHTML={{ __html: themeInitializationScript }} /></head>
       <body>
         {/* ヘッダーがセッションを参照するため、Providers の内側へ入れる。
             SiteHeader 自体はServer Componentのまま子として渡される(Issue #40)。 */}

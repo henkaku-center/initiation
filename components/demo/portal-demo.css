@@ -4,6 +4,21 @@
   --pd-paper: #f6f6f2;
   --pd-line: #dcded9;
   --pd-muted: #626773;
+  --pd-surface: #fff;
+  --pd-surface-subtle: #f0f0ec;
+  --pd-surface-accent: #e9edfc;
+  --pd-dialog-surface: #f8f8f4;
+  --pd-line-strong: #bfc6da;
+  --pd-line-accent: #d1d7fa;
+  --pd-action: #263df5;
+  --pd-action-hover: #1226d5;
+  --pd-on-action: #fff;
+  --pd-success: #267763;
+  --pd-success-surface: #edf7f1;
+  --pd-success-line: #badbc9;
+  --pd-warning: #63431f;
+  --pd-warning-surface: #fff0d5;
+  --pd-warning-line: #b98c54;
   min-height: 100vh;
   background: var(--pd-paper);
   color: var(--pd-ink);
@@ -11,6 +26,28 @@
   font-size: 16px;
   line-height: 1.6;
   color-scheme: light;
+}
+html[data-theme="dark"] .portal-demo {
+  --pd-blue: #a4b0ff;
+  --pd-ink: #f2f3f6;
+  --pd-paper: #13171f;
+  --pd-line: #35404d;
+  --pd-muted: #a5adba;
+  --pd-surface: #1b232d;
+  --pd-surface-subtle: #232d39;
+  --pd-surface-accent: #202b49;
+  --pd-dialog-surface: #17212b;
+  --pd-line-strong: #556274;
+  --pd-line-accent: #465783;
+  --pd-action: #4459dd;
+  --pd-action-hover: #3648c4;
+  --pd-success: #8cd9b9;
+  --pd-success-surface: #193b30;
+  --pd-success-line: #477a64;
+  --pd-warning: #f2cc97;
+  --pd-warning-surface: #3a2b18;
+  --pd-warning-line: #8c6939;
+  color-scheme: dark;
 }
 .portal-demo * {
   box-sizing: border-box;
@@ -48,7 +85,8 @@
   position: fixed;
   left: 16px;
   top: -100px;
-  background: #fff;
+  background: var(--pd-surface);
+  color: var(--pd-ink);
   padding: 12px;
   z-index: 100;
 }
@@ -192,9 +230,9 @@
   gap: 40px;
   min-height: 52px;
   padding: 14px 22px;
-  border: 1px solid var(--pd-blue);
-  background: var(--pd-blue);
-  color: white;
+  border: 1px solid var(--pd-action);
+  background: var(--pd-action);
+  color: var(--pd-on-action);
   font-size: 14px;
   font-weight: 650;
   line-height: 1.4;
@@ -203,7 +241,7 @@
     transform 0.2s;
 }
 .pd-primary:hover {
-  background: #1226d5;
+  background: var(--pd-action-hover);
   transform: translateY(-2px);
 }
 .pd-primary span {
@@ -271,7 +309,7 @@
 .pd-preview-invitation {
   margin: 70px 5%;
   padding: 60px;
-  background: #eceef9;
+  background: var(--pd-surface-accent);
   text-align: center;
 }
 .pd-preview-invitation h2 {
