@@ -26,3 +26,9 @@ No unit/integration tests, standalone lint, or standalone type check were run fo
 - Ran the replacement's geometry, link coverage, parent comparison controls, and decrypted comparison link coverage at all six viewport sizes: 24 checks, all passed.
 - Switched between both variants at every size; links stayed available. A direct multi-bubble Community link faded to `#community`, and the homepage replay reopened the default variant.
 - The archived original HTML/CSS are byte-identical to the saved encrypted baseline. The generated encrypted `intro.html` also remains unchanged.
+
+## CI lint correction
+
+The PR's Node 22 job stopped at `@next/next/no-assign-module-variable` in the multi-bubble builder. Renamed the local script-text binding from `module` to `introScript`, retaining the literal `type="module"` attributes. All three generated Gateway documents remained byte-identical (SHA-256 comparison).
+
+Verified with the same Node.js 22.23.2 version used by CI: normal build, `tsc --noEmit`, repository lint, all 244 unit tests across 30 files, and demo build passed. This follow-up supersedes the earlier layout-only verification limit for those checks. Integration tests were not run locally in this follow-up; their result is reported separately by GitHub CI. No lint rules or CI checks were disabled.

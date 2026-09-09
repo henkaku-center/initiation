@@ -128,9 +128,9 @@ export function buildBubbleIntro({ source, shell, logo }) {
     throw new TypeError("Bubble intro requires source, shell, and logo strings");
   }
   const style = source.match(/<style>([\s\S]*?)<\/style>/)?.[1];
-  let module = source.match(/<script type="module">([\s\S]*?)<\/script>/)?.[1];
+  let introScript = source.match(/<script type="module">([\s\S]*?)<\/script>/)?.[1];
   const body = source.match(/<body>([\s\S]*?)<script type="module">/)?.[1];
-  if (!style || !module || !body) throw new Error("Bubble intro reference is incomplete");
+  if (!style || !introScript || !body) throw new Error("Bubble intro reference is incomplete");
 
   let hero = body.replace(/<p class="hint">[\s\S]*?<\/p>/g, "");
   hero = hero.replace(/<svg viewBox="0 0 515 692"[\s\S]*?<\/svg>/, () => logo);
@@ -157,7 +157,7 @@ export function buildBubbleIntro({ source, shell, logo }) {
     "<summary>表示モード</summary>", "display panel label");
 
   const patch = (search, replacement, label) => {
-    module = replaceOnce(module, search, replacement, label);
+    introScript = replaceOnce(introScript, search, replacement, label);
   };
   patch('const lens3d = document.getElementById("lens3d");',
     'const lens3d = document.getElementById("lens3d");\nlet stopped = false;\nconst input = new AbortController();',
@@ -232,10 +232,10 @@ export function buildBubbleIntro({ source, shell, logo }) {
   for (const name of ["measureRadius", "paintPlate", "applyRoll", "applyMode", "relayout"]) {
     patch(`function ${name}() {`, `function ${name}() {\n  if (stopped) return;`, "stopped " + name + " guard");
   }
-  const inputStart = module.indexOf("/* ---------- input ---------- */");
-  const inputEnd = module.indexOf("function updateReadout() {", inputStart);
+  const inputStart = introScript.indexOf("/* ---------- input ---------- */");
+  const inputEnd = introScript.indexOf("function updateReadout() {", inputStart);
   if (inputStart < 0 || inputEnd < inputStart) throw new Error("Bubble intro input boundary changed");
-  module = module.slice(0, inputStart) + lifecycle + "\n" + module.slice(inputEnd);
+  introScript = introScript.slice(0, inputStart) + lifecycle + "\n" + introScript.slice(inputEnd);
 
   return `<!doctype html>
 <!-- Multi-bubble reference with local navigation, viewport, clipping, and lifecycle adapters. -->
@@ -244,6 +244,6 @@ export function buildBubbleIntro({ source, shell, logo }) {
 <meta name="robots" content="noindex,nofollow" /><title>HENKAKU Intro</title>
 <style>${style}</style><style>${shell}</style></head><body>
 ${hero}
-<script type="module">${module}</script>
+<script type="module">${introScript}</script>
 </body></html>`;
 }
