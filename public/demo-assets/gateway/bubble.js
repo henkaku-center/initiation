@@ -229,6 +229,8 @@ function supportsHtmlInCanvas() {
 }
 function createBubble(elements, options = {}) {
   const config = { ...DEFAULTS, ...options };
+  // Local lifecycle fix: callbacks queued before destroy must become inert.
+  let destroyed = false;
   const { source, content, output } = elements;
   const gl = output.getContext("webgl2", {
     alpha: true,
@@ -256,15 +258,16 @@ function createBubble(elements, options = {}) {
   let wake = () => {
   };
   function schedulePaint() {
-    if (!manualPaint) return;
+    if (destroyed || !manualPaint) return;
     if (paintPending) {
       repaintQueued = true;
       return;
     }
     paintPending = true;
-    Promise.resolve(
-      config.paint(source, source.width / Math.max(output.clientWidth, 1))
-    ).then(() => {
+    Promise.resolve().then(() => {
+      if (!destroyed) return config.paint(source, source.width / Math.max(output.clientWidth, 1));
+    }).then(() => {
+      if (destroyed) return;
       paintPending = false;
       painted = true;
       contentDirty = true;
@@ -274,6 +277,7 @@ function createBubble(elements, options = {}) {
         schedulePaint();
       }
     }).catch(() => {
+      if (destroyed) return;
       paintPending = false;
       repaintQueued = false;
     });
@@ -281,6 +285,7 @@ function createBubble(elements, options = {}) {
   // --- END PATCH ---------------------------------------------------------
   if (htmlInCanvas) {
     paintable.onpaint = () => {
+      if (destroyed) return;
       try {
         sourceCtx.reset();
         sourceCtx.drawElementImage(content, 0, 0);
@@ -344,6 +349,7 @@ function createBubble(elements, options = {}) {
   gl.generateMipmap(gl.TEXTURE_2D);
   let contentMaxX = 1;
   function syncCanvasSize() {
+    if (destroyed) return;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const width = Math.max(1, Math.round(output.clientWidth * dpr));
     const height = Math.max(1, Math.round(output.clientHeight * dpr));
@@ -493,7 +499,6 @@ function createBubble(elements, options = {}) {
   }
   let raf = 0;
   let lastTime = performance.now();
-  let destroyed = false;
   let running = false;
   let visible = true;
   const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -590,10 +595,12 @@ function createBubble(elements, options = {}) {
   return {
     // PATCH (henkaku demo): re-capture for an animation frame.
     invalidate() {
+      if (destroyed) return;
       schedulePaint();
       start();
     },
     setOptions(next) {
+      if (destroyed) return;
       if (!Object.entries(next).some(
         ([key, value]) => config[key] !== value
       ))
@@ -602,11 +609,14 @@ function createBubble(elements, options = {}) {
       start();
     },
     resize() {
+      if (destroyed) return;
       syncCanvasSize();
       start();
     },
     destroy() {
+      if (destroyed) return;
       destroyed = true;
+      repaintQueued = false;
       cancelAnimationFrame(raf);
       listenTarget.removeEventListener("pointermove", onPointerMove);
       listenTarget.removeEventListener("pointerleave", onPointerLeave);

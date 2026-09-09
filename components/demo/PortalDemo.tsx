@@ -12,7 +12,7 @@ import { DemoJourney } from "./DemoJourney";
 import { DemoPassport } from "./DemoPassport";
 import { DemoCommunity } from "./DemoCommunity";
 import { DemoDialog } from "./DemoDialog";
-import { ReferenceGateway } from "./ReferenceGateway";
+import { ReferenceGateway } from "./ReferenceGatewayView";
 import "./portal-demo.css";
 import "./experience.css";
 import "./reference-gateway.css";
@@ -57,7 +57,8 @@ export function PortalDemo() {
   }, [message]);
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
-    document.getElementById("demo-main")?.focus({ preventScroll: true });
+    const initialTarget = screen === "home" ? document.querySelector<HTMLButtonElement>(".pd-intro-enter") : null;
+    (initialTarget ?? document.getElementById("demo-main"))?.focus({ preventScroll: true });
     if (screen !== "journey") audioRef.current?.pause();
   }, [screen]);
   const toggleSound = async () => {

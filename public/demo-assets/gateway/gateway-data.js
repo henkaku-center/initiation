@@ -6,7 +6,12 @@ window.gatewayMock = {
     { label:"QUEST / INITIATION", title:"ウォレットの準備", detail:"接続、署名、Polygon。最初のクエストへ。", href:"/#setup" },
     { label:"CHECK-IN / DEMO", title:"今日のチェックイン", detail:"1日1回、この場所に来たしるしを残す。", href:"/#community" },
   ],
-  podcast: { date:"VOICES / PODCAST", title:"声のプレースホルダー", summary:"公開するエピソードは準備中。音声の自動再生は行いません。", href:"/#community" },
+  podcast: {
+    date:"FEATURED PODCAST / JOI ITO",
+    title:"Joi Ito's Podcast — 変革への道",
+    summary:"伊藤穰一が多彩なゲストとの対話を通じて、テクノロジーと社会、文化のつながりを探る番組。AIやデジタル社会の変化から、茶の湯、ものづくり、受け継がれる知恵まで、分野を越えて考えます。公式サイトには各回の関連キーワードや視聴先の案内もあり、気になるテーマから聴き進められます。",
+    href:"https://joi.ito.com/podcast/",
+  },
   tracks: [
     { title:"Signal 01", time:"RECENTLY PLAYED / 01", detail:"仮の再生ログ · 音源未設定", abstract:"01" },
     { title:"Signal 02", time:"RECENTLY PLAYED / 02", detail:"仮の再生ログ · 音源未設定", abstract:"02" },

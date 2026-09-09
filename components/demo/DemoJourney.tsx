@@ -1,11 +1,13 @@
 "use client";
 import { useEffect, useRef, useState, type RefObject } from "react";
+import Image from "next/image";
 import {
   contributionOptions,
   interestOptions,
   type DemoState,
 } from "@/lib/demo/state";
 import { dispatchDemo, navigateDemo } from "@/lib/demo/useDemo";
+import "./explorer-scene.css";
 
 const stages = [
   {
@@ -95,15 +97,15 @@ export function DemoJourney({
 
   return (
     <section
-      className={`pd-game ${state.completed ? "pd-game-complete" : ""}`}
+      className={`pd-game ${state.completed ? "pd-game-complete" : "pd-game-journey"}`}
       aria-label="Initiationの旅"
     >
-      <div
-        className={`pd-game-world pd-world-${state.completed ? "dusk" : scene.image}`}
-        style={{ transform: `translateX(${look * 3}%)` }}
-        aria-hidden="true"
-      />
-      <div className="pd-game-shade" aria-hidden="true" />
+      {state.completed && (
+        <>
+          <div className="pd-game-world pd-world-dusk" aria-hidden="true" />
+          <div className="pd-game-shade" aria-hidden="true" />
+        </>
+      )}
       <div className="pd-game-top">
         <button className="pd-game-exit" onClick={() => navigateDemo("home")}>
           ← ポータルへ
@@ -170,25 +172,39 @@ export function DemoJourney({
           </p>
         </div>
       ) : (
-        <>
-          <div className="pd-scene-heading">
-            <p className="pd-mono">
-              STAGE {String(state.stage + 1).padStart(2, "0")} / 05
-            </p>
-            <h1>{scene.title}</h1>
-            <p>{scene.japanese}</p>
-          </div>
-          <div className="pd-scene-center" aria-hidden="true">
-            <span className="pd-compass">+</span>
-            <span className="pd-mono">
-              {look < 0
-                ? "WEST / 新しい気配"
-                : look > 0
-                  ? "EAST / 遠くの灯り"
-                  : "A PATH NOT YET TAKEN"}
-            </span>
-          </div>
-          <div className="pd-game-bottom">
+        <div className="pd-journey-layout">
+          <div className="pd-journey-scene">
+            <div className="pd-journey-viewport">
+              <div
+                className={`pd-scene-plane pd-scene-plane-${scene.image}`}
+                style={{ transform: `translateX(${look * 3}%)` }}
+              >
+                <div
+                  className={`pd-game-world pd-world-${scene.image}`}
+                  aria-hidden="true"
+                />
+                <div className="pd-explorer-scene">
+                  <div className="pd-explorer-ground" aria-hidden="true" />
+                  <Image
+                    className="pd-explorer-image"
+                    src="/demo-assets/explorer.webp"
+                    alt="リュックを背負い、画面奥の世界を見つめて佇む探究者"
+                    width={265}
+                    height={720}
+                    sizes="(max-width: 620px) 75px, 100px"
+                    preload
+                  />
+                </div>
+              </div>
+              <div className="pd-game-shade" aria-hidden="true" />
+              <div className="pd-scene-heading">
+                <p className="pd-mono">
+                  STAGE {String(state.stage + 1).padStart(2, "0")} / 05
+                </p>
+                <h1>{scene.title}</h1>
+                <p>{scene.japanese}</p>
+              </div>
+            </div>
             <div className="pd-look-controls">
               <span className="pd-mono">LOOK AROUND</span>
               <div>
@@ -208,8 +224,17 @@ export function DemoJourney({
                   →
                 </button>
               </div>
+              <span className="pd-look-bearing pd-mono" aria-live="polite">
+                {look < 0
+                  ? "WEST / 新しい気配"
+                  : look > 0
+                    ? "EAST / 遠くの灯り"
+                    : "A PATH NOT YET TAKEN"}
+              </span>
               <p>{scene.caption}</p>
             </div>
+          </div>
+          <div className="pd-game-bottom">
             <div
               className="pd-game-card"
               ref={cardRef}
@@ -382,7 +407,7 @@ export function DemoJourney({
               </div>
             </div>
           </div>
-        </>
+        </div>
       )}
       <div className="pd-music-credit">
         <span>Music: Breeze Zero / karawapo · CC BY 4.0 · Synth preview</span>

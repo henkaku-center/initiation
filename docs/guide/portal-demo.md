@@ -59,11 +59,17 @@ npm run dev:demo -- --port 3000
 
 ## 素材
 
+イントロでは空白のクリックで暗号化／復号を切り替え、復号後にリンクを選ぶとフェードして対応する画面へ進みます。トップの「イントロを再生」で再表示できます。Journeyは背景と旅人を共通の座標で配置し、質問フォームから独立させています。
+
+VOICES / PODCASTでは[Joi Ito's Podcast — 変革への道](https://joi.ito.com/podcast/)を独自の短い要約で紹介し、公式サイトへ案内します。番組の音源・画像・本文は収録していません。
+
 ゲーム背景とCommunity/Passportの画像は生成素材、ゲーム音楽は既存の許諾済みMIDIから合成したプレビューです。トップは指定元のコードを収録し、canvas-ui由来の2モジュールの元ライセンスと著作権表示を保持しています。
 
 詳細は [素材のクレジット](https://github.com/sangraal123/initiation/blob/codex/portal-demo/public/demo-assets/CREDITS.md)、生成プロンプトは [asset-provenance.json](https://github.com/sangraal123/initiation/blob/codex/portal-demo/public/demo-assets/asset-provenance.json) に記録しています。画面のフッターからも確認できます。
 
 ## 検証コマンド
+
+2026-09-09のイントロ・Journey・Podcast更新は依頼によりレイアウト確認のみ実施しました。確認方法と結果は`tests/layout/README.md`を参照してください。以下はプロジェクト全般の検証コマンドです。
 
 ```bash
 npm test

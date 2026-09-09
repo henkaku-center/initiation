@@ -22,23 +22,19 @@ hero = hero.replace('<h1 class="headline">', '<h1 class="headline" id="gateway-t
 hero = hero.replace('<p class="label">HENKAKU<br />COMMUNITY</p>', '<p class="label"><a href="/#home" target="_top">HENKAKU<br />COMMUNITY</a></p>');
 hero = hero.replace(/<ul>[\s\S]*?<\/ul>/, `<ul>
   <li><a href="/#setup" target="_top">WALLET SETUP</a></li>
-  <li><a href="/#journey" target="_top">INITIATION</a></li>
+  <li><a href="/#journey" target="_top">BEGIN INITIATION</a></li>
   <li><a href="/#community" target="_top">COMMUNITY</a></li>
-  <li><a href="/#community" target="_top">CHECK-IN</a></li>
-  <li><a href="/#passport" target="_top">ALLOWLIST</a></li>
-  <li><a href="/#passport" target="_top">HENKAKU</a></li>
   <li><a href="/#passport" target="_top">MY PASSPORT</a></li>
 </ul>`);
-hero = hero.replace('PEOPLE<br />IDEAS<br />SYSTEMS<br />FUTURES', 'CONNECT<br />SIGN IN<br />POLYGON<br />HENKAKU');
-hero = hero.replace('SHARED OWNERSHIP<br />TRANSPARENT SYSTEMS<br />DISTRIBUTED IMPACT', 'INITIATION<br />ALLOWLIST APPLICATION<br />MEMBERSHIP');
-hero = hero.replace('BUILD<br />CONNECT<br />ITERATE<br />EVOLVE', 'COMMUNITY<br />CHECK-IN<br />MY PASSPORT');
-hero = hero.replace('CO-CREATE THE FUTURE', '<a href="/#journey" target="_top">BEGIN INITIATION →</a>');
+hero = hero.replace('PEOPLE<br />IDEAS<br />SYSTEMS<br />FUTURES', 'QUESTS<br />ANSWERS<br />PROGRESS');
+hero = hero.replace('SHARED OWNERSHIP<br />TRANSPARENT SYSTEMS<br />DISTRIBUTED IMPACT', 'ALLOWLIST<br />TOKEN DISTRIBUTION');
+hero = hero.replace('BUILD<br />CONNECT<br />ITERATE<br />EVOLVE', 'CHECK-IN<br />ACTIVITY');
+hero = hero.replace('CO-CREATE THE FUTURE', '<a href="/#home" target="_top">ENTER PORTAL →</a>');
 
 const panelStart = hero.indexOf('<div class="panelbox"');
 const panel = hero.slice(panelStart);
 hero = hero.slice(0, panelStart);
 let liquidModule = liquid.match(/<script type="module">([\s\S]*?)<\/script>/)[1];
-liquidModule = liquidModule.replace('card.addEventListener("click", (event) => {', 'card.addEventListener("click", (event) => {\n    if (event.target.closest?.("a")) return;');
 
 let sections = gateway.slice(gateway.indexOf('  <section class="gateway-section placeholder-section"'), gateway.indexOf('</main>'));
 sections = sections.replace(/<svg viewBox="0 0 515 692"[\s\S]*?<\/svg>/g, logo);
@@ -48,6 +44,8 @@ sections = sections.replace('第2段階で、最近動いているプロジェ�
 sections = sections.replace('第2段階で、権利確認前の抽象プレースホルダーを使い、3〜5曲の再生ログを個人情報なしで表示します。', '4つの音のしるし。権利確認前の抽象プレースホルダーと、個人情報を含まない仮の再生ログです。');
 sections = sections.replace('aria-label="Community Pulse placeholder"', 'aria-label="最近のプロジェクト、投稿、クエスト、Check-in"');
 sections = sections.replace('aria-label="Recently played placeholder"', 'aria-label="個人情報を含まない4件の仮再生ログ"');
+sections = sections.replace('aria-label="Podcast placeholder"', 'aria-label="Joi Itoのポッドキャスト紹介"');
+sections = sections.replace('<div class="placeholder-list" data-podcast-card></div>', '<div class="placeholder-list" data-podcast-card></div><p class="podcast-source"><a href="https://joi.ito.com/podcast/" target="_blank" rel="noopener noreferrer">公式サイトで番組を聴く ↗</a><span>紹介文：公式情報をもとに編集</span></p>');
 sections = sections.replace('<div class="placeholder-grid" aria-label="最近のプロジェクト、投稿、クエスト、Check-in">\n            <div class="media-block" aria-hidden="true"></div>', '<div class="placeholder-grid pulse-grid" aria-label="最近のプロジェクト、投稿、クエスト、Check-in">');
 
 const inlineScroll = gateway.match(/<script>\s*const root = document.documentElement;([\s\S]*?)<\/script>/)[1];
@@ -57,13 +55,12 @@ scrollCode = scrollCode.replace('const item = document.createElement("div");', '
 scrollCode = scrollCode.replace('item.className = "placeholder-card";', 'item.className = "placeholder-card";\n    if (abstract) item.dataset.abstract = abstract;');
 scrollCode = scrollCode.replace('detail: track.artist,', 'detail: track.detail,\n      abstract: track.abstract,');
 scrollCode = scrollCode.replace('title: window.gatewayMock.podcast.title,', 'title: window.gatewayMock.podcast.title,\n      href: window.gatewayMock.podcast.href,');
-scrollCode = scrollCode.replace('scrollSections.forEach((section) => {\n      section.style.setProperty', 'scrollSections.forEach((section) => {\n      section.style.setProperty');
 // Each Pulse card enters separately while its section is pinned.
 scrollCode += `\n
 const pulseSection = document.querySelector('[data-gateway-section="01-community-pulse"]');
 const pulseCards = [...document.querySelectorAll('[data-pulse-list] .placeholder-card')];
 function updatePulseCards() {
-  const progress = reduceMotion.matches ? 1 : progressFor(pulseSection);
+  const progress = reduceMotion.matches ? 1 : Math.min(1, 0.35 + progressFor(pulseSection) * 0.8);
   pulseCards.forEach((item, index) => item.style.setProperty('--card-progress', String(Math.min(1, Math.max(0, (progress - index * 0.12) / 0.28)))));
 }
 window.addEventListener('scroll', updatePulseCards, { passive:true });
@@ -97,16 +94,32 @@ a.placeholder-card:hover,a.placeholder-card:focus-visible { color:var(--accent);
 @media(max-width:820px){.pulse-grid .placeholder-list{grid-template-columns:1fr;gap:6px}}
 `;
 
-const html = `<!doctype html>
-<!-- Adapted from henkaku-ui.vercel.app/liquid and gateway-v1-claude. See CREDITS.md and LICENSE-canvas-ui.txt. -->
+const homeShell = read("assets/reference/gateway/home-shell.css");
+const introShell = read("assets/reference/gateway/intro-shell.css");
+sections = sections.replace('<h2 class="section-title" id="pulse-title">COMMUNITY PULSE</h2>', '<h1 class="section-title" id="pulse-title">COMMUNITY PULSE</h1>');
+const introHtml = `<!doctype html>
+<!-- Liquid reference, with local replay/teardown fixes. See CREDITS.md. -->
 <html lang="ja"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<meta name="robots" content="noindex,nofollow"/><title>HENKAKU Community Gateway</title>
-<style>${gatewayStyle}</style><style>${liquidStyle}</style><style>${adapters}</style></head><body>
-<p class="prototype-label">PUBLIC GATEWAY / DEMO</p>
-<main aria-label="HENKAKU Community Gateway"><section class="gateway-section liquid-hero-section" data-gateway-section="00-gateway" aria-labelledby="gateway-title">${hero}</section>${sections}</main>
-${panel}
+<meta name="robots" content="noindex,nofollow"/><title>HENKAKU Intro</title>
+<style>${liquidStyle}</style><style>${introShell}</style></head><body>
+${hero}${panel}
 <script type="module">${liquidModule}</script>
-<script type="module" src="./gateway-v1-claude-decrypt.js"></script>
-<script src="./gateway-data.js"></script><script>${scrollCode}</script>
 </body></html>`;
+const html = `<!doctype html>
+<!-- The four source chapters form the homepage; the Liquid intro lives in intro.html. -->
+<html lang="ja"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow"/><title>HENKAKU Community</title>
+<style>${gatewayStyle}</style><style>${adapters}</style><style>${homeShell}</style></head><body>
+<header class="home-header" id="home-top">
+  <a class="home-brand" href="#home-top">${logo}<span>HENKAKU<small>COMMUNITY</small></span></a>
+  <nav class="home-navigation" aria-label="メインメニュー"><a href="/#community" target="_top">Community</a><a href="/#journey" target="_top">Initiation</a><a href="/#passport" target="_top">My passport</a><a href="/#setup" target="_top">Setup</a></nav>
+  <button type="button" class="home-replay">イントロを再生</button>
+</header>
+<div class="home-intro"><p>いま、コミュニティで動いていること。</p><span>COMMUNITY GATEWAY / DEMO</span></div>
+<main aria-label="HENKAKU トップページ">${sections}</main>
+<script type="module" src="./gateway-v1-claude-decrypt.js"></script>
+<script src="./gateway-data.js"></script><script>${scrollCode}
+document.querySelector('.home-replay').addEventListener('click', () => window.parent.postMessage({ type:'henkaku:intro:replay' }, location.origin));
+</script></body></html>`;
 fs.writeFileSync(path.join(root,"public/demo-assets/gateway/index.html"), html);
+fs.writeFileSync(path.join(root,"public/demo-assets/gateway/intro.html"), introHtml);

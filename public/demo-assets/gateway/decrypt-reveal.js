@@ -427,6 +427,8 @@ function supportsHtmlInCanvas() {
 }
 function createDecryptReveal(elements, options = {}) {
   const config = { ...DEFAULTS, ...options };
+  // Local lifecycle fix: callbacks queued before destroy must become inert.
+  let destroyed = false;
   const { source, content, output } = elements;
   const gl = output.getContext("webgl2", {
     alpha: true,
@@ -458,13 +460,16 @@ function createDecryptReveal(elements, options = {}) {
   let paintPending = false;
   let repaintQueued = false;
   function schedulePaint() {
-    if (!manualPaint) return;
+    if (destroyed || !manualPaint) return;
     if (paintPending) {
       repaintQueued = true;
       return;
     }
     paintPending = true;
-    Promise.resolve(config.paint(source, source.width / Math.max(source.clientWidth || output.clientWidth, 1))).then(() => {
+    Promise.resolve().then(() => {
+      if (!destroyed) return config.paint(source, source.width / Math.max(source.clientWidth || output.clientWidth, 1));
+    }).then(() => {
+      if (destroyed) return;
       paintPending = false;
       painted = true;
       contentDirty = true;
@@ -475,6 +480,7 @@ function createDecryptReveal(elements, options = {}) {
         schedulePaint();
       }
     }).catch(() => {
+      if (destroyed) return;
       paintPending = false;
       repaintQueued = false;
     });
@@ -482,6 +488,7 @@ function createDecryptReveal(elements, options = {}) {
   // --- END PATCH ---------------------------------------------------------
   if (htmlInCanvas) {
     paintable.onpaint = () => {
+      if (destroyed) return;
       try {
         sourceCtx.reset();
         sourceCtx.drawElementImage(content, 0, 0);
@@ -641,6 +648,7 @@ function createDecryptReveal(elements, options = {}) {
     return [h * clampAspect(config.aspect), h];
   }
   function syncCanvasSize() {
+    if (destroyed) return;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const width = Math.max(1, Math.round(output.clientWidth * dpr));
     const height = Math.max(1, Math.round(output.clientHeight * dpr));
@@ -824,7 +832,6 @@ function createDecryptReveal(elements, options = {}) {
   }
   let raf = 0;
   let lastTime = performance.now();
-  let destroyed = false;
   let running = false;
   let visible = true;
   function frame(now) {
@@ -920,6 +927,7 @@ function createDecryptReveal(elements, options = {}) {
   listenTarget.addEventListener("pointerleave", onPointerLeave, { passive: true });
   return {
     setOptions(next) {
+      if (destroyed) return;
       let changed = false;
       for (const [key, value] of Object.entries(next)) {
         if (typeof value === "function") continue;
@@ -946,6 +954,7 @@ function createDecryptReveal(elements, options = {}) {
       start();
     },
     resize() {
+      if (destroyed) return;
       syncCanvasSize();
       start();
     },
@@ -954,12 +963,14 @@ function createDecryptReveal(elements, options = {}) {
     // PATCH (henkaku demo): drive the reveal circle from script (auto tour,
     // tap-to-expand) instead of only from a real cursor.
     setPointer(x, y, active) {
+      if (destroyed) return;
       pointer.tx = x;
       pointer.ty = y;
       if (active !== void 0) pointer.target = active;
       start();
     },
     snapPointer(x, y) {
+      if (destroyed) return;
       pointer.x = pointer.tx = x;
       pointer.y = pointer.ty = y;
       start();
@@ -968,6 +979,7 @@ function createDecryptReveal(elements, options = {}) {
       return contextLost;
     },
     repaint() {
+      if (destroyed) return;
       painted = false;
       schedulePaint();
       start();
@@ -976,11 +988,14 @@ function createDecryptReveal(elements, options = {}) {
     // repaint() it keeps `painted` true, so the shader never drops back to
     // the crisp fallback mid-motion.
     invalidate() {
+      if (destroyed) return;
       schedulePaint();
       start();
     },
     destroy() {
+      if (destroyed) return;
       destroyed = true;
+      repaintQueued = false;
       cancelAnimationFrame(raf);
       observer.disconnect();
       intersection.disconnect();
