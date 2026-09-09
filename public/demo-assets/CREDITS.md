@@ -8,6 +8,6 @@
 
 Exact generation prompts and reference investigation are in asset-provenance.json. Original Game A images were not reused because a redistribution license was not confirmed. These placeholders take their atmosphere from the supplied reference, without reproducing its original assets.
 
-The geometric mark, glass bubbles and passport card are original CSS/SVG UI code (MIT); no canvas-ui component code was copied.
+The geometric mark, glass bubbles and passport card are original CSS/SVG/WebGL UI code (MIT); no canvas-ui component code was copied. The updated bubbles use an original distance-field shader and a generated decorative texture; page text and controls remain DOM content.
 
-References: https://claude.ai/code/artifact/f74311c1-d807-4972-a3d6-51e5547609b1 and https://henkaku-ui.vercel.app/bubble-multi .
+References: https://claude.ai/code/artifact/f74311c1-d807-4972-a3d6-51e5547609b1 , https://henkaku-ui.vercel.app/bubble-multi and https://henkaku-ui.vercel.app/gateway-v1-claude .
