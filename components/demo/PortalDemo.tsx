@@ -1,22 +1,33 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import {
   dispatchDemo,
   navigateDemo,
   useDemo,
   useDemoScreen,
 } from "@/lib/demo/useDemo";
-import { DemoWallet } from "./DemoWallet";
-import { DemoJourney } from "./DemoJourney";
-import { DemoPassport } from "./DemoPassport";
-import { DemoCommunity } from "./DemoCommunity";
 import { DemoDialog } from "./DemoDialog";
 import { ReferenceGateway } from "./ReferenceGatewayView";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import "./portal-demo.css";
 import "./experience.css";
 import "./reference-gateway.css";
+
+// These components load only when their existing screen condition is selected.
+const DemoWallet = dynamic(() =>
+  import("./DemoWallet").then((module) => module.DemoWallet),
+);
+const DemoJourney = dynamic(() =>
+  import("./DemoJourney").then((module) => module.DemoJourney),
+);
+const DemoPassport = dynamic(() =>
+  import("./DemoPassport").then((module) => module.DemoPassport),
+);
+const DemoCommunity = dynamic(() =>
+  import("./DemoCommunity").then((module) => module.DemoCommunity),
+);
 
 export function DemoMark() {
   return (

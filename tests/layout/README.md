@@ -1,5 +1,15 @@
 # Portal layout checks
 
+## JavaScript lazy loading — 2026-09-09
+
+The change is limited to JavaScript loading. In a fresh local browser tab, the intro and the top of home had zero YouTube API script tags and zero video iframe elements. Focusing a link in the Voices section brought it into view and inserted exactly one API script. The initial paused state remained unchanged. This browser could not connect to YouTube, so the existing official-thumbnail/link fallback was verified; successful player creation is covered by the runtime unit tests rather than claimed as a live playback check.
+
+Setup, Initiation, Passport and Community were each selected and their expected content appeared after the dynamic import. The saved check-in remained visible. A production bundle inspection confirmed that wallet, check-in and journey strings occur in separate chunks, not the scripts referenced by the initial home HTML.
+
+`lazyScreens.test.ts` traces synchronous source dependencies (four failures before the import split, then four passes). `podcastLazyLoading.test.ts` executes the actual browser script with controlled visibility, parent messages and API readiness. It checks no initial network/polling, one-time loading, pre-observer clicks, hidden tabs, late callbacks after disposal, and back/forward-cache restoration (six failures before the change; all ten cases pass after it).
+
+Final validation: all **258 unit tests**, type checking, repository lint, and normal/demo production builds passed using the default Turbopack bundler. Returning from another tab to home also left the API/player counts at zero until the video section was approached. Local Supabase integration tests were not rerun for this browser-only change.
+
 ## Community Frequency, inverted JoiN column and Setup navigation — 2026-09-09
 
 The current Frequency is a shared fictional community feed. `community-frequency.mjs` checks four play events, three abstract listener icons plus an anonymous icon, the mock disclosure, removal of personal progress/resume links, readable icon sizes, and overflow. JoiN's column alone uses the opposite appearance; the surrounding background retains the page theme. Let the existing color transition finish before inspecting computed background colors.

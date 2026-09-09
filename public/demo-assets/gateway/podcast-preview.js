@@ -22,6 +22,10 @@
     let selected = null;
     let disposed = false;
     let pageSuspended = false;
+    let nearViewport = false;
+    let loadStarted = false;
+    let interval = null;
+    let apiTimeout = null;
 
     function setStatus(scene, message, state) {
       if (scene.status.textContent !== message) scene.status.textContent = message;
@@ -47,7 +51,7 @@
         ratio: 0, start: null, end: null, requested: false,
         metadataAt: 0, readyTimeout: null,
       };
-      setStatus(scene, "公式映像を読み込み中 · 音声なし", "loading");
+      setStatus(scene, "映像は一時停止中 · 音声なし", "paused");
       return scene;
     });
 
@@ -116,6 +120,7 @@
 
     function synchronize() {
       if (disposed) return;
+      requestPlayers();
       const candidates = allowed() ? scenes.filter((scene) => scene.ready && !scene.failed && !scene.blocked && scene.ratio > 0.5) : [];
       // Follow the same scroll progress as the strip, including on wide screens
       // where several previews can remain visible throughout a handoff.
@@ -147,6 +152,7 @@
 
     function attachPlayers() {
       if (disposed) return;
+      interval = setInterval(pollPlayback, 250);
       scenes.forEach((scene, index) => {
         const frame = document.createElement("iframe");
         const params = new URLSearchParams({
@@ -230,6 +236,16 @@
     }, { threshold: [0, 0.5, 0.51, 0.75, 1] });
     scenes.forEach((scene) => observer.observe(scene.screen));
 
+    // Prepare the YouTube runtime shortly before the section comes into view.
+    // The parent can keep this document hidden behind the intro, so visibility
+    // alone is not enough to start downloading the external JavaScript.
+    const loadTarget = voicesScroll || scenes[0].screen;
+    const loadObserver = new IntersectionObserver((entries) => {
+      nearViewport = entries.some((entry) => entry.isIntersecting);
+      synchronize();
+    }, { rootMargin: "600px 0px" });
+    loadObserver.observe(loadTarget);
+
     toggle.addEventListener("click", () => {
       if (scenes.some((scene) => scene.blocked)) locallyPaused = false;
       else locallyPaused = !locallyPaused;
@@ -250,7 +266,7 @@
       synchronize();
     });
 
-    const interval = setInterval(() => {
+    function pollPlayback() {
       if (disposed || pageSuspended || document.hidden) return;
       for (const scene of scenes) {
         prepareScene(scene);
@@ -263,7 +279,7 @@
         if (selected.player.getCurrentTime() >= selected.end) selected.player.seekTo(selected.start, true);
       }
       synchronize();
-    }, 250);
+    }
 
     window.addEventListener("pagehide", (event) => {
       pageSuspended = true;
@@ -271,7 +287,9 @@
       if (event.persisted) return;
       disposed = true;
       clearInterval(interval);
+      clearTimeout(apiTimeout);
       observer.disconnect();
+      loadObserver.disconnect();
       scenes.forEach((scene) => {
         clearTimeout(scene.readyTimeout);
         scene.ready = false;
@@ -285,6 +303,11 @@
       homeActive = window.parent === window;
       observer.disconnect();
       scenes.forEach((scene) => { scene.ratio = 0; observer.observe(scene.screen); });
+      if (!loadStarted) {
+        nearViewport = false;
+        loadObserver.disconnect();
+        loadObserver.observe(loadTarget);
+      }
       if (window.parent !== window) window.parent.postMessage({ type: "henkaku:podcast:ready" }, location.origin);
       synchronize();
     });
@@ -292,28 +315,34 @@
     updateToggle();
     if (window.parent !== window) window.parent.postMessage({ type: "henkaku:podcast:ready" }, location.origin);
 
-    if (window.YT?.Player) { attachPlayers(); return; }
-    let settled = false;
-    const apiTimeout = setTimeout(apiUnavailable, 15000);
-    function apiUnavailable() {
-      if (settled || disposed) return;
-      settled = true;
-      clearTimeout(apiTimeout);
-      scenes.forEach((scene) => fail(scene, "YouTubeに接続できません。公式動画からご覧ください。"));
+    function requestPlayers() {
+      if (loadStarted || disposed || pageSuspended || !homeActive || parentPaused || document.hidden || (!nearViewport && locallyPaused)) return;
+      loadStarted = true;
+      loadObserver.disconnect();
+      scenes.forEach((scene) => setStatus(scene, "公式映像を読み込み中 · 音声なし", "loading"));
+      if (window.YT?.Player) { attachPlayers(); return; }
+      let settled = false;
+      apiTimeout = setTimeout(apiUnavailable, 15000);
+      function apiUnavailable() {
+        if (settled || disposed) return;
+        settled = true;
+        clearTimeout(apiTimeout);
+        scenes.forEach((scene) => fail(scene, "YouTubeに接続できません。公式動画からご覧ください。"));
+      }
+      const previousReady = window.onYouTubeIframeAPIReady;
+      window.onYouTubeIframeAPIReady = () => {
+        if (typeof previousReady === "function") previousReady();
+        if (settled || disposed) return;
+        settled = true;
+        clearTimeout(apiTimeout);
+        attachPlayers();
+      };
+      const script = document.createElement("script");
+      script.src = "https://www.youtube.com/iframe_api";
+      script.async = true;
+      script.addEventListener("error", apiUnavailable, { once: true });
+      document.head.appendChild(script);
     }
-    const previousReady = window.onYouTubeIframeAPIReady;
-    window.onYouTubeIframeAPIReady = () => {
-      if (typeof previousReady === "function") previousReady();
-      if (settled || disposed) return;
-      settled = true;
-      clearTimeout(apiTimeout);
-      attachPlayers();
-    };
-    const script = document.createElement("script");
-    script.src = "https://www.youtube.com/iframe_api";
-    script.async = true;
-    script.addEventListener("error", apiUnavailable, { once: true });
-    document.head.appendChild(script);
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initialize, { once: true });
