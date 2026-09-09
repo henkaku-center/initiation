@@ -58,3 +58,33 @@ export function auditIntroLinkPlacement() {
   }
   return { viewport: { width: innerWidth, height: innerHeight }, issues };
 }
+
+// The replacement intro uses two overlaid lens canvases with readable DOM links.
+export function auditMultiBubbleLayout() {
+  const issues = [];
+  const hero = document.querySelector("#stage.hero");
+  if (!hero) issues.push("Multi-bubble intro is missing");
+  if (hero) {
+    const bounds = hero.getBoundingClientRect();
+    if (Math.abs(bounds.width - innerWidth) > 2 || Math.abs(bounds.height - innerHeight) > 2) issues.push("Multi-bubble intro does not fill the viewport");
+    for (const id of ["lens2d", "lens3d"]) {
+      const canvas = document.getElementById(id);
+      const box = canvas?.getBoundingClientRect();
+      if (!box || Math.abs(box.width - bounds.width) > 2 || Math.abs(box.height - bounds.height) > 2) issues.push(`${id} does not match the intro viewport`);
+    }
+  }
+  if (document.documentElement.scrollWidth > innerWidth + 2 || document.documentElement.scrollHeight > innerHeight + 2) issues.push("Multi-bubble intro overflows the viewport");
+  return { viewport: { width: innerWidth, height: innerHeight }, issues };
+}
+
+export function auditIntroComparisonControls() {
+  const issues = [];
+  const group = document.querySelector(".pd-intro-variants");
+  if (!group) issues.push("Intro comparison controls are missing");
+  for (const button of group?.querySelectorAll("button") ?? []) {
+    const box = button.getBoundingClientRect();
+    if (box.width < 44 || box.height < 44 || box.left < 0 || box.right > innerWidth || box.top < 0 || box.bottom > innerHeight) issues.push(`${button.textContent} comparison target is clipped or too small`);
+    if (!button.contains(document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2))) issues.push(`${button.textContent} comparison target is covered`);
+  }
+  return { viewport: { width: innerWidth, height: innerHeight }, issues };
+}

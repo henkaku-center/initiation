@@ -11,7 +11,7 @@
 
 Exact generation prompts and reference investigation are in asset-provenance.json. Original Game A images were not reused because a redistribution license was not confirmed. These placeholders take their atmosphere from the supplied reference, without reproducing its original assets.
 
-The user-provided mark is traced as a simple SVG. The active homepage now adapts the requested reference sources; its Bubble and DecryptReveal ports retain their own MIT + Commons Clause license. See `gateway/CREDITS.md` and `gateway/LICENSE-canvas-ui.txt`. The older original WebGL implementation is no longer used by the homepage.
+The user-provided mark is traced as a simple SVG. The default intro adapts the supplied Bubble Multi source. The encrypted comparison retains the Bubble and DecryptReveal ports under their own MIT + Commons Clause license. See `gateway/CREDITS.md` and `gateway/LICENSE-canvas-ui.txt`.
 
 The seven new image prompts and provenance are recorded in `polished-provenance.json`. They are conceptual imagery, not photographs of actual community members or events.
 

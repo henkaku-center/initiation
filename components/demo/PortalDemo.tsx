@@ -291,11 +291,11 @@ export function PortalDemo() {
             <h3>Design references</h3>
             <p>
               <a
-                href="https://henkaku-ui.vercel.app/liquid"
+                href="https://henkaku-ui.vercel.app/bubble-multi"
                 target="_blank"
                 rel="noreferrer"
               >
-                Liquid / Bubble Decrypt Reveal ↗
+                Bubble Multi / 複数の泡 ↗
               </a>
               <br />
               <a href="https://henkaku-ui.vercel.app/gateway-v1-claude" target="_blank" rel="noreferrer">

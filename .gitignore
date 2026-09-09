@@ -37,6 +37,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# Private local snapshots: never commit or publish.
+/.local-archives/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

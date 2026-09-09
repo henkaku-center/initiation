@@ -1,0 +1,1638 @@
+<!doctype html>
+<!-- Multi-bubble reference with local navigation, viewport, clipping, and lifecycle adapters. -->
+<html lang="ja"><head><meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex,nofollow" /><title>HENKAKU Intro</title>
+<style>
+  :root {
+    --bg: #f4f4f4;
+    --ink: #0a0a0a;
+    --blue: #1b34f5;
+    --rule: #bcbcbc;
+    --font-sans: "Helvetica Neue", Helvetica, Arial, "Hiragino Kaku Gothic ProN",
+      "Yu Gothic", "Noto Sans JP", sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- hero shell ----------
+     Three layers share the box:
+       .content  the real DOM. Always present, always selectable, always read
+                 aloud correctly. It is the page, not a picture of the page.
+       #lens2d   Canvas 2D bubble. Wherever a canvas works.
+       #lens3d   WebGL2 bubble. Takes over when the GPU path is available.
+     The lenses only ever paint inside the bubble, so everything outside it is
+     the untouched DOM underneath. */
+  .hero {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    max-height: 100svh;
+    background: var(--bg);
+    overflow: hidden;
+    touch-action: pan-y;
+  }
+
+  .lens {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    pointer-events: none;
+  }
+
+  #lens3d { z-index: 3; }
+  #lens2d { z-index: 2; }
+
+  /* ---------- layout ----------
+     Grid overlap (two items sharing one cell) rather than absolute
+     positioning. `position: relative` here keeps the inner z-indexes to
+     themselves, so .upper cannot climb over the lenses. */
+  .content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    padding: 3.9% 4.1%;
+  }
+
+  .upper {
+    display: grid;
+    grid-template-columns: 30.3% 8.9% 38% 22.8%;
+    border-bottom: 1px solid var(--rule);
+    z-index: 2;
+  }
+
+  .col { display: flex; flex-direction: column; min-width: 0; }
+  .col-a { border-right: 1px solid var(--rule); padding-right: 3%; }
+  .col-b { border-right: 1px solid var(--rule); }
+
+  .label {
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 0.78vw, 15px);
+    letter-spacing: 0.2em;
+    line-height: 1.85;
+    margin: 0;
+  }
+
+  .dash { width: 1.1em; height: 2px; background: var(--blue); }
+  .label + .dash { margin-top: clamp(8px, 1.1vw, 20px); }
+
+  .plus {
+    font-family: var(--font-mono);
+    font-size: clamp(13px, 1.15vw, 22px);
+    line-height: 1;
+    color: var(--blue);
+  }
+
+  /* left column ---------------------------------------------------- */
+  .headline-wrap { margin-top: 19%; }
+  .headline {
+    font-size: clamp(19px, 2.78vw, 54px);
+    font-weight: 800;
+    letter-spacing: -0.015em;
+    line-height: 1.09;
+    margin: clamp(10px, 1.5vw, 26px) 0 0;
+  }
+
+  /* centre graphic --------------------------------------------------- */
+  .arrow {
+    grid-column: 3;
+    grid-row: 1;
+    display: flex;
+    align-items: center;
+    z-index: 1;
+  }
+  .arrow svg { width: 88%; height: auto; display: block; }
+
+  .wordmark {
+    grid-column: 3;
+    grid-row: 1;
+    z-index: 3;
+    position: relative;
+    margin-top: -2%;
+  }
+
+  /* The wordmark rolls down the hero and wraps back in at the top, the way it
+     does on the earlier variants. Copies of it are stacked exactly one period
+     apart and the whole stack is moved, so the loop has no seam and the hero's
+     own overflow does the clipping.
+
+     Taken out of flow on purpose: the stack is several screens tall, and the
+     row it sits in is sized by its contents, so leaving it in would let the
+     wordmark push the rest of the hero off the page. */
+  .roll {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 13%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: clamp(64px, 12vw, 232px);
+    /* The run is longer than its row. In em, so the lift tracks the type at
+       every size. This is the knob: more negative lifts it further. */
+    margin-top: -0.34em;
+    will-change: transform;
+  }
+
+  .roll span {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    font-weight: 800;
+    letter-spacing: -0.055em;
+    line-height: 0.8;
+    white-space: nowrap; /* vertical text wraps into a 2nd column otherwise */
+    color: var(--blue);
+  }
+
+  /* Only the first copy is the wordmark. The rest are scenery: not read out,
+     not selectable, and never picked up by the painter. */
+  .roll .ghost { user-select: none; }
+
+  /* right column ----------------------------------------------------- */
+  .col-d { align-items: flex-start; }
+  .gateway {
+    margin-top: auto;
+    width: 100%;
+    border-top: 1px solid var(--rule);
+    border-left: 1px solid var(--rule);
+    padding: clamp(10px, 1.6vw, 30px) 0 0 clamp(12px, 2vw, 36px);
+    display: flex;
+    flex-direction: column;
+  }
+  .gateway h2 {
+    font-size: clamp(12px, 1.16vw, 23px);
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    margin: clamp(8px, 1.2vw, 22px) 0 clamp(10px, 1.5vw, 26px);
+  }
+  .gateway ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 0.78vw, 15px);
+    letter-spacing: 0.14em;
+    line-height: 2.15;
+  }
+
+  /* bottom strip ----------------------------------------------------- */
+  .bottom {
+    display: grid;
+    grid-template-columns: 19.9% 43% 17.6% 19.5%;
+    padding-top: clamp(12px, 1.8vw, 32px);
+    z-index: 1;
+  }
+  .bcol { display: flex; flex-direction: column; min-width: 0; }
+  .bcol:nth-child(1), .bcol:nth-child(3) { border-right: 1px solid var(--rule); }
+  .bcol:nth-child(2), .bcol:nth-child(4) { padding-left: 4%; }
+  .bcol p {
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 0.78vw, 15px);
+    letter-spacing: 0.14em;
+    line-height: 1.75;
+    margin: clamp(10px, 1.5vw, 26px) 0 0;
+  }
+  .bcol .dash { margin-bottom: 0; }
+
+  /* ---------- mobile ---------- */
+  @media (max-width: 820px) {
+    .hero { aspect-ratio: auto; min-height: 100svh; max-height: none; }
+    .content { grid-template-rows: 1fr auto; padding: 28px 20px; }
+    .upper { grid-template-columns: 1fr; }
+    .col-a { border-right: 0; padding-right: 0; padding-bottom: 24px; }
+    .col-b { display: none; }
+    .arrow, .wordmark { grid-column: 1; grid-row: auto; }
+    .arrow { justify-content: center; padding: 18px 0; }
+    .arrow svg { width: 46%; }
+    /* Laid on its side the wordmark fits, so it does not roll and does not
+       need to be lifted or taken out of flow. */
+    .wordmark {
+      margin-top: -14%;
+      margin-bottom: 6%;
+      height: auto;
+    }
+    .roll {
+      position: static;
+      right: auto;
+      margin-top: 0;
+      font-size: 15vw;
+    }
+    .roll span {
+      writing-mode: horizontal-tb;
+      letter-spacing: -0.03em;
+    }
+    .headline-wrap { margin-top: 26px; }
+    .headline { font-size: 30px; }
+    .gateway { margin-top: 24px; border-left: 0; padding-left: 0; }
+    .gateway ul { line-height: 1.95; }
+    .bottom { grid-template-columns: 1fr 1fr; gap: 20px 0; }
+    .bcol:nth-child(1), .bcol:nth-child(3) { border-right: 0; }
+    .bcol:nth-child(2), .bcol:nth-child(4) { padding-left: 0; }
+    .label, .gateway ul, .bcol p { font-size: 11px; }
+  }
+
+  /* ---------- demo chrome (not part of the hero) ---------- */
+
+  .hint { padding: 14px 4.1%; color: #6b7078; font-size: 13px; margin: 0; line-height: 1.7; }
+  .hint a { color: var(--blue); }
+  .hint + .hint { padding-top: 0; }
+
+  .panel {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.6;
+  }
+
+  .panel summary {
+    list-style: none;
+    cursor: pointer;
+    background: var(--blue);
+    color: #fff;
+    padding: 8px 14px;
+    letter-spacing: 0.12em;
+    text-align: right;
+  }
+
+  .panel summary::-webkit-details-marker { display: none; }
+
+  .panel .body {
+    background: #fff;
+    border: 1px solid var(--rule);
+    border-right: 0;
+    border-bottom: 0;
+    padding: 14px 16px;
+    max-width: min(88vw, 340px);
+  }
+
+  .panel dl {
+    margin: 0 0 12px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 3px 12px;
+  }
+
+  .panel dt { color: #777; }
+  .panel dd { margin: 0; }
+  .panel dd b { color: var(--blue); font-weight: 700; }
+
+  .panel .modes { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+
+  .panel button {
+    font: inherit;
+    padding: 5px 9px;
+    background: #fff;
+    color: var(--ink);
+    border: 1px solid var(--rule);
+    cursor: pointer;
+  }
+
+  .panel button[aria-pressed="true"] {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #fff;
+  }
+
+  .panel p { margin: 0; color: #777; line-height: 1.75; }
+
+  /* ---------- embedded preview: chrome off ---------- */
+  html.embedded .panel,
+  html.embedded .hint { display: none; }
+  /* The gallery scrolls past this frame, so a finger dragging over the hero has
+     to move the page. */
+  html.embedded, html.embedded body { overflow: hidden; }
+</style><style>/* Local viewport shell for the unmodified bubble-multi reference. */
+html, body { width:100%; height:100%; overflow:hidden; }
+.hero { height:100svh; height:100dvh; min-height:0; max-height:none; aspect-ratio:auto; }
+.content { height:100%; grid-template-rows:minmax(0,1fr) auto; padding:clamp(20px,3.5vw,45px) 4.1% 88px; }
+.upper, .col, .arrow, .wordmark { min-height:0; }
+.upper { grid-template-columns:30.3% 8.9% 35% 25.8%; }
+.arrow, .wordmark { overflow:hidden; margin:0; padding:0; }
+.arrow { color:#333; }
+.arrow svg { width:88%; height:auto; max-height:100%; }
+.wordmark { pointer-events:none; }
+.roll { top:0; right:10%; margin-top:0; font-size:clamp(64px,min(12vw,18svh),232px); }
+.headline-wrap { margin-top:clamp(20px,5svh,68px); }
+.label a, .gateway a, .bcol a { color:inherit; text-decoration:none; }
+.col-a > .label a { display:inline-block; }
+.gateway { flex:none; display:flex; gap:12px; padding-top:16px; }
+.gateway > .dash { display:none; }
+.gateway h2 { flex:none; margin:0; font-size:clamp(12px,1.16vw,23px); line-height:1.3; }
+.gateway ul { width:100%; display:grid; gap:0; }
+.gateway li { min-width:0; }
+.gateway a { display:flex; align-items:center; min-height:44px; line-height:1.4; overflow-wrap:anywhere; }
+.bcol a { display:inline-flex; align-items:center; min-height:44px; }
+a:hover { text-decoration:underline; text-underline-offset:4px; }
+a:focus-visible, .panel summary:focus-visible, .panel button:focus-visible { outline:2px solid var(--blue); outline-offset:4px; }
+.panel, html.embedded .panel { display:block; z-index:20; right:16px; bottom:16px; }
+.panel summary { min-height:36px; display:flex; align-items:center; justify-content:flex-end; font-size:11px; }
+.panel[open] { max-height:calc(100dvh - 32px); overflow:auto; }
+.panel .body { max-width:min(88vw,340px); }
+.hint { display:none; }
+
+@media (max-width:820px) {
+  .content { padding:20px 18px 76px; }
+  .upper { grid-template-columns:minmax(0,1fr) minmax(0,1fr); grid-template-rows:auto minmax(0,1fr); gap:0 14px; }
+  .col-a { grid-column:1 / -1; grid-row:1; border:0; padding:0 0 14px; }
+  .col-b { display:none; }
+  .col-a > .label { font-size:10px; }
+  .label + .dash { margin-top:8px; }
+  .headline-wrap { margin-top:12px; }
+  .headline { font-size:clamp(18px,3.2svh,26px); margin-top:8px; }
+  .arrow, .wordmark { grid-column:1; grid-row:2; margin:0; padding:0; align-self:stretch; }
+  .arrow { justify-content:center; }
+  .arrow svg { width:86%; max-height:100%; }
+  .wordmark { display:flex; align-items:center; }
+  .roll { position:static; width:100%; right:auto; margin:0; font-size:clamp(24px,7.7vw,56px); }
+  .roll span { writing-mode:horizontal-tb; letter-spacing:-.03em; }
+  .col-d { grid-column:2; grid-row:2; justify-content:center; }
+  .col-d > .label, .col-d > .dash { display:none; }
+  .gateway { margin-top:0; border-left:0; padding:10px 0 0; gap:10px; }
+  .gateway h2 { font-size:11px; }
+  .gateway ul { font-size:10px; letter-spacing:.08em; }
+  .bottom { grid-template-columns:1fr 1fr; gap:8px 14px; padding-top:10px; }
+  .bcol:nth-child(n) { border:0; padding-left:0; }
+  .bcol p { font-size:8px; line-height:1.6; margin-top:5px; }
+  .bcol .plus { font-size:10px; }
+  .bcol .dash { height:1px; }
+  .panel, html.embedded .panel { top:12px; right:12px; bottom:auto; }
+}
+
+/* A short phone keeps the primary menu and portal entry on screen. */
+@media (max-width:599px) and (max-height:680px) {
+  .bottom { grid-template-columns:1fr; padding-top:8px; }
+  .bottom .bcol:not(:last-child) { display:none; }
+  .bottom .bcol:last-child .dash { display:none; }
+  .bottom .bcol:last-child p { margin:0; }
+}
+
+/* Landscape phones retain three distinct cells and the full-size link targets. */
+@media (min-width:600px) and (max-height:600px) {
+  .content { padding:16px 22px 76px; }
+  .upper { grid-template-columns:minmax(0,1.1fr) minmax(0,.8fr) minmax(0,1.2fr); grid-template-rows:minmax(0,1fr); gap:0 18px; }
+  .col-a { grid-column:1; grid-row:1; padding:0; border:0; }
+  .col-b { display:none; }
+  .col-a > .label { font-size:9px; }
+  .label + .dash { margin-top:7px; }
+  .headline-wrap { margin-top:12px; }
+  .headline { margin-top:7px; font-size:clamp(15px,2.8vw,22px); }
+  .arrow, .wordmark { grid-column:2; grid-row:1; margin:0; padding:0; }
+  .wordmark { display:block; }
+  .roll { position:absolute; top:0; left:0; right:0; width:auto; margin:0; font-size:clamp(38px,14svh,70px); }
+  .roll span { writing-mode:vertical-rl; letter-spacing:-.055em; }
+  .col-d { grid-column:3; grid-row:1; justify-content:center; }
+  .col-d > .label, .col-d > .dash { display:none; }
+  .gateway { margin:0; border-left:0; padding:8px 0 0; gap:8px; }
+  .gateway h2 { font-size:11px; }
+  .gateway ul { font-size:10px; letter-spacing:.08em; }
+  .bottom { grid-template-columns:1fr; padding-top:4px; }
+  .bottom .bcol:not(:last-child), .bottom .bcol:last-child .dash { display:none; }
+  .bottom .bcol:last-child { padding:0; }
+  .bottom .bcol:last-child p { margin:0; font-size:9px; }
+  .panel, html.embedded .panel { top:auto; right:16px; bottom:16px; }
+}
+</style></head><body>
+
+
+<div class="hero" id="stage">
+  <canvas class="lens" id="lens2d" aria-hidden="true"></canvas>
+  <canvas class="lens" id="lens3d" aria-hidden="true"></canvas>
+
+  <div class="content" id="content">
+
+    <div class="upper">
+      <div class="col col-a">
+        <p class="label"><a href="/#home" target="_top" data-intro-screen="home">HENKAKU<br />COMMUNITY</a></p>
+        <div class="dash"></div>
+        <div class="headline-wrap">
+          <div class="dash"></div>
+          <h1 class="headline" id="gateway-title">A LIVING<br />INFRASTRUCTURE<br />FOR COLLECTIVE<br />TRANSFORMATION</h1>
+        </div>
+      </div>
+
+      <div class="col col-b"></div>
+
+      <div class="arrow">
+        <svg viewBox="0 0 48 60" aria-hidden="true"><path d="M0 0 L48 37 L19 37 L0 60 Z" fill="currentColor" /></svg>
+      </div>
+      <div class="wordmark"><div class="roll" id="roll"><span id="mark">HENKAKU</span></div></div>
+
+      <div class="col col-d">
+        <p class="label">JOIN THE<br />HENKAKU NETWORK</p>
+        <div class="dash"></div>
+        <div class="gateway">
+          <div class="dash"></div>
+          <h2>PUBLIC GATEWAY</h2>
+          <ul aria-label="参加とコミュニティのメニュー">
+  <li><a href="/#setup" target="_top" data-intro-screen="setup">WALLET SETUP</a></li>
+  <li><a href="/#journey" target="_top" data-intro-screen="journey">BEGIN INITIATION</a></li>
+  <li><a href="/#community" target="_top" data-intro-screen="community">COMMUNITY</a></li>
+  <li><a href="/#passport" target="_top" data-intro-screen="passport">MY PASSPORT</a></li>
+</ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom">
+      <div class="bcol">
+        <span class="plus">+</span>
+        <p>QUESTS<br />ANSWERS<br />PROGRESS</p>
+      </div>
+      <div class="bcol">
+        <span class="plus">+</span>
+        <p>ALLOWLIST<br />TOKEN DISTRIBUTION</p>
+      </div>
+      <div class="bcol">
+        <span class="plus">+</span>
+        <p>CHECK-IN<br />ACTIVITY</p>
+      </div>
+      <div class="bcol">
+        <div class="dash"></div>
+        <p><a href="/#home" target="_top" data-intro-screen="home">ENTER PORTAL →</a></p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+
+
+<details class="panel" id="panel">
+  <summary>表示モード</summary>
+  <div class="body">
+    <dl>
+      <dt>WebGL2</dt><dd id="r-gl">—</dd>
+      <dt>動きを減らす</dt><dd id="r-motion">—</dd>
+      <dt>ポインタ</dt><dd id="r-pointer">—</dd>
+      <dt>いま出ているもの</dt><dd id="r-mode"><b>—</b></dd>
+    </dl>
+    <div class="modes">
+      <button type="button" data-force="auto" aria-pressed="true">自動</button>
+      <button type="button" data-force="gl" aria-pressed="false">屈折バブル</button>
+      <button type="button" data-force="flat" aria-pressed="false">静止バブル</button>
+      <button type="button" data-force="none" aria-pressed="false">バブルなし</button>
+    </div>
+    <p>OSの設定を変えなくても、ボタンで各環境の見え方を確認できます。文字はDOMのままなので、どの状態でも選択・読み上げができます。</p>
+  </div>
+</details>
+
+
+<script type="module">
+/* ABOUTME: Redraws the hero into a canvas plate, then bends that plate through a bubble.
+   ABOUTME: WebGL2 draws the moving lens; Canvas 2D draws the still one everywhere else. */
+
+const stage = document.getElementById("stage");
+const content = document.getElementById("content");
+const lens2d = document.getElementById("lens2d");
+const lens3d = document.getElementById("lens3d");
+let stopped = false;
+const input = new AbortController();
+
+const TAU = Math.PI * 2;
+const CROWD = 8; // bubbles adrift at once
+/* Plus the bubble the cursor carries, which is the one from the single-bubble
+   page at a smaller size: a head that chases the cursor and a short history of
+   where it has just been. Moving pulls those apart and the smooth minimum
+   stretches between them, so the bubble draws out and snaps back. They go last
+   in the arrays, so dropping them when no cursor is on the stage is a matter
+   of drawing fewer spheres. */
+const TAIL = 14;
+const SPHERES = CROWD + TAIL;
+
+/* Lengths are ratios of the bubble radius, and the radius is a ratio of the
+   stage, so the glass keeps its proportions from a phone to a wide desktop. */
+const BUBBLE = {
+  radiusScale: 0.10,
+  radiusMin: 42,
+  radiusMax: 92,
+  blend: 0.35,        // how eagerly neighbouring spheres fuse
+  pace: 2.6,          // multiplies every bubble's own drift: the speed knob
+  gathering: 0.34,    // 0-1, how far an unattended gathering closes the distance
+  pointerLean: 0.85,  // 0-1, how far a bubble within reach comes over
+  pointerReach: 6.5,  // radii; past this the cursor is somebody else's business
+  follow: 0.22,       // 0-1, cursor chase per frame. Lower stretches further
+  beaconEase: 0.05,   // 0-1, how slowly the crowd re-reads where the visitor is
+  leanEase: 0.024,    // 0-1, how fast a bubble crosses the room. Lower is slower
+  cursorSize: 0.5,    // radii, the head of the bubble the cursor carries
+  cursorTaper: 0.58,  // how much smaller the tail gets toward its end
+  thickness: 0.6,   // apparent glass depth; drives the refraction offset
+  dispersion: 0.9,  // rgb split
+  shine: 0.55,
+  rim: 0.7,
+  iridescence: 0.55,
+};
+
+const motionQuery = matchMedia("(prefers-reduced-motion: reduce)");
+const pointerQuery = matchMedia("(hover: hover) and (pointer: fine)");
+
+let radius = 104;
+let dome = 90; // the depth profile the whole merged blob is read against
+
+function measureRadius() {
+  if (stopped) return;
+  const span = Math.min(stage.clientWidth, stage.clientHeight);
+  radius = Math.max(BUBBLE.radiusMin, Math.min(BUBBLE.radiusMax, span * BUBBLE.radiusScale));
+}
+
+/* ------------------------------------------------------------------ *
+ * The plate: the hero drawn as pixels.
+ *
+ * The browser is asked where every glyph, rule and shape actually landed,
+ * and each one is stamped into a canvas at that exact place. Nothing
+ * serialises the document, so none of the browser differences around
+ * foreignObject or the html-in-canvas API can apply.
+ *
+ * Only what this hero is made of is reproduced: text, solid backgrounds,
+ * solid borders and one SVG path.
+ * ------------------------------------------------------------------ */
+
+const plate = document.createElement("canvas");
+const plateCtx = plate.getContext("2d", { willReadFrequently: false });
+const markPlate = document.createElement("canvas");
+const markCtx = markPlate.getContext("2d", { willReadFrequently: false });
+let plateReady = false;
+
+const rollEl = document.getElementById("roll");
+const markEl = document.getElementById("mark");
+const ROLL_MS = 5200; // one full turn, matching the earlier variants
+let rollPeriod = 0;   // css px; zero means the wordmark is not rolling
+let rollTop = 0;      // css px from the top of the stage to the unrolled run
+let rollShift = 0;
+let markClip = { x: 0, y: 0, width: 0, height: 0 };
+
+/** A colour that would put nothing on screen is not worth a fillRect. */
+function inked(colour) {
+  if (!colour || colour === "transparent" || colour === "none") return false;
+  const alpha = colour.match(/^rgba?\([^)]*,\s*([\d.]+)\s*\)$/);
+  return !alpha || parseFloat(alpha[1]) > 0;
+}
+
+/**
+ * Where the baseline sits inside a box, following the CSS inline box model:
+ * half the leading, then the ascent. Feeding it a per-line rect makes it
+ * correct whether the browser reports that rect as the font box (leading
+ * works out to zero) or as the full line box.
+ */
+function baselineIn(extent, ascent, descent) {
+  return (extent - (ascent + descent)) / 2 + ascent;
+}
+
+/** Backgrounds and borders, in tree order, so children land over parents. */
+function paintBoxes(ctx, origin) {
+  for (const el of content.querySelectorAll("*")) {
+    if (el.closest("svg")) continue; // shapes are painted from their geometry
+    const s = getComputedStyle(el);
+    if (s.display === "none" || s.visibility === "hidden") continue;
+
+    const r = el.getBoundingClientRect();
+    if (!r.width || !r.height) continue;
+    const x = r.left - origin.left;
+    const y = r.top - origin.top;
+
+    if (inked(s.backgroundColor)) {
+      ctx.fillStyle = s.backgroundColor;
+      ctx.fillRect(x, y, r.width, r.height);
+    }
+
+    // getBoundingClientRect is the border box, so each side is a strip of it.
+    for (const side of ["Top", "Bottom", "Left", "Right"]) {
+      const w = parseFloat(s[`border${side}Width`]) || 0;
+      const style = s[`border${side}Style`];
+      const colour = s[`border${side}Color`];
+      if (!w || style === "none" || style === "hidden" || !inked(colour)) continue;
+      ctx.fillStyle = colour;
+      if (side === "Top") ctx.fillRect(x, y, r.width, w);
+      else if (side === "Bottom") ctx.fillRect(x, y + r.height - w, r.width, w);
+      else if (side === "Left") ctx.fillRect(x, y, w, r.height);
+      else ctx.fillRect(x + r.width - w, y, w, r.height);
+    }
+  }
+}
+
+/** Inline SVG, replayed from its own path data through the viewBox mapping. */
+function paintShapes(ctx, origin) {
+  for (const svg of content.querySelectorAll("svg")) {
+    const r = svg.getBoundingClientRect();
+    if (!r.width || !r.height) continue;
+
+    const box = (svg.getAttribute("viewBox") || "").trim().split(/[\s,]+/).map(Number);
+    if (box.length !== 4 || box.some((n) => !Number.isFinite(n)) || !box[2] || !box[3]) continue;
+
+    ctx.save();
+    ctx.translate(r.left - origin.left, r.top - origin.top);
+    ctx.scale(r.width / box[2], r.height / box[3]);
+    ctx.translate(-box[0], -box[1]);
+
+    for (const path of svg.querySelectorAll("path")) {
+      const d = path.getAttribute("d");
+      if (!d) continue;
+      const fill = getComputedStyle(path).fill || path.getAttribute("fill");
+      if (!inked(fill)) continue;
+      ctx.fillStyle = fill;
+      ctx.fill(new Path2D(d));
+    }
+    ctx.restore();
+  }
+}
+
+/**
+ * Text, one glyph at a time, at the position the browser worked out for it.
+ *
+ * Asking a Range where a single character landed hands back the result of the
+ * browser's own line breaking, alignment, kerning and letter-spacing. Stamping
+ * the glyph there reproduces all of it without re-implementing any of it, and
+ * without the drift that measuring the text ourselves would accumulate.
+ */
+function paintText(ctx, origin, limit = {}) {
+  const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT);
+  const range = document.createRange();
+
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    const text = node.nodeValue;
+    if (!text || !text.trim()) continue;
+
+    const el = node.parentElement;
+    if (!el) continue;
+    if (limit.skip && limit.skip.contains(el)) continue;
+    if (limit.only && !limit.only.contains(el)) continue;
+    const s = getComputedStyle(el);
+    if (s.display === "none" || s.visibility === "hidden" || !inked(s.color)) continue;
+
+    const size = parseFloat(s.fontSize) || 16;
+    ctx.font = `${s.fontStyle} ${s.fontWeight} ${size}px ${s.fontFamily}`;
+    ctx.fillStyle = s.color;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
+
+    const m = ctx.measureText("H");
+    const ascent = m.fontBoundingBoxAscent ?? m.actualBoundingBoxAscent ?? size * 0.8;
+    const descent = m.fontBoundingBoxDescent ?? m.actualBoundingBoxDescent ?? size * 0.2;
+    const sideways = s.writingMode.startsWith("vertical");
+
+    // Offsets are UTF-16 units; iterating by code point keeps pairs together.
+    let offset = 0;
+    for (const glyph of text) {
+      const start = offset;
+      offset += glyph.length;
+      if (!glyph.trim()) continue; // whitespace has no ink to place
+
+      range.setStart(node, start);
+      range.setEnd(node, offset);
+      const r = range.getBoundingClientRect();
+      if (!r.width || !r.height) continue;
+
+      if (!sideways) {
+        ctx.fillText(glyph, r.left - origin.left, r.top - origin.top + baselineIn(r.height, ascent, descent));
+        continue;
+      }
+
+      /* vertical-rl with text-orientation: mixed turns Latin a quarter turn
+         clockwise and runs it down the page. Rotating the canvas the same way
+         means the glyph advance follows the rect's height, and the ascent now
+         points at the right-hand edge, which is the "over" side here. */
+      ctx.save();
+      ctx.translate(r.right - origin.left - baselineIn(r.width, ascent, descent), r.top - origin.top);
+      ctx.rotate(Math.PI / 2);
+      ctx.fillText(glyph, 0, 0);
+      ctx.restore();
+    }
+  }
+}
+
+/**
+ * How far the wordmark travels before it repeats, and where its one drawn run
+ * begins. A touch of air on top of the type's own length, so the loop reads as
+ * a word rolling past rather than as one unbroken ribbon of letters.
+ */
+function measureRoll(origin) {
+  rollPeriod = 0;
+  if (!markEl || !rollEl) return;
+  const box = markEl.getBoundingClientRect();
+  if (!box.height) return;
+  rollTop = box.top - origin.top;
+  // Only the vertical setting runs off the end of its row. Laid on its side
+  // the wordmark fits, and rolling it would just be motion for its own sake.
+  if (!getComputedStyle(markEl).writingMode.startsWith("vertical")) return;
+  rollPeriod = box.height * 1.06;
+}
+
+/** Enough copies to cover the hero at any point in the turn, and no more. */
+function stackCopies() {
+  if (!rollEl || !markEl) return;
+  if (rollPeriod <= 0) {
+    for (const ghost of rollEl.querySelectorAll(".ghost")) ghost.remove();
+    rollEl.style.rowGap = "";
+    rollEl.style.transform = "";
+    return;
+  }
+  rollEl.style.rowGap = `${Math.max(0, rollPeriod - markEl.getBoundingClientRect().height)}px`;
+  const need = Math.ceil((stage.clientHeight + 2 * rollPeriod) / rollPeriod) + 1;
+  while (rollEl.children.length < need) {
+    const ghost = markEl.cloneNode(true);
+    ghost.removeAttribute("id");
+    ghost.classList.add("ghost");
+    ghost.setAttribute("aria-hidden", "true");
+    rollEl.appendChild(ghost);
+  }
+  while (rollEl.children.length > need) rollEl.lastElementChild.remove();
+}
+
+function paintPlate() {
+  if (stopped) return;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const w = Math.max(1, stage.clientWidth);
+  const h = Math.max(1, stage.clientHeight);
+
+  plate.width = markPlate.width = Math.round(w * dpr);
+  plate.height = markPlate.height = Math.round(h * dpr);
+
+  /* Measure and draw the wordmark where it sits before any of the roll is
+     applied. The shader puts it back at the right height; a run captured
+     mid-turn would be put back twice. */
+  const held = rollEl ? rollEl.style.transform : "";
+  if (rollEl) rollEl.style.transform = "none";
+
+  const origin = stage.getBoundingClientRect();
+  const cell = content.querySelector(".wordmark");
+  const clip = cell.getBoundingClientRect();
+  markClip = { x: clip.left - origin.left, y: clip.top - origin.top, width: clip.width, height: clip.height };
+
+  const ctx = plateCtx;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = getComputedStyle(stage).backgroundColor || "#f4f4f4";
+  ctx.fillRect(0, 0, w, h);
+  paintBoxes(ctx, origin);
+  paintShapes(ctx, origin);
+  paintText(ctx, origin, { skip: cell });
+
+  // The wordmark on its own, on nothing, so it can be slid over the rest.
+  const mctx = markCtx;
+  mctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  mctx.clearRect(0, 0, w, h);
+  if (markEl) paintText(mctx, origin, { only: markEl });
+
+  measureRoll(origin);
+  if (rollEl) rollEl.style.transform = held;
+  stackCopies();
+  rollShift = rollPeriod > 0 ? rollShift % rollPeriod : 0;
+  applyRoll();
+
+  plateReady = true;
+}
+
+/** Move the stack. One period up, so a copy is always waiting above the top. */
+function applyRoll() {
+  if (stopped) return;
+  if (!rollEl) return;
+  rollEl.style.transform = rollPeriod > 0
+    ? `translateY(${rollShift - rollPeriod}px)`
+    : "";
+}
+
+/* The still lens draws the plate straight, so it needs the two pictures put
+   back together itself. It only runs when something changed, not per frame. */
+const flatPlate = document.createElement("canvas");
+const flatCtx = flatPlate.getContext("2d");
+
+function composedPlate() {
+  flatPlate.width = plate.width;
+  flatPlate.height = plate.height;
+  const dpr = plate.width / Math.max(stage.clientWidth, 1);
+  flatCtx.setTransform(1, 0, 0, 1, 0, 0);
+  flatCtx.clearRect(0, 0, flatPlate.width, flatPlate.height);
+  flatCtx.drawImage(plate, 0, 0);
+  flatCtx.save();
+  flatCtx.beginPath();
+  flatCtx.rect(markClip.x * dpr, markClip.y * dpr, markClip.width * dpr, markClip.height * dpr);
+  flatCtx.clip();
+
+  if (rollPeriod <= 0) {
+    flatCtx.drawImage(markPlate, 0, 0); // not rolling, but still needed back
+    flatCtx.restore();
+    return flatPlate;
+  }
+  const span = Math.ceil(stage.clientHeight / rollPeriod) + 2;
+  for (let k = -1; k < span; k++) {
+    flatCtx.drawImage(markPlate, 0, (rollShift + k * rollPeriod) * dpr);
+  }
+  flatCtx.restore();
+  return flatPlate;
+}
+
+/* ------------------------------------------------------------------ *
+ * Layer 1: the still bubble, in Canvas 2D.
+ *
+ * A circular clip, the plate drawn back magnified about the bubble centre,
+ * then a rim and a highlight. That is a lens: enough to show that glass is
+ * sitting on the page without a single frame of animation. This is what the
+ * "reduce motion" reader, the touch visitor and the GPU-less browser get.
+ * ------------------------------------------------------------------ */
+
+const ctx2d = lens2d.getContext("2d");
+
+function drawOneStill(ctx, sheet, cx, cy, r, w, h) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, TAU);
+  ctx.clip();
+
+  /* Magnifying about the centre is the cheap stand-in for refraction: the
+     centre stays put and everything else pushes outward, which is what a
+     thick lens does to the middle of its field. */
+  const zoom = 1.18;
+  ctx.translate(cx, cy);
+  ctx.scale(zoom, zoom);
+  ctx.translate(-cx, -cy);
+  ctx.drawImage(sheet, 0, 0, w, h);
+  ctx.restore();
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, TAU);
+  ctx.clip();
+
+  // Rim: dark just inside the edge, where a real bubble bends light away.
+  const rim = ctx.createRadialGradient(cx, cy, r * 0.72, cx, cy, r);
+  rim.addColorStop(0, "rgba(10,10,10,0)");
+  rim.addColorStop(0.82, "rgba(10,10,10,0.10)");
+  rim.addColorStop(1, "rgba(10,10,10,0.26)");
+  ctx.fillStyle = rim;
+  ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+
+  // A single soft highlight, up and to the left, matching the GPU light.
+  const hx = cx - r * 0.34;
+  const hy = cy - r * 0.40;
+  const shine = ctx.createRadialGradient(hx, hy, 0, hx, hy, r * 0.66);
+  shine.addColorStop(0, "rgba(255,255,255,0.68)");
+  shine.addColorStop(0.55, "rgba(255,255,255,0.14)");
+  shine.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = shine;
+  ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+
+  // A trace of colour at the edge, standing in for the iridescence.
+  const film = ctx.createRadialGradient(cx, cy, r * 0.86, cx, cy, r);
+  film.addColorStop(0, "rgba(27,52,245,0)");
+  film.addColorStop(1, "rgba(27,52,245,0.18)");
+  ctx.fillStyle = film;
+  ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+  ctx.restore();
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, r - 0.5, 0, TAU);
+  ctx.strokeStyle = "rgba(10,10,10,0.22)";
+  ctx.lineWidth = 1;
+  ctx.stroke();
+}
+
+/* The whole group, at rest and apart. Where two of them do touch, the wall
+   between them stays drawn, which is what a raft of real bubbles looks like
+   and says "several" more plainly than one merged outline would. */
+function drawStill(circles) {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const w = Math.max(1, stage.clientWidth);
+  const h = Math.max(1, stage.clientHeight);
+
+  lens2d.width = Math.round(w * dpr);
+  lens2d.height = Math.round(h * dpr);
+
+  const ctx = ctx2d;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+  if (!plateReady) return;
+
+  const sheet = composedPlate();
+  for (const c of circles) drawOneStill(ctx, sheet, c.x, c.y, c.r, w, h);
+}
+
+function clearStill() {
+  ctx2d.setTransform(1, 0, 0, 1, 0, 0);
+  ctx2d.clearRect(0, 0, lens2d.width, lens2d.height);
+}
+
+/* ------------------------------------------------------------------ *
+ * Layer 2: the moving bubble, in WebGL2.
+ *
+ * The blob is a 2D signed distance field: a smooth union of every sphere
+ * the page hands it. A dome profile turns the distance into a
+ * surface normal, the normal refracts the view ray, and the ray samples the
+ * plate. Only the plate has to exist for any of this to work, which is why
+ * the same shader runs the same way in every browser that has WebGL2.
+ * ------------------------------------------------------------------ */
+
+const VERT = `#version 300 es
+precision highp float;
+layout(location = 0) in vec2 aPos;
+void main () { gl_Position = vec4(aPos, 0.0, 1.0); }`;
+
+const FRAG = `#version 300 es
+precision highp float;
+out vec4 outColor;
+
+uniform sampler2D uPlate;   // the hero, with the wordmark left out
+uniform sampler2D uMark;    // the wordmark alone, transparent everywhere else
+uniform float uRoll;        // px the wordmark has rolled down
+uniform float uPeriod;      // px of one full turn; 0 when it does not roll
+uniform float uMarkTop;     // px from the top of the stage to the unrolled run
+uniform vec4 uMarkClip; // top-down pixel bounds of the graphic cell
+uniform vec2  uRes;
+uniform int   uCount;
+uniform vec2  uBall[${SPHERES}];
+uniform float uRadius[${SPHERES}];
+uniform float uBlend;
+uniform float uDome;
+uniform float uThickness;
+uniform float uDispersion;
+uniform float uShine;
+uniform float uRim;
+uniform float uIridescence;
+uniform float uTime;
+
+/* Exponential smooth minimum: fuses the spheres into one skin instead of
+   leaving the seams a plain min() would show. */
+float smin (float a, float b, float k) {
+  float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
+  return mix(b, a, h) - k * h * (1.0 - h);
+}
+
+float field (vec2 p) {
+  float d = 1e9;
+  for (int i = 0; i < ${SPHERES}; i++) {
+    if (i >= uCount) break;
+    d = smin(d, length(p - uBall[i]) - uRadius[i], uBlend);
+  }
+  return d;
+}
+
+/* The hero is held as two pictures rather than one, so that rolling the
+   wordmark costs no repainting: the page is drawn once without it, the
+   wordmark is drawn once on its own, and the two are put together here with
+   the wordmark's row wrapped by the roll. Redrawing the whole plate every
+   frame, or re-uploading it, would cost far more than the lens itself. */
+vec3 samplePlate (vec2 px) {
+  vec2 uv = clamp(px / uRes, vec2(0.0005), vec2(0.9995));
+  float down = 1.0 - uv.y; // textures are stored top-down; gl_FragCoord is not
+  vec3 base = texture(uPlate, vec2(uv.x, down)).rgb;
+
+  /* Rolling, every point maps back into the one run that was actually drawn.
+     Standing still — the wordmark laid on its side fits its row and does not
+     roll — it is simply put back where it was found. Either way it has to be
+     put back: the base picture does not have it. */
+  float y = down * uRes.y;
+  float wrapped = uPeriod > 0.0
+    ? uMarkTop + mod(y - uMarkTop - uRoll, uPeriod)
+    : y;
+  vec4 mark = texture(uMark, vec2(uv.x, wrapped / uRes.y));
+  float x = uv.x * uRes.x;
+  float inside = step(uMarkClip.x, x) * step(uMarkClip.y, y)
+    * (1.0 - step(uMarkClip.x + uMarkClip.z, x))
+    * (1.0 - step(uMarkClip.y + uMarkClip.w, y));
+  return mix(base, mark.rgb, mark.a * inside);
+}
+
+void main () {
+  vec2 p = gl_FragCoord.xy;
+  float d = field(p);
+
+  // One pixel of feather, so the edge is smooth without a blur pass.
+  float cover = 1.0 - smoothstep(-1.0, 1.0, d);
+  if (cover <= 0.002) { outColor = vec4(0.0); return; }
+
+  // Outward gradient of the field, sampled with central differences.
+  float e = 1.0;
+  vec2 grad = normalize(vec2(
+    field(p + vec2(e, 0.0)) - field(p - vec2(e, 0.0)),
+    field(p + vec2(0.0, e)) - field(p - vec2(0.0, e))) + 1e-6);
+
+  // Dome profile: flat in the middle, steep at the rim.
+  float depth = clamp(-d / max(uDome, 1.0), 0.0, 1.0);
+  float nz = 1.0 - (1.0 - depth) * (1.0 - depth);
+  vec3 n = normalize(vec3(grad * sqrt(max(1.0 - nz * nz, 0.0)), nz));
+
+  vec3 view = vec3(0.0, 0.0, -1.0);
+  float split = uDispersion * 0.035;
+
+  vec3 rR = refract(view, n, 1.0 / (1.33 - split));
+  vec3 rG = refract(view, n, 1.0 / 1.33);
+  vec3 rB = refract(view, n, 1.0 / (1.33 + split));
+
+  vec2 oR = rR.xy * (uThickness / max(abs(rR.z), 0.32));
+  vec2 oG = rG.xy * (uThickness / max(abs(rG.z), 0.32));
+  vec2 oB = rB.xy * (uThickness / max(abs(rB.z), 0.32));
+
+  vec3 refr = vec3(
+    samplePlate(p + oR).r,
+    samplePlate(p + oG).g,
+    samplePlate(p + oB).b);
+
+  float fres = pow(1.0 - nz, 3.0);
+
+  // Cosine palette, shifted by the grazing angle: a thin-film sheen that
+  // costs one cosine rather than a spectral integral.
+  vec3 film = 0.5 + 0.5 * cos(6.28318 * (vec3(0.0, 0.33, 0.67) + fres * 1.4 + uTime * 0.04));
+  refr = mix(refr, refr * film * 1.25, uIridescence * fres);
+
+  // Rim: light bent right out of the eye near the edge.
+  refr *= 1.0 - 0.42 * uRim * fres;
+
+  vec3 L = normalize(vec3(-0.45, 0.62, 0.65));
+  float spec = pow(max(dot(reflect(-L, n), vec3(0.0, 0.0, 1.0)), 0.0), 46.0);
+  refr += vec3(spec * uShine);
+
+  outColor = vec4(refr * cover, cover);
+}`;
+
+function createLens() {
+  const gl = lens3d.getContext("webgl2", {
+    alpha: true,
+    depth: false,
+    stencil: false,
+    antialias: false,
+    premultipliedAlpha: true,
+  });
+  if (!gl || gl.isContextLost()) return null;
+  const owned = { shaders: [], programs: [], buffers: [], textures: [] };
+  let released = false;
+  function release() {
+    if (released) return;
+    released = true;
+    gl.useProgram(null);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    for (const unit of [gl.TEXTURE0, gl.TEXTURE1]) {
+      gl.activeTexture(unit);
+      gl.bindTexture(gl.TEXTURE_2D, null);
+    }
+    for (const texture of owned.textures) gl.deleteTexture(texture);
+    for (const buffer of owned.buffers) gl.deleteBuffer(buffer);
+    for (const program of owned.programs) gl.deleteProgram(program);
+    for (const shader of owned.shaders) gl.deleteShader(shader);
+    gl.getExtension("WEBGL_lose_context")?.loseContext();
+  }
+
+  function compile(type, src) {
+    const sh = gl.createShader(type);
+    if (!sh) return null;
+    gl.shaderSource(sh, src);
+    gl.compileShader(sh);
+    if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
+      console.error("bubble shader:", gl.getShaderInfoLog(sh));
+      gl.deleteShader(sh);
+      return null;
+    }
+    owned.shaders.push(sh);
+    return sh;
+  }
+
+  const vs = compile(gl.VERTEX_SHADER, VERT);
+  const fs = compile(gl.FRAGMENT_SHADER, FRAG);
+  if (!vs || !fs) { release(); return null; }
+
+  const prog = gl.createProgram();
+  if (!prog) { release(); return null; }
+  owned.programs.push(prog);
+  gl.attachShader(prog, vs);
+  gl.attachShader(prog, fs);
+  gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+    console.error("bubble link:", gl.getProgramInfoLog(prog));
+    release();
+    return null;
+  }
+
+  /* Drivers disagree on whether an array uniform reports itself as "uBall" or
+     "uBall[0]", and a missed lookup is a silent no-op that leaves the bubble
+     at radius zero. Both spellings are filed under the same location. */
+  const u = {};
+  const total = gl.getProgramParameter(prog, gl.ACTIVE_UNIFORMS);
+  for (let i = 0; i < total; i++) {
+    const info = gl.getActiveUniform(prog, i);
+    const loc = gl.getUniformLocation(prog, info.name);
+    u[info.name] = loc;
+    u[info.name.replace(/\[0\]$/, "")] = loc;
+  }
+
+  const quad = gl.createBuffer();
+  if (!quad) { release(); return null; }
+  owned.buffers.push(quad);
+  gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(0);
+  gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+
+  function makeTexture() {
+    const tex = gl.createTexture();
+    if (!tex) return null;
+    owned.textures.push(tex);
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    return tex;
+  }
+  const tex = makeTexture();
+  const markTex = makeTexture();
+  if (!tex || !markTex) { release(); return null; }
+
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+
+  let plateDirty = true;
+
+  return {
+    destroy: release,
+    markPlateDirty() { if (!released && !stopped) plateDirty = true; },
+    resize() {
+      if (released || stopped) return;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      lens3d.width = Math.round(Math.max(1, stage.clientWidth) * dpr);
+      lens3d.height = Math.round(Math.max(1, stage.clientHeight) * dpr);
+    },
+    clear() {
+      if (released || stopped) return;
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      gl.viewport(0, 0, lens3d.width, lens3d.height);
+      gl.clearColor(0, 0, 0, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+    },
+    draw(spheres, count, time) {
+      if (released || stopped) return;
+      const dpr = lens3d.width / Math.max(stage.clientWidth, 1);
+
+      if (plateDirty && plateReady) {
+        // The draw below leaves unit 1 active; uploads belong on unit 0.
+        gl.activeTexture(gl.TEXTURE0);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, plate);
+        /* The wordmark keeps its own transparency, and mixing against it in
+           the shader wants the colour a glyph edge actually has rather than
+           the colour already faded toward nothing. */
+        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+        gl.bindTexture(gl.TEXTURE_2D, markTex);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, markPlate);
+        plateDirty = false;
+      }
+
+      this.clear();
+      if (!plateReady || count < 1) return;
+
+      const balls = new Float32Array(SPHERES * 2);
+      const radii = new Float32Array(SPHERES);
+      for (let i = 0; i < count; i++) {
+        balls[i * 2] = spheres[i].x * dpr;
+        // GL counts rows from the bottom; the DOM counts them from the top.
+        balls[i * 2 + 1] = lens3d.height - spheres[i].y * dpr;
+        radii[i] = spheres[i].r * dpr;
+      }
+
+      gl.useProgram(prog);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.uniform1i(u.uPlate, 0);
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_2D, markTex);
+      gl.uniform1i(u.uMark, 1);
+      gl.uniform1f(u.uRoll, rollShift * dpr);
+      gl.uniform1f(u.uPeriod, rollPeriod * dpr);
+      gl.uniform1f(u.uMarkTop, rollTop * dpr);
+      gl.uniform4f(u.uMarkClip, markClip.x * dpr, markClip.y * dpr, markClip.width * dpr, markClip.height * dpr);
+      gl.uniform2f(u.uRes, lens3d.width, lens3d.height);
+      gl.uniform1i(u.uCount, count);
+      gl.uniform2fv(u.uBall, balls);
+      gl.uniform1fv(u.uRadius, radii);
+      gl.uniform1f(u.uBlend, radius * BUBBLE.blend * dpr);
+      gl.uniform1f(u.uDome, dome * dpr);
+      gl.uniform1f(u.uThickness, radius * BUBBLE.thickness * dpr);
+      gl.uniform1f(u.uDispersion, BUBBLE.dispersion);
+      gl.uniform1f(u.uShine, BUBBLE.shine);
+      gl.uniform1f(u.uRim, BUBBLE.rim);
+      gl.uniform1f(u.uIridescence, BUBBLE.iridescence);
+      gl.uniform1f(u.uTime, time);
+
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    },
+  };
+}
+
+/* ------------------------------------------------------------------ *
+ * Which layer runs, and when.
+ * ------------------------------------------------------------------ */
+
+const lens = createLens();
+const readout = {
+  gl: document.getElementById("r-gl"),
+  motion: document.getElementById("r-motion"),
+  pointer: document.getElementById("r-pointer"),
+  mode: document.getElementById("r-mode"),
+};
+
+let force = "auto";
+let mode = "";
+
+function resolveMode() {
+  if (force !== "auto") return force === "gl" && !lens ? "flat" : force;
+  if (!lens) return "flat";
+  if (motionQuery.matches) return "flat";
+  if (!pointerQuery.matches) return "flat";
+  return "gl";
+}
+
+/* ------------------------------------------------------------------ *
+ * The crowd.
+ *
+ * Each bubble keeps a slow loop of its own around a place of its own, and
+ * one shared pull draws the whole group toward a single point and then lets
+ * it go again. None of the merging is scripted: the shader already takes a
+ * smooth minimum over every sphere, so two bubbles fuse when they happen to
+ * arrive near each other and part when they drift away again. All that is
+ * animated is where each one is.
+ * ------------------------------------------------------------------ */
+
+const crowd = Array.from({ length: CROWD }, (_, i) => {
+  // Golden angle, so no two of them start in a row, a ring or a grid.
+  const angle = i * 2.39996;
+  const reach = Math.sqrt((i + 0.5) / CROWD);
+  const spin = (m) => (i * m) % 1;
+  return {
+    ax: 0.5 + 0.37 * reach * Math.cos(angle),
+    ay: 0.5 + 0.33 * reach * Math.sin(angle),
+    amp: 0.055 + 0.045 * spin(0.618),
+    fx: (0.061 + 0.023 * spin(0.754)) * BUBBLE.pace,
+    fy: (0.047 + 0.027 * spin(0.317)) * BUBBLE.pace,
+    px: i * 1.71,
+    py: i * 2.93,
+    scale: 0.55 + 0.45 * spin(0.431),
+    /* Not everyone answers the pull equally. If they did, a gathering would
+       collapse into one circle instead of staying a group that has come
+       together. */
+    gather: 0.5 + 0.42 * spin(0.382),
+    /* Its own place to stand when the crowd comes over, in radii out from the
+       cursor. Close enough in that whoever arrives overlaps whoever is already
+       there — a ring wide enough to give everyone elbow room would be a ring
+       of separate bubbles, and the merging is the whole point. */
+    station: i * 2.39996,
+    stand: 0.6 + 0.55 * spin(0.271),
+    lean: 0, // eased, so coming over is a walk rather than a cut
+
+  };
+});
+
+const slots = Array.from({ length: SPHERES }, () => ({ x: 0, y: 0, r: 0 }));
+
+/** Where the group sits with nothing pulling on it: spread, at rest. */
+function stillCrowd() {
+  const w = Math.max(1, stage.clientWidth);
+  const h = Math.max(1, stage.clientHeight);
+  return crowd.map((b) => ({ x: b.ax * w, y: b.ay * h, r: radius * b.scale }));
+}
+
+function centre() {
+  return { x: stage.clientWidth * 0.5, y: stage.clientHeight * 0.5 };
+}
+
+/**
+ * A gathering is an event, not a state.
+ *
+ * Cubing the wave holds it near zero for most of its period and lets it swell
+ * now and then, which is what makes coming together read as something that
+ * happened rather than as the way things are. It is zero at phase zero, so
+ * the page opens on a crowd that is dispersed.
+ */
+function swell(phase) {
+  const w = 0.5 + 0.5 * Math.sin(phase - Math.PI / 2);
+  return w * w * w;
+}
+
+/* Three readings of the same cursor, each as quick as its job needs.
+   `pointerTarget` is where the cursor actually is. `head` chases it, and the
+   gap that opens while it catches up is what stretches the bubble. `beacon` is
+   where the crowd believes the visitor is, and it is deliberately slow: people
+   do not re-aim mid-stride every time somebody shifts their weight. */
+const pointerTarget = { x: 0, y: 0 };
+const head = { x: 0, y: 0 };
+const beacon = { x: 0, y: 0 };
+const tail = Array.from({ length: TAIL }, () => ({ x: 0, y: 0 }));
+
+/** Drop the whole trail on one spot, so arriving does not whip it across. */
+function settleTail(x, y) {
+  head.x = beacon.x = x;
+  head.y = beacon.y = y;
+  for (const t of tail) { t.x = x; t.y = y; }
+}
+let pointerHere = false;
+let pointerWeight = 0; // 0-1, eased, so arriving and leaving are not switches
+let presence = 0;
+let running = false;
+let raf = 0;
+const startedAt = performance.now();
+let onStage = true;
+
+/* The turn is timed off the clock rather than counted in frames, so a busy
+   moment costs a little smoothness rather than putting the roll behind. */
+let rollLast = 0;
+
+function advanceRoll(now) {
+  if (rollPeriod <= 0) { rollLast = now; return; }
+  const step = rollLast ? Math.min(now - rollLast, 100) : 0;
+  rollLast = now;
+  rollShift = (rollShift + (rollPeriod * step) / ROLL_MS) % rollPeriod;
+  applyRoll();
+}
+
+function frame(now) {
+  raf = 0;
+  if (stopped || document.hidden || mode !== "gl" || !lens || !onStage) { running = false; return; }
+
+  const t = (now - startedAt) / 1000;
+  advanceRoll(now);
+  const w = Math.max(1, stage.clientWidth);
+  const h = Math.max(1, stage.clientHeight);
+
+  head.x += (pointerTarget.x - head.x) * BUBBLE.follow;
+  head.y += (pointerTarget.y - head.y) * BUBBLE.follow;
+  beacon.x += (head.x - beacon.x) * BUBBLE.beaconEase;
+  beacon.y += (head.y - beacon.y) * BUBBLE.beaconEase;
+  pointerWeight += ((pointerHere ? 1 : 0) - pointerWeight) * 0.05;
+  presence += (1 - presence) * 0.06;
+
+  /* Left alone, the crowd still gathers now and then, on two periods that do
+     not divide into each other so it never arrives on a beat you can count.
+     This is only there to keep an unattended page alive: it gives way as soon
+     as somebody is here, because people arriving is the thing worth showing
+     and a timer doing the same job would only compete with it. */
+  const mx = w * (0.5 + 0.16 * Math.sin(t * 0.062));
+  const my = h * (0.5 + 0.13 * Math.sin(t * 0.045 + 2.1));
+  const pull = BUBBLE.gathering * (1 - pointerWeight) *
+    Math.max(swell(t * 0.38), 0.85 * swell(t * 0.235));
+
+  const reach = radius * BUBBLE.pointerReach;
+  const turn = t * 0.06; // the huddle turns, so it never sets into a rosette
+
+  for (let i = 0; i < CROWD; i++) {
+    const b = crowd[i];
+    let x = b.ax * w + b.amp * w * Math.sin(t * b.fx + b.px);
+    let y = b.ay * h + b.amp * h * Math.sin(t * b.fy + b.py);
+
+    const k = pull * b.gather;
+    x += (mx - x) * k;
+    y += (my - y) * k;
+
+    /* The cursor is not a bubble and does not carry the crowd around with it.
+       It is someone standing there: whoever is already close comes over, and
+       everyone further off carries on with what they were doing. Squaring the
+       falloff keeps the far edge of the circle from twitching every time the
+       mouse moves.
+
+       Each one heads for its own place around the cursor rather than for the
+       cursor itself. Aim them all at the one point and the crowd stacks back
+       into a single circle, which is the thing this page exists to get away
+       from; aim them around it and they fuse with each other on arrival.
+
+       Full strength across the inner half of the circle and a soft edge after
+       that. A falloff that started dropping at the cursor itself would mean
+       only the bubble you were already touching ever came, which reads as a
+       hover state rather than as anyone crossing the room.
+
+       The lean itself is eased rather than read straight off the distance, so
+       nobody teleports the moment the cursor lands near them: they set off,
+       and they take a couple of seconds to arrive and to drift back. */
+    const away = Math.hypot(beacon.x - x, beacon.y - y);
+    const edge = Math.max(0, Math.min(1, (reach - away) / (reach * 0.55)));
+    const near = edge * edge * (3 - 2 * edge);
+    b.lean += (pointerWeight * BUBBLE.pointerLean * near - b.lean) * BUBBLE.leanEase;
+
+    const sx = beacon.x + Math.cos(turn + b.station) * radius * b.stand;
+    const sy = beacon.y + Math.sin(turn + b.station) * radius * b.stand;
+
+    slots[i].x = x + (sx - x) * b.lean;
+    slots[i].y = y + (sy - y) * b.lean;
+    slots[i].r = radius * b.scale * presence;
+  }
+
+  /* The visitor's own bubble, in hand the whole time the cursor is on the
+     stage: it is what makes the crowd coming over read as coming over to
+     somebody rather than to an empty patch of the page. The history shifts by
+     one each frame, which is all the stretching there is to it — move quickly
+     and the spheres spread out along the path, and the field necks and parts
+     between them. */
+  for (let i = TAIL - 1; i > 0; i--) {
+    tail[i].x = tail[i - 1].x;
+    tail[i].y = tail[i - 1].y;
+  }
+  tail[0].x = head.x;
+  tail[0].y = head.y;
+
+  const carried = radius * BUBBLE.cursorSize * presence * pointerWeight;
+  for (let i = 0; i < TAIL; i++) {
+    slots[CROWD + i].x = tail[i].x;
+    slots[CROWD + i].y = tail[i].y;
+    slots[CROWD + i].r = carried * (1 - BUBBLE.cursorTaper * (i / (TAIL - 1)));
+  }
+
+  // One depth profile for the whole blob: once two bubbles have merged there
+  // is no longer a radius that belongs to either of them.
+  dome = radius * 0.78 * presence;
+  /* A sphere of no radius is still a point the field bends around, and it
+     shows up as a speck. With the carried bubble last in the array, leaving it
+     out is simply a shorter draw. */
+  lens.draw(slots, pointerWeight > 0.01 ? SPHERES : CROWD, t);
+
+  /* No parking heuristic here. The single-bubble page can stop once the
+     bubble has caught up, because a still bubble is its resting state; this
+     one is never at rest, and freezing it would take away the whole point.
+     Scrolling it out of view still stops it — see the observer below. */
+  raf = requestAnimationFrame(frame);
+  running = true;
+}
+
+function wake() {
+  if (stopped || document.hidden || !onStage || running || mode !== "gl") return;
+  running = true;
+  raf = requestAnimationFrame(frame);
+}
+
+function applyMode() {
+  if (stopped) return;
+  const next = resolveMode();
+  if (next === mode) return;
+  mode = next;
+
+  if (raf) { cancelAnimationFrame(raf); raf = 0; }
+  running = false;
+  rollLast = 0;
+
+  if (mode === "gl") {
+    clearStill();
+    lens.resize();
+    // The group is on screen and drifting from the first paint. Waiting for a
+    // first mouse move would show an empty hero to anyone who arrives and
+    // starts reading before touching the mouse.
+    if (presence === 0) {
+      const c = centre();
+      pointerTarget.x = c.x;
+      pointerTarget.y = c.y;
+      settleTail(c.x, c.y);
+    }
+    wake();
+  } else {
+    lens?.clear();
+    if (mode === "flat") drawStill(stillCrowd());
+    else clearStill();
+  }
+
+  readout.mode.innerHTML = `<b>${
+    mode === "gl" ? "屈折バブル（WebGL2）" : mode === "flat" ? "静止バブル（Canvas 2D）" : "バブルなし"
+  }</b>`;
+}
+
+function relayout() {
+  if (stopped) return;
+  measureRadius();
+  paintPlate();
+  lens?.markPlateDirty();
+  if (mode === "gl") { lens.resize(); wake(); }
+  else if (mode === "flat") drawStill(stillCrowd());
+}
+
+
+// All input belongs to this iframe and can be retired together.
+const resizeObserver = new ResizeObserver(() => {
+  if (!stopped) relayout();
+});
+resizeObserver.observe(stage);
+
+const intersectionObserver = new IntersectionObserver((entries) => {
+  if (stopped) return;
+  onStage = entries[entries.length - 1]?.isIntersecting ?? true;
+  if (onStage) wake();
+  else pauseFrames();
+});
+intersectionObserver.observe(stage);
+
+function pauseFrames() {
+  if (raf) cancelAnimationFrame(raf);
+  raf = 0;
+  running = false;
+  rollLast = 0;
+}
+
+function stopIntro() {
+  if (stopped) return;
+  stopped = true;
+  onStage = false;
+  pointerHere = false;
+  pauseFrames();
+  input.abort();
+  resizeObserver.disconnect();
+  intersectionObserver.disconnect();
+  lens?.destroy();
+  plateReady = false;
+  for (const canvas of [plate, markPlate, flatPlate, lens2d, lens3d]) {
+    canvas.width = canvas.height = 1;
+  }
+}
+
+stage.addEventListener("pointermove", (event) => {
+  if (stopped || mode !== "gl") return;
+  const box = stage.getBoundingClientRect();
+  pointerTarget.x = event.clientX - box.left;
+  pointerTarget.y = event.clientY - box.top;
+  if (!pointerHere) settleTail(pointerTarget.x, pointerTarget.y);
+  pointerHere = true;
+  wake();
+}, { passive: true, signal: input.signal });
+
+stage.addEventListener("pointerleave", () => {
+  if (stopped) return;
+  pointerHere = false;
+  wake();
+}, { passive: true, signal: input.signal });
+
+function environmentChanged() {
+  if (stopped) return;
+  updateReadout();
+  applyMode();
+}
+motionQuery.addEventListener("change", environmentChanged, { signal: input.signal });
+pointerQuery.addEventListener("change", environmentChanged, { signal: input.signal });
+document.addEventListener("visibilitychange", () => {
+  if (stopped) return;
+  if (document.hidden) pauseFrames();
+  else wake();
+}, { signal: input.signal });
+
+// A font promise may finish after the parent has already removed the intro.
+if (document.fonts?.ready) {
+  document.fonts.ready.then(() => {
+    if (!stopped) relayout();
+  }, () => {});
+}
+
+for (const button of document.querySelectorAll(".panel button")) {
+  button.addEventListener("click", () => {
+    if (stopped) return;
+    force = button.dataset.force;
+    for (const other of document.querySelectorAll(".panel button")) {
+      other.setAttribute("aria-pressed", String(other === button));
+    }
+    applyMode();
+  }, { signal: input.signal });
+}
+
+// The anchors work on their own; only ordinary iframe clicks use the parent
+// transition. Modified clicks keep the browser's normal link behavior.
+document.addEventListener("click", (event) => {
+  if (stopped || event.defaultPrevented || event.button !== 0 ||
+      event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  const anchor = event.target instanceof Element
+    ? event.target.closest("a[data-intro-screen]") : null;
+  if (!anchor || window.parent === window) return;
+  const url = new URL(anchor.href, location.href);
+  const screen = anchor.dataset.introScreen;
+  if (url.origin !== location.origin || url.hash !== "#" + screen ||
+      !["home", "setup", "journey", "community", "passport"].includes(screen)) return;
+  try {
+    if (window.parent.location.origin !== location.origin) return;
+  } catch { return; }
+  event.preventDefault();
+  window.parent.postMessage({ type: "henkaku:intro:navigate", screen }, location.origin);
+}, { signal: input.signal });
+
+window.addEventListener("message", (event) => {
+  if (event.source !== window.parent || event.origin !== location.origin) return;
+  if (event.data?.type === "henkaku:intro:stop") stopIntro();
+}, { signal: input.signal });
+window.addEventListener("pagehide", stopIntro, { once: true, signal: input.signal });
+
+function updateReadout() {
+  readout.gl.textContent = lens ? "利用できる" : "利用できない";
+  readout.motion.textContent = motionQuery.matches ? "オン（動きを控える）" : "オフ";
+  readout.pointer.textContent = pointerQuery.matches ? "マウス" : "タッチ";
+}
+
+measureRadius();
+paintPlate();
+lens?.markPlateDirty();
+updateReadout();
+applyMode();
+</script>
+</body></html>

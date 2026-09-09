@@ -5,7 +5,7 @@
 1. Start `npm run dev:demo -- --port 3000` and open `http://localhost:3000/#home`. Use `localhost` consistently: Next's development-origin protection rejects some script requests through `127.0.0.1`.
 2. Apply each viewport: 360×800, 390×844, 768×1024, 844×390, 1440×900. Check the additional short-screen intro breakpoint at 667×375.
 3. Run `auditPortalLayout` with the connected browser's read-only `page.evaluate` on the parent page, then on the `body` of the intro/home iframe as applicable.
-4. After clicking the empty intro area and waiting for `#reveal[data-phase="done"]`, run `auditIntroLinkPlacement` in that iframe. It checks the actual hit targets and overlap with the bottom strip.
+4. On the default multi-bubble intro, run `auditMultiBubbleLayout` and `auditIntroLinkPlacement` in the iframe, and `auditIntroComparisonControls` in the parent. Select `暗号化＋泡`, click an empty area, wait for `#reveal[data-phase="done"]`, then run `auditIntroLinkPlacement` again. Switch back using `複数の泡`. Links in the multi-bubble version are immediately available.
 5. Repeat the root check on `#journey`, `#community`, `#passport`, `#setup`. Check both scene backgrounds and the long final-question form. Visually confirm that the traveler touches the foreground ground and does not overlap the form.
 
 An empty `issues` array is a pass. Checks cover horizontal overflow, full-screen intro size, skip-button hit area, PUBLIC GATEWAY/navigation separation, duplicate navigation destinations, covered links, question-card clipping, and traveler/form overlap. The helper does not access wallet providers, authentication, or the database.
@@ -19,3 +19,10 @@ An empty `issues` array is a pass. Checks cover horizontal overflow, full-screen
 - The Podcast summary was visually checked at 360px with a readable body and an official-site link.
 
 No unit/integration tests, standalone lint, or standalone type check were run for this revision, as requested. Vercel performs the build needed to publish the demo.
+
+## Multi-bubble replacement and comparison
+
+- Added `auditMultiBubbleLayout` first and confirmed the encrypted-only implementation failed with `Multi-bubble intro is missing`.
+- Ran the replacement's geometry, link coverage, parent comparison controls, and decrypted comparison link coverage at all six viewport sizes: 24 checks, all passed.
+- Switched between both variants at every size; links stayed available. A direct multi-bubble Community link faded to `#community`, and the homepage replay reopened the default variant.
+- The archived original HTML/CSS are byte-identical to the saved encrypted baseline. The generated encrypted `intro.html` also remains unchanged.

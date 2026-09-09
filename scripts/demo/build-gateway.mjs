@@ -2,40 +2,19 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { buildBubbleIntro } from "./build-bubble-intro.mjs";
+import { buildEncryptedIntro } from "./build-encrypted-intro.mjs";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
-const liquid = read("assets/reference/gateway/liquid.html");
+const bubbleSource = read("assets/reference/gateway/bubble-multi.html");
 const gateway = read("assets/reference/gateway/gateway-v1-claude.html");
 const styleOf = (html) => html.match(/<style>([\s\S]*?)<\/style>/)[1];
 
 let gatewayStyle = styleOf(gateway);
 gatewayStyle = gatewayStyle.replace(/  \/\* ---------- 00 GATEWAY:[\s\S]*?(?=  \/\* ---------- 02 VOICES:)/, "");
 gatewayStyle = gatewayStyle.replace(/  \/\* ---------- the hero on a phone ----------[\s\S]*?(?=\n  \.placeholder-section \{)/, "");
-let liquidStyle = styleOf(liquid).replace(/--(bg|ink|blue|rule)\b/g, "--liquid-$1");
-liquidStyle = liquidStyle.replace(/  \/\* ---------- embedded preview: chrome off ----------[\s\S]*?(?=  \.row \{)/, "");
-
 const logo = '<svg viewBox="0 0 48 60" aria-hidden="true"><path d="M0 0 L48 37 L19 37 L0 60 Z" fill="currentColor" /></svg>';
-let hero = liquid.slice(liquid.indexOf('<div class="notice"'), liquid.indexOf('<script type="module">'));
-hero = hero.replace(/<svg viewBox="0 0 515 692"[\s\S]*?<\/svg>/, logo);
-hero = hero.replace('<h1 class="headline">', '<h1 class="headline" id="gateway-title">');
-hero = hero.replace('<p class="label">HENKAKU<br />COMMUNITY</p>', '<p class="label"><a href="/#home" target="_top">HENKAKU<br />COMMUNITY</a></p>');
-hero = hero.replace(/<ul>[\s\S]*?<\/ul>/, `<ul>
-  <li><a href="/#setup" target="_top">WALLET SETUP</a></li>
-  <li><a href="/#journey" target="_top">BEGIN INITIATION</a></li>
-  <li><a href="/#community" target="_top">COMMUNITY</a></li>
-  <li><a href="/#passport" target="_top">MY PASSPORT</a></li>
-</ul>`);
-hero = hero.replace('PEOPLE<br />IDEAS<br />SYSTEMS<br />FUTURES', 'QUESTS<br />ANSWERS<br />PROGRESS');
-hero = hero.replace('SHARED OWNERSHIP<br />TRANSPARENT SYSTEMS<br />DISTRIBUTED IMPACT', 'ALLOWLIST<br />TOKEN DISTRIBUTION');
-hero = hero.replace('BUILD<br />CONNECT<br />ITERATE<br />EVOLVE', 'CHECK-IN<br />ACTIVITY');
-hero = hero.replace('CO-CREATE THE FUTURE', '<a href="/#home" target="_top">ENTER PORTAL →</a>');
-
-const panelStart = hero.indexOf('<div class="panelbox"');
-const panel = hero.slice(panelStart);
-hero = hero.slice(0, panelStart);
-let liquidModule = liquid.match(/<script type="module">([\s\S]*?)<\/script>/)[1];
-
 let sections = gateway.slice(gateway.indexOf('  <section class="gateway-section placeholder-section"'), gateway.indexOf('</main>'));
 sections = sections.replace(/<svg viewBox="0 0 515 692"[\s\S]*?<\/svg>/g, logo);
 sections = sections.replace('href="index.html" data-app-href="/setup"', 'href="/#setup" target="_top"');
@@ -70,9 +49,7 @@ updatePulseCards();
 `;
 
 const adapters = `
-/* Integration only: keep the two source compositions and their viewport math. */
-.liquid-hero-section { min-height:0; color:var(--liquid-ink); background:var(--liquid-bg); }
-.liquid-hero-section .hero { touch-action:pan-y; }
+/* Keep the homepage source composition and viewport math. */
 .arrow { color:#333; }
 .label a,.gateway a,.bcol a { color:inherit; text-decoration:none; }
 .gateway a:hover,.gateway a:focus-visible,.bcol a:hover { text-decoration:underline; text-underline-offset:4px; }
@@ -95,18 +72,16 @@ a.placeholder-card:hover,a.placeholder-card:focus-visible { color:var(--accent);
 `;
 
 const homeShell = read("assets/reference/gateway/home-shell.css");
-const introShell = read("assets/reference/gateway/intro-shell.css");
+const bubbleShell = read("assets/reference/gateway/bubble-intro-shell.css");
 sections = sections.replace('<h2 class="section-title" id="pulse-title">COMMUNITY PULSE</h2>', '<h1 class="section-title" id="pulse-title">COMMUNITY PULSE</h1>');
-const introHtml = `<!doctype html>
-<!-- Liquid reference, with local replay/teardown fixes. See CREDITS.md. -->
-<html lang="ja"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<meta name="robots" content="noindex,nofollow"/><title>HENKAKU Intro</title>
-<style>${liquidStyle}</style><style>${introShell}</style></head><body>
-${hero}${panel}
-<script type="module">${liquidModule}</script>
-</body></html>`;
+const introHtml = buildBubbleIntro({ source: bubbleSource, shell: bubbleShell, logo });
+const encryptedIntroHtml = buildEncryptedIntro({
+  liquid: read("assets/reference/gateway/archive/encrypted-intro/liquid.html"),
+  introShell: read("assets/reference/gateway/archive/encrypted-intro/intro-shell.css"),
+  logo,
+});
 const html = `<!doctype html>
-<!-- The four source chapters form the homepage; the Liquid intro lives in intro.html. -->
+<!-- The four source chapters form the homepage; the multiple-bubble intro lives in bubble-multi.html. -->
 <html lang="ja"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <meta name="robots" content="noindex,nofollow"/><title>HENKAKU Community</title>
 <style>${gatewayStyle}</style><style>${adapters}</style><style>${homeShell}</style></head><body>
@@ -122,4 +97,5 @@ const html = `<!doctype html>
 document.querySelector('.home-replay').addEventListener('click', () => window.parent.postMessage({ type:'henkaku:intro:replay' }, location.origin));
 </script></body></html>`;
 fs.writeFileSync(path.join(root,"public/demo-assets/gateway/index.html"), html);
-fs.writeFileSync(path.join(root,"public/demo-assets/gateway/intro.html"), introHtml);
+fs.writeFileSync(path.join(root,"public/demo-assets/gateway/bubble-multi.html"), introHtml);
+fs.writeFileSync(path.join(root,"public/demo-assets/gateway/intro.html"), encryptedIntroHtml);
