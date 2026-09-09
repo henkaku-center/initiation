@@ -1,0 +1,42 @@
+{
+  "createdAt": "2026-09-09",
+  "purpose": "HENKAKU portal demo — original provisional environment assets",
+  "sourceInvestigation": {
+    "requestedArtifactUrl": "https://claude.ai/code/artifact/f74311c1-d807-4972-a3d6-51e5547609b1",
+    "verifiedPublicUrl": "https://claude.ai/code/frame/f74311c1-d807-4972-a3d6-51e5547609b1",
+    "embeddedFrameUrl": "https://f74311c1-d807-4972-a3d6-51e5547609b1.frame.claudeusercontent.com/_f/1788360409-ac49/?__frame_v=manifest.79a7d0a76e4f2644.json",
+    "observedTitle": "HENKAKU Initiation — Game A Prototype",
+    "downloadAvailability": "The public artifact embeds scene and traveler images. No standalone licensed download was obtained; original provisional backgrounds were generated for this demo.",
+    "reuseLicenseEvidence": "No explicit redistribution license was confirmed for the reference images. No original image files are included.",
+    "sound": "Visible control credits MUSIC / karawapo. No audio/source DOM element exposed a media URL. Parent has already licensed Breeze Zero MIDI/JSON; use existing licensed assets instead.",
+    "traveler": "No standalone licensed traveler sprite obtained. Environmental navigation can omit traveler sprite."
+  },
+  "assets": [
+    {
+      "filename": "night.webp",
+      "type": "original AI-generated provisional background",
+      "generator": "Built-in image_gen tool",
+      "originalUrl": null,
+      "provenance": "Created for this user-authorized prototype from text prompt only; no source image supplied or extracted for generation.",
+      "licensing": "HENKAKU portal demo / CC BY 4.0 where copyright applies. Original AI-generated provisional asset.",
+      "prompt": "Use case: stylized-concept\nAsset type: original provisional game environment background for a browser-based community initiation adventure.\nPrimary request: landscape 16:9 dark fantasy pixel-art nighttime floating ruined city, with a central stone path leading toward a luminous cyan portal.\nScene/backdrop: deep blue starry night, monumental broken arches and floating ancient architecture, tiny warm golden lights in the ruins. Layered atmospheric depth from detailed dark stone foreground into misty distant sky islands.\nStyle/medium: richly detailed, deliberately pixelated game concept art with crisp square pixels, restrained dithering and cinematic atmosphere.\nComposition/framing: wide 16:9 landscape. Clear center path and portal near the center distance. Keep upper left relatively quiet and dark for interface text. Environment only.\nLighting/mood: mysterious, contemplative, inviting discovery. Cyan portal glow against indigo and muted charcoal, sparse gold lights.\nConstraints: original composition, no imitation of any exact existing image. No people, no traveler, no text, no letters, no logos, no watermark.",
+      "width": 1672,
+      "height": 941,
+      "review": "Wide environment, atmospheric depth and central route/courtyard present, no visible text or logos. No variants or retries generated.",
+      "publicPath": "/demo-assets/night.webp"
+    },
+    {
+      "filename": "dusk.webp",
+      "type": "original AI-generated provisional background",
+      "generator": "Built-in image_gen tool",
+      "originalUrl": null,
+      "provenance": "Created for this user-authorized prototype from text prompt only; no source image supplied or extracted for generation.",
+      "licensing": "HENKAKU portal demo / CC BY 4.0 where copyright applies. Original AI-generated provisional asset.",
+      "prompt": "Use case: stylized-concept\nAsset type: original provisional game environment background for a browser-based community initiation adventure.\nPrimary request: landscape 16:9 warm dusk pixel-art collaborative future city with floating islands, amber windows, and an open central courtyard.\nScene/backdrop: imaginative welcoming city of layered towers, bridges, terraces and small floating islands under a peach to violet dusk sky. Warm amber-lit windows suggest shared studios and gathering places. Central open courtyard with a clear route forward, generous spatial depth.\nStyle/medium: richly detailed deliberately pixelated game concept art with crisp square pixels and restrained dithering.\nComposition/framing: wide 16:9 landscape. Open central courtyard in the foreground, buildings around its sides, floating skyline beyond. Upper left relatively quiet for an interface overlay. Environment only.\nLighting/mood: hopeful, warm, quietly vibrant; soft mauve shadows, sunset amber light and muted teal architectural accents.\nConstraints: original composition, no imitation of any exact existing image. No people, no characters, no text, no letters, no logos, no watermark.",
+      "width": 1672,
+      "height": 941,
+      "review": "Wide environment, atmospheric depth and central route/courtyard present, no visible text or logos. No variants or retries generated.",
+      "publicPath": "/demo-assets/dusk.webp"
+    }
+  ]
+}

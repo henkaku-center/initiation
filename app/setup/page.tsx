@@ -1,12 +1,14 @@
 // ABOUTME: 新入り向けウォレットセットアップ導線を提供する。
 // ABOUTME: 接続、SIWE、Polygon切替、HENKAKU追加を順番に案内する。
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ConnectWallet } from "@/components/ConnectWallet";
 import { SignInWithEthereum } from "@/components/SignInWithEthereum";
 import { WalletSetup } from "@/components/WalletSetup";
 import { buttonStyles, cardStyles } from "@/lib/ui";
 
 export default function SetupPage() {
+  if (process.env.HENKAKU_DEMO_ONLY === "1") redirect("/");
   return (
     <main className="space-y-8">
       <header>

@@ -60,6 +60,9 @@ jobs:
       # 統合テストはSupabaseを必要とするため、このjobでは単体テストのみ実行する
       - run: npx vitest run tests/unit
 
+      # デモ専用ビルドも、サービス用の環境変数なしで成立することを確認する。
+      - run: npm run build:demo
+
   integration:
     name: integration tests (local supabase)
     runs-on: ubuntu-latest

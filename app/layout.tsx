@@ -15,11 +15,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "HENKAKU Initiation",
-  description: "ウォレットを準備して、HENKAKUコミュニティへの参加を始める",
+  title: process.env.HENKAKU_DEMO_ONLY === "1" ? "HENKAKU — Experience Demo" : "HENKAKU Initiation",
+  description: process.env.HENKAKU_DEMO_ONLY === "1" ? "好奇心からはじまる、HENKAKUの小さな旅。" : "ウォレットを準備して、HENKAKUコミュニティへの参加を始める",
+  ...(process.env.HENKAKU_DEMO_ONLY === "1" ? { robots: { index: false, follow: false } } : {}),
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
+  if (process.env.HENKAKU_DEMO_ONLY === "1") {
+    return <html lang="ja" className={`${geistSans.variable} ${geistMono.variable}`}><body>{children}</body></html>;
+  }
   return (
     <html lang="ja" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body>
