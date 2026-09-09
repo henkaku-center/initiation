@@ -17,6 +17,14 @@ describe("demo deployment boundary", () => {
       expect(demoRequestPolicy(true, "GET", path)).toBe("block");
     },
   );
+  it.each(["/favicon.ico", "/icon.svg"])(
+    "serves the file-based icon at %s without allowing writes",
+    (pathname) => {
+      expect(demoRequestPolicy(true, "GET", pathname)).toBe("allow");
+      expect(demoRequestPolicy(true, "HEAD", pathname)).toBe("allow");
+      expect(demoRequestPolicy(true, "POST", pathname)).toBe("block");
+    },
+  );
   it("serves the demo and assets while redirecting live pages", () => {
     for (const path of [
       "/",

@@ -7,7 +7,7 @@ export function demoRequestPolicy(
   if (method !== "GET" && method !== "HEAD") return "block";
   if (pathname === "/api" || pathname.startsWith("/api/")) return "block";
   if (
-    ["/", "/demo", "/favicon.ico"].includes(pathname) ||
+    ["/", "/demo", "/favicon.ico", "/icon.svg"].includes(pathname) ||
     pathname.startsWith("/_next/") ||
     pathname.startsWith("/demo-assets/") ||
     pathname.startsWith("/music/")
