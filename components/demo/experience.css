@@ -1244,6 +1244,9 @@
   margin-left: auto;
   white-space: nowrap;
 }
+.pd-daily-checkin {
+  margin-bottom: 65px;
+}
 .pd-checkin-panel {
   display: flex;
   justify-content: space-between;
@@ -1252,7 +1255,7 @@
   padding: 40px;
   background: var(--pd-surface-accent);
   border: 1px solid var(--pd-line-accent);
-  margin-bottom: 65px;
+  margin-bottom: 0;
 }
 .pd-checkin-panel h2 {
   font-size: 28px;
@@ -1299,9 +1302,10 @@
     0 0 0 22px #c7e3d522;
 }
 .pd-checkin-history {
-  border-top: 1px solid var(--pd-line);
-  margin-top: 60px;
-  padding-top: 35px;
+  border: 1px solid var(--pd-line-accent);
+  border-top: 0;
+  padding: 28px clamp(24px, 4vw, 40px);
+  background: var(--pd-surface);
 }
 .pd-checkin-history > .pd-mono {
   color: var(--pd-muted);

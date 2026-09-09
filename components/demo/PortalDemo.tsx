@@ -130,6 +130,12 @@ export function PortalDemo() {
         </a>
         <nav aria-label="デモのメインメニュー">
           <a
+            href="#setup"
+            aria-current={screen === "setup" ? "page" : undefined}
+          >
+            Setup
+          </a>
+          <a
             href="#community"
             aria-current={screen === "community" ? "page" : undefined}
           >

@@ -6,6 +6,17 @@ export function auditSharedShellLayout() {
   const header = document.querySelector(".pd-header");
   const footer = document.querySelector(".pd-footer");
   const main = document.querySelector("#demo-main");
+  const navigation = [...document.querySelectorAll('.pd-header nav a')];
+  if (navigation[0]?.textContent.trim() !== 'Setup' || navigation[1]?.textContent.trim() !== 'Community' || navigation[0]?.getAttribute('href') !== '#setup') issues.push('Setup must appear immediately before Community and link to wallet setup');
+  if (location.hash === '#community' && document.querySelector('.pd-page-heading .pd-eyebrow')?.textContent !== 'DAILY CHECK-IN') issues.push('Community tab must identify the daily check-in screen');
+  if (location.hash === '#community') {
+    const daily = document.querySelector('.pd-daily-checkin');
+    const history = daily?.querySelector('.pd-checkin-history');
+    const activities = document.querySelector('.pd-community-grid');
+    if (!history || !daily?.querySelector('.pd-checkin-panel') || !history.querySelector('h2')) issues.push('Your Footprints must be a subsection of Daily Check-in');
+    if (daily?.contains(activities)) issues.push('Sample activities must remain outside Daily Check-in');
+    if (history && activities && history.getBoundingClientRect().bottom > activities.getBoundingClientRect().top) issues.push('Check-in history must appear before sample activities');
+  }
   if (document.documentElement.scrollWidth > innerWidth + 2) issues.push("Page overflows horizontally");
   for (const [name, element] of [["Shared header", header], ["Shared footer", footer]]) {
     if (!visible(element)) { issues.push(`${name} is missing from the layout`); continue; }

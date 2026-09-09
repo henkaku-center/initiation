@@ -20,7 +20,7 @@ sections = sections.replace(/<svg viewBox="0 0 515 692"[\s\S]*?<\/svg>/g, logo);
 sections = sections.replace('href="index.html" data-app-href="/setup"', 'href="/#setup" target="_top"');
 sections = sections.replace('href="/initiation"', 'href="/#journey" target="_top"');
 sections = sections.replace('第2段階で、最近動いているプロジェクト、投稿、クエスト、Check-in を短いカードとして順に現れる構成へ差し替えます。', 'コミュニティの入口を、みんなでつくる。');
-sections = sections.replace('第2段階で、権利確認前の抽象プレースホルダーを使い、3〜5曲の再生ログを個人情報なしで表示します。', 'Joi Itoのポッドキャストを、あなたのペースで。最近聴いた回の続きを、ここから。');
+sections = sections.replace('第2段階で、権利確認前の抽象プレースホルダーを使い、3〜5曲の再生ログを個人情報なしで表示します。', 'コミュニティの誰かが聴いた対話から、次の一回に出会う。');
 sections = sections.replace('aria-label="Community Pulse placeholder"', 'aria-label="最近のプロジェクト、投稿、クエスト、Check-in"');
 sections = sections.replace('縦スクロールの途中で、場面だけが横へ流れる比較用セクションです。音声の自動再生は行いません。', 'Joi Itoとゲストの対話から、ランダムな一場面。映像は無音で流れます。');
 sections = sections.replace('<div class="voices-photo-stage" aria-label="Voices horizontal scene strip">', '<div class="podcast-toolbar"><span>JOI ITO’S PODCAST · SOUND OFF</span><button type="button" data-podcast-toggle aria-pressed="true">映像を無音で再開</button></div><div class="voices-photo-stage" aria-label="Joi Itoのポッドキャスト・無音プレビュー">');
@@ -36,9 +36,9 @@ const previewScenes = Array.from({ length: 4 }, (_, index) => `
 sections = sections.replace(/(<div class="voices-photo-track" data-photo-strip>)[\s\S]*?(?=\n              <\/div>\n            <\/div>)/, `$1${previewScenes}`);
 // The moving strip belongs to the full-width panel, outside the text column.
 sections = sections.replace(/(<div class="voices-photo-stage"[^>]*>[\s\S]*?\n              <\/div>\n            <\/div>)\n          <\/div>\n        <\/div>/, '</div>\n        </div>\n        $1');
-sections = sections.replace(/<div class="placeholder-grid" aria-label="Recently played placeholder">[\s\S]*?<div class="placeholder-list" data-track-list><\/div>\s*<\/div>/, `<p class="frequency-summary">あなたの最近聴いた回 <span>MOCK LISTENING HISTORY</span></p>
-          <ol class="frequency-list" data-track-list aria-label="最近聴いたJoi Itoのポッドキャスト"></ol>
-          <p class="frequency-disclaimer">日時・進捗はデモ用のサンプルです。</p>`);
+sections = sections.replace(/<div class="placeholder-grid" aria-label="Recently played placeholder">[\s\S]*?<div class="placeholder-list" data-track-list><\/div>\s*<\/div>/, `<p class="frequency-summary">みんなの最近のプレイ履歴 <span>COMMUNITY PLAYS / MOCK</span></p>
+          <ol class="frequency-list" data-track-list aria-label="コミュニティ全体の最近のプレイ履歴"></ol>
+          <p class="frequency-disclaimer">リスナー・アイコン・再生時刻は架空のサンプルです。実際の視聴履歴ではありません。</p>`);
 sections = sections.replace('aria-label="Podcast placeholder"', 'aria-label="Joi Itoのポッドキャスト紹介"');
 sections = sections.replace('<div class="placeholder-list" data-podcast-card></div>', '<div class="placeholder-list" data-podcast-card></div><p class="podcast-source"><a href="https://joi.ito.com/podcast/" target="_blank" rel="noopener noreferrer">公式サイトで番組を聴く ↗</a><span>紹介文：公式情報をもとに編集</span></p>');
 sections = sections.replace('<div class="placeholder-grid" aria-label="最近のプロジェクト、投稿、クエスト、Check-in">\n            <div class="media-block" aria-hidden="true"></div>', '<div class="placeholder-grid pulse-grid" aria-label="最近のプロジェクト、投稿、クエスト、Check-in">');

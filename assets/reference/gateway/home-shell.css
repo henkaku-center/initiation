@@ -22,6 +22,17 @@ html[data-theme="dark"] {
   --accent-bg:#202b49;
 }
 html,body { background:var(--paper);color:var(--ink); }
+/* Only the invitation column switches appearance; the page stays unchanged. */
+html[data-theme="light"] .gate {
+  color-scheme:dark;
+  --ink:#f2f3f6;--muted:#a5adba;--blue:#a4b0ff;
+  --line:#35404d;--surface:#1b232d;--accent-bg:#202b49;
+}
+html[data-theme="dark"] .gate {
+  color-scheme:light;
+  --ink:#12141a;--muted:#626773;--blue:#263df5;
+  --line:#dcded9;--surface:#fff;--accent-bg:#e8ebff;
+}
 body { font-family:Arial,"Helvetica Neue","Noto Sans JP",sans-serif; }
 .home-replay { flex:none;min-height:44px;font:12px/1.5 var(--font-mono);border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:10px 15px;cursor:pointer; }
 .home-replay:hover { border-color:var(--blue);color:var(--blue); }

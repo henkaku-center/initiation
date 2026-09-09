@@ -1,6 +1,22 @@
 # Portal layout checks
 
-## Podcast previews, personal history and Issue cards — 2026-09-09
+## Community Frequency, inverted JoiN column and Setup navigation — 2026-09-09
+
+The current Frequency is a shared fictional community feed. `community-frequency.mjs` checks four play events, three abstract listener icons plus an anonymous icon, the mock disclosure, removal of personal progress/resume links, readable icon sizes, and overflow. JoiN's column alone uses the opposite appearance; the surrounding background retains the page theme. Let the existing color transition finish before inspecting computed background colors.
+
+`shared-shell.mjs` also checks that Setup appears immediately before Community and points to `#setup`. The existing 44px target requirement caught Setup's initially narrow target at 360px; all navigation links now retain at least 44px width.
+
+Before implementation, the checks failed on the personal heading/progress, missing listener icons, missing Setup and unchanged JoiN appearance. After the user's clarification, a separate failing background check confirmed the section-wide inversion before narrowing it to the column.
+
+Final geometry and appearance results: **20 checks passed** (home + navigation at 360×800, 390×844, 768×1024, 844×390 and 1440×900, each in light and dark). Parent viewport dimensions were verified; the iframe height follows the existing shared shell. All four listener variants and the light/dark JoiN column were visually reviewed.
+
+Routing was searched in upstream Issues [#73](https://github.com/henkaku-center/initiation/issues/73), [#52's Gateway comment](https://github.com/henkaku-center/initiation/issues/52#issuecomment-5359048602) and [#16](https://github.com/henkaku-center/initiation/issues/16). The existing `/setup` → `/initiation` flow and Gateway entry agree with the demo routing. Fourteen existing routing/boundary tests passed, and HTTP checks confirmed `/setup` → `/#setup`, `/initiation` → `/#journey`, `/checkin` → `/#community`, and `/apply` / `/admin` → `/#passport`. No route changes were needed.
+
+Follow-up: Community's label is now **DAILY CHECK-IN**, and **YOUR FOOTPRINTS** is a nested subsection directly below the check-in panel, ahead of OPEN SIGNALS. The prior layout failed the label/nesting checks. After the change, navigation and check-in/history geometry passed another **20 checks** across the same five sizes and both themes. An actual demo check-in added one footprint and disabled the button for that day; the empty state was also visually checked. The homepage retains its separate Community Pulse heading.
+
+Validation: `npm test` passed all **244 unit tests**; the **21 integration tests** failed because the local Supabase endpoint was unavailable. `tsc --noEmit`, repository lint and `git diff --check` passed. Normal and demo production builds passed with `--webpack` (the existing `ox/tempo` dependency emits a warning). The default Turbopack build could not create its local subprocess port in the restricted environment; the standard Webpack fallback verified compilation without changing the project's build configuration.
+
+## Earlier podcast previews, personal history and Issue cards — 2026-09-09
 
 `podcast-layout.mjs` exports `auditPodcastLayout`, a read-only geometry check for the homepage iframe's `body`. Run at 360×800, 390×844, 768×1024, 844×390, and 1440×900 on the parent viewport, selecting both appearance modes. Confirm the actual parent dimensions after applying each viewport override. Frequency shows one browser-local mock history, with no membership-tier selector.
 

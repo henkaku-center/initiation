@@ -22,7 +22,7 @@
 .pd-header { height:auto;min-height:99px;gap:24px;flex-wrap:wrap;padding-block:18px;background:var(--pd-paper); }
 .pd-header .pd-brand { min-height:44px;flex-shrink:0; }
 .pd-header nav { margin-left:auto;flex-wrap:wrap;gap:28px; }
-.pd-header nav a { display:inline-flex;min-height:44px;align-items:center; }
+.pd-header nav a { display:inline-flex;min-width:44px;min-height:44px;align-items:center; }
 .pd-header .theme-toggle { margin-left:4px; }
 .pd-footer { align-items:center;background:var(--pd-paper); }
 .pd-footer > div { flex-wrap:wrap;gap:12px 25px; }

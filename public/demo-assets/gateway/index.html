@@ -1019,6 +1019,17 @@ html[data-theme="dark"] {
   --accent-bg:#202b49;
 }
 html,body { background:var(--paper);color:var(--ink); }
+/* Only the invitation column switches appearance; the page stays unchanged. */
+html[data-theme="light"] .gate {
+  color-scheme:dark;
+  --ink:#f2f3f6;--muted:#a5adba;--blue:#a4b0ff;
+  --line:#35404d;--surface:#1b232d;--accent-bg:#202b49;
+}
+html[data-theme="dark"] .gate {
+  color-scheme:light;
+  --ink:#12141a;--muted:#626773;--blue:#263df5;
+  --line:#dcded9;--surface:#fff;--accent-bg:#e8ebff;
+}
 body { font-family:Arial,"Helvetica Neue","Noto Sans JP",sans-serif; }
 .home-replay { flex:none;min-height:44px;font:12px/1.5 var(--font-mono);border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:10px 15px;cursor:pointer; }
 .home-replay:hover { border-color:var(--blue);color:var(--blue); }
@@ -1119,8 +1130,25 @@ html[data-theme="dark"] .voices-fragment,html[data-theme="dark"] .voices-observe
 .frequency-summary { display:flex;flex-wrap:wrap;gap:10px 24px;margin:30px 0 22px; }
 .frequency-summary span { font:9px/2.4 var(--font-mono);letter-spacing:.08em; }
 .frequency-list { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 30px;list-style:none;margin:0;padding:0; }
-.frequency-entry { min-width:0;border-top:1px solid var(--line); }
-.frequency-link { display:grid;grid-template-columns:112px minmax(0,1fr);align-items:start;gap:16px;padding:22px 0;min-width:0;color:var(--ink);text-decoration:none; }
+.frequency-entry { min-width:0;border-top:1px solid var(--line);padding-top:20px; }
+.frequency-listener { display:flex;align-items:center;gap:12px;min-width:0; }
+.frequency-identity { display:grid;gap:3px;min-width:0; }
+.frequency-listener-name { font:12px/1.5 var(--font-sans);color:var(--ink); }
+.frequency-avatar { position:relative;display:grid;place-items:center;flex:none;width:40px;height:40px;border-radius:50%;color:var(--blue);background:color-mix(in srgb,currentColor 10%,var(--surface));border:1px solid color-mix(in srgb,currentColor 24%,transparent); }
+.frequency-avatar-shape,.frequency-avatar-shape::before,.frequency-avatar-shape::after { position:absolute;display:block;box-sizing:border-box; }
+.frequency-avatar[data-avatar="orbit"] .frequency-avatar-shape { width:24px;height:14px;border:1.5px solid currentColor;border-radius:50%;transform:rotate(-35deg); }
+.frequency-avatar[data-avatar="orbit"] .frequency-avatar-shape::before { content:"";width:14px;height:24px;top:-6.5px;left:3.5px;border:1.5px solid currentColor;border-radius:50%; }
+.frequency-avatar[data-avatar="orbit"] .frequency-avatar-shape::after { content:"";width:5px;height:5px;top:3px;left:8px;background:currentColor;border-radius:50%; }
+.frequency-avatar[data-avatar="mosaic"] { color:light-dark(#287267,#85cbb6); }
+.frequency-avatar[data-avatar="mosaic"] .frequency-avatar-shape { width:9px;height:9px;top:9px;left:9px;background:currentColor;box-shadow:11px 11px currentColor; }
+.frequency-avatar[data-avatar="mosaic"] .frequency-avatar-shape::before { content:"";width:9px;height:9px;left:11px;border:1.5px solid currentColor;border-radius:50%; }
+.frequency-avatar[data-avatar="mosaic"] .frequency-avatar-shape::after { content:"";width:9px;height:9px;top:11px;border:1.5px solid currentColor;transform:rotate(45deg) scale(.75); }
+.frequency-avatar[data-avatar="spark"] { color:light-dark(#a35a24,#edb27b); }
+.frequency-avatar[data-avatar="spark"] .frequency-avatar-shape { width:24px;height:24px;background:currentColor;clip-path:polygon(50% 0,60% 33%,85% 15%,67% 40%,100% 50%,67% 60%,85% 85%,60% 67%,50% 100%,40% 67%,15% 85%,33% 60%,0 50%,33% 40%,15% 15%,40% 33%); }
+.frequency-avatar[data-avatar="anonymous"] { color:var(--muted); }
+.frequency-avatar[data-avatar="anonymous"] .frequency-avatar-shape { width:10px;height:10px;top:8px;border:1.5px solid currentColor;border-radius:50%; }
+.frequency-avatar[data-avatar="anonymous"] .frequency-avatar-shape::after { content:"";width:20px;height:11px;top:13px;left:-6.5px;border:1.5px solid currentColor;border-radius:12px 12px 4px 4px; }
+.frequency-link { display:grid;grid-template-columns:112px minmax(0,1fr);align-items:start;gap:16px;padding:16px 0 22px;min-width:0;color:var(--ink);text-decoration:none; }
 .frequency-link:hover .frequency-title { color:var(--blue); }
 .frequency-art { aspect-ratio:16/9;background:var(--surface-subtle);overflow:hidden; }
 .frequency-art img { display:block;width:100%;height:100%;object-fit:cover; }
@@ -1129,8 +1157,6 @@ html[data-theme="dark"] .voices-fragment,html[data-theme="dark"] .voices-observe
 .frequency-meta { font:10px/1.6 var(--font-mono);color:var(--muted); }
 .frequency-title { font:600 17px/1.55 var(--font-sans);overflow-wrap:anywhere; }
 .frequency-guest { font:11px/1.7 var(--font-sans);color:var(--muted); }
-.frequency-progress { height:3px;background:var(--line);margin:7px 0 1px; }
-.frequency-progress > span { display:block;height:100%;background:var(--blue); }
 .frequency-disclaimer { margin:22px 0 0; }
 @media(max-width:1100px) { .frequency-list { grid-template-columns:1fr; }.frequency-link { grid-template-columns:140px minmax(0,1fr); } }
 @media(max-width:820px) {
@@ -1242,10 +1268,10 @@ html[data-theme="dark"] .voices-fragment,html[data-theme="dark"] .voices-observe
         <div class="chapter-body">
           <p class="kicker">Frequency / Recently Played</p>
           <h2 class="section-title" id="frequency-title">FREQUENCY</h2>
-          <p class="microcopy">Joi Itoのポッドキャストを、あなたのペースで。最近聴いた回の続きを、ここから。</p>
-          <p class="frequency-summary">あなたの最近聴いた回 <span>MOCK LISTENING HISTORY</span></p>
-          <ol class="frequency-list" data-track-list aria-label="最近聴いたJoi Itoのポッドキャスト"></ol>
-          <p class="frequency-disclaimer">日時・進捗はデモ用のサンプルです。</p>
+          <p class="microcopy">コミュニティの誰かが聴いた対話から、次の一回に出会う。</p>
+          <p class="frequency-summary">みんなの最近のプレイ履歴 <span>COMMUNITY PLAYS / MOCK</span></p>
+          <ol class="frequency-list" data-track-list aria-label="コミュニティ全体の最近のプレイ履歴"></ol>
+          <p class="frequency-disclaimer">リスナー・アイコン・再生時刻は架空のサンプルです。実際の視聴履歴ではありません。</p>
         </div>
       </div>
     </div>

@@ -114,38 +114,60 @@ export function DemoCommunity({
   const today = useTokyoDate();
   const checked = state.checkins.includes(today);
   return (
-    <section className="pd-page">
-      <div className="pd-page-heading">
-        <p className="pd-eyebrow">COMMUNITY PULSE</p>
-        <h1>今日も、どこかで動いている。</h1>
-        <p>見ることから、話すことから。あなたなりの関わり方で。</p>
-      </div>
-      <div className="pd-checkin-panel">
-        <div>
-          <span className="pd-eyebrow">{today} / JST</span>
-          <h2>
-            {checked
-              ? "今日のしるし、受け取りました。"
-              : `${state.answers.name ? state.answers.name + "さん、" : ""}今日は、ここにいる。`}
-          </h2>
-          <p>
-            {checked
-              ? "また明日、気が向いたら。"
-              : "ひと押しだけでも、参加のしるしになります。"}
-          </p>
+    <div className="pd-page">
+      <section className="pd-daily-checkin" aria-labelledby="daily-checkin-title">
+        <div className="pd-page-heading">
+          <p className="pd-eyebrow">DAILY CHECK-IN</p>
+          <h1 id="daily-checkin-title">今日も、どこかで動いている。</h1>
+          <p>見ることから、話すことから。あなたなりの関わり方で。</p>
         </div>
-        <button
-          className={`pd-checkin-button ${checked ? "is-checked" : ""}`}
-          disabled={checked}
-          onClick={() => {
-            dispatchDemo({ type: "checkin", date: tokyoDate() });
-            notify("今日のチェックインを記録しました（このブラウザ内のみ）");
-          }}
-        >
-          <span>{checked ? "✓" : "+"}</span>
-          {checked ? "CHECKED IN" : "CHECK IN"}
-        </button>
-      </div>
+        <div className="pd-checkin-panel">
+          <div>
+            <span className="pd-eyebrow">{today} / JST</span>
+            <h2>
+              {checked
+                ? "今日のしるし、受け取りました。"
+                : `${state.answers.name ? state.answers.name + "さん、" : ""}今日は、ここにいる。`}
+            </h2>
+            <p>
+              {checked
+                ? "また明日、気が向いたら。"
+                : "ひと押しだけでも、参加のしるしになります。"}
+            </p>
+          </div>
+          <button
+            className={`pd-checkin-button ${checked ? "is-checked" : ""}`}
+            disabled={checked}
+            onClick={() => {
+              dispatchDemo({ type: "checkin", date: tokyoDate() });
+              notify("今日のチェックインを記録しました（このブラウザ内のみ）");
+            }}
+          >
+            <span>{checked ? "✓" : "+"}</span>
+            {checked ? "CHECKED IN" : "CHECK IN"}
+          </button>
+        </div>
+        <section className="pd-checkin-history" aria-labelledby="footprints-title">
+          <span className="pd-mono">YOUR FOOTPRINTS</span>
+          <h2 id="footprints-title">ここにいた、あなたの記録。</h2>
+          {state.checkins.length ? (
+            <div className="pd-footprints">
+              {[...state.checkins].reverse().map((date) => (
+                <div key={date}>
+                  <span>✳</span>
+                  <strong>{date}</strong>
+                  <small>CHECKED IN</small>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p>最初のチェックインが、あなたの足あとになります。</p>
+          )}
+          <p className="pd-fineprint">
+            1日1回（日本時間）。このブラウザだけのデモ記録です。
+          </p>
+        </section>
+      </section>
       <div className="pd-section-heading">
         <div>
           <span className="pd-eyebrow">OPEN SIGNALS</span>
@@ -154,26 +176,6 @@ export function DemoCommunity({
         <span className="pd-tag">SAMPLE ACTIVITIES</span>
       </div>
       <CommunityCards state={state} />
-      <div className="pd-checkin-history">
-        <span className="pd-mono">YOUR FOOTPRINTS</span>
-        <h2>ここにいた、あなたの記録。</h2>
-        {state.checkins.length ? (
-          <div className="pd-footprints">
-            {[...state.checkins].reverse().map((date) => (
-              <div key={date}>
-                <span>✳</span>
-                <strong>{date}</strong>
-                <small>CHECKED IN</small>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p>最初のチェックインが、あなたの足あとになります。</p>
-        )}
-        <p className="pd-fineprint">
-          1日1回（日本時間）。このブラウザだけのデモ記録です。
-        </p>
-      </div>
-    </section>
+    </div>
   );
 }
