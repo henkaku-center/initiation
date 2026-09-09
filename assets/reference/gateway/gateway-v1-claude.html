@@ -1,0 +1,1698 @@
+<!doctype html>
+<!-- ABOUTME: V1 CLAUDE scroll prototype (edited by Claude) for the HENKAKU Public Gateway first-pass demo. -->
+<!-- ABOUTME: Shows the gateway and threshold rhythm without touching the initiation app. -->
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>HENKAKU Public Gateway Prototype - V1 CLAUDE</title>
+<meta name="description" content="HENKAKU Public Gateway のスクロール型プロトタイプ第1段階。00 Gateway と 04 Threshold のトーン確認用。" />
+<style>
+  :root {
+    --paper: #f4f4f0;
+    --paper-warm: #f7f2e8;
+    --ink: #080808;
+    --muted: #5d625f;
+    --blue: #1737ff;
+    --line: rgba(8, 8, 8, 0.22);
+    --dark: #07090f;
+    --quiet: #f9f7f0;
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --threshold-progress: 0;
+    --font-sans: "Helvetica Neue", Helvetica, Arial, "Hiragino Kaku Gothic ProN",
+      "Yu Gothic", "Noto Sans JP", sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  html {
+    min-height: 100%;
+    scroll-behavior: auto;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    overflow-x: hidden;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  a { color: inherit; }
+
+  .prototype-label {
+    position: fixed;
+    z-index: 20;
+    top: 14px;
+    left: 14px;
+    border: 1px solid currentColor;
+    background: rgba(244, 244, 240, 0.86);
+    color: var(--blue);
+    padding: 7px 9px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.13em;
+    line-height: 1;
+    text-transform: uppercase;
+    backdrop-filter: blur(10px);
+  }
+
+  main { position: relative; }
+
+  /* The bubble is chapter 00's and nobody else's. It needs the hero redrawn as
+     pixels to bend the type through, that copy only exists for chapter 00, and
+     a plain circle trailing the cursor through the rest of the page turned out
+     to be a different, lesser thing pretending to be the same one. So past the
+     hero the cursor is just a cursor. */
+
+  .gateway-section {
+    position: relative;
+    min-height: 100svh;
+    isolation: isolate;
+    --section-progress: 0;
+  }
+
+  .gateway-panel {
+    position: sticky;
+    top: 0;
+    min-height: 100svh;
+    overflow: hidden;
+  }
+
+  .chapter {
+    display: grid;
+    grid-template-columns: minmax(70px, 0.25fr) minmax(0, 1fr);
+    gap: clamp(16px, 4vw, 64px);
+    width: min(1520px, 100%);
+    margin: 0 auto;
+    padding: clamp(54px, 7vw, 92px) clamp(18px, 5vw, 72px);
+  }
+
+  .chapter-number {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: currentColor;
+  }
+
+  .chapter-body {
+    min-width: 0;
+    border-top: 1px solid currentColor;
+    padding-top: clamp(18px, 2.4vw, 34px);
+  }
+
+  .kicker {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .section-title {
+    margin: clamp(12px, 2vw, 22px) 0 0;
+    font-size: clamp(38px, calc(7vw + var(--section-progress) * 2.6vw), 148px);
+    line-height: 0.95;
+    font-weight: 800;
+    letter-spacing: 0;
+    text-transform: uppercase;
+    transform:
+      translateY(calc((1 - var(--section-progress)) * 28px))
+      scale(calc(0.965 + var(--section-progress) * 0.035));
+    transform-origin: left top;
+  }
+
+  .microcopy {
+    max-width: 52ch;
+    margin: clamp(16px, 2.4vw, 28px) 0 0;
+    color: var(--muted);
+    font-size: clamp(14px, 1.3vw, 17px);
+    line-height: 1.75;
+  }
+
+  /* ---------- 00 GATEWAY: the bubble refraction hero ----------
+     Lifted from demo/bubble-hero.html, the variant already published on Vercel.
+     Three layers share the stage:
+       .content  the real DOM. Always present, always selectable, always read
+                 aloud correctly. It is the page, not a picture of the page.
+       #lens2d   Canvas 2D bubble. Wherever a canvas works.
+       #lens3d   WebGL2 bubble. Takes over when the GPU path is available.
+     The lenses only ever paint inside the bubble, so everything outside it is
+     the untouched DOM underneath. */
+
+  /* The hero keeps the palette it was designed with rather than inheriting the
+     gateway one. The two blues are close but not equal, and quietly merging
+     them would change a design that is here to be judged as it stands. The
+     tokens sit on the section so the panel and the letterboxing both see them. */
+  .gateway-hero {
+    /* 0 while the hero is held, running to 1 as it leaves. Written by the
+       scroll handler, because it covers the stretch after the pinning ends,
+       which --section-progress has already finished measuring. */
+    --hero-exit: 0;
+    --bg: #f4f4f4;
+    --ink: #0a0a0a;
+    --blue: #1b34f5;
+    --rule: #bcbcbc;
+    /* 100svh of panel plus 65svh of hold, so the hero is still for a good half
+       screen of scrolling before it starts to leave. */
+    min-height: 165svh;
+    background: var(--bg);
+  }
+
+  /* No `position` here. .gateway-panel already makes this sticky, and setting
+     `relative` on top of it — which was done only to anchor .hero-scroll —
+     quietly cancelled the pinning. The hero then scrolled away like an ordinary
+     block and left the rest of the section, some 47svh of bare paper, showing
+     before 01 arrived. Sticky is itself a positioned box, so the scroll cue had
+     an anchor all along. */
+  .hero-panel {
+    min-height: 100svh;
+    padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+  }
+
+  /* Instead of an edge travelling up through the artwork, the whole hero sinks
+     into the colour of the chapter behind it. There is no line to cut anything,
+     and by the time 01's real edge arrives there is nothing left to cut. It sits
+     above the lenses and the scroll cue, so everything goes down together. */
+  .hero-panel::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    background: #141414;
+    /* Ahead of the scroll on purpose: the hero is fully dark by the time two
+       thirds of it has gone, so what finally meets 01's edge is already 01's
+       own black and the join cannot be seen. */
+    opacity: clamp(0, calc(var(--hero-exit, 0) * 1.5), 1);
+    pointer-events: none;
+  }
+
+  /* The stage fills the screen. It was drawn at 16:9 and letterboxing it kept
+     that ratio honest, but the bars read as dead paper under the wordmark, so
+     the layout stretches instead — the same thing it already does on a phone.
+
+     No transform may land on this box or any ancestor. The painter measures the
+     live DOM to redraw it, and a scaled ancestor would put every glyph in the
+     wrong place — which is why this hero no longer lifts and shrinks on scroll
+     the way the other chapters do. */
+  .bubble-stage {
+    position: relative;
+    width: 100%;
+    height: 100svh;
+    overflow: hidden;
+    background: var(--bg);
+    touch-action: pan-y;
+  }
+
+  /* The one instruction the section carries, kept outside the stage so it is
+     never redrawn into the bubble. It fades out as the chapter is left behind,
+     because an instruction you have already followed should stop asking. */
+  .hero-scroll {
+    position: absolute;
+    z-index: 4;
+    opacity: clamp(0, calc(1 - var(--section-progress, 0) * 4), 1);
+    left: 0;
+    right: 0;
+    bottom: clamp(9px, 1.4vh, 16px);
+    margin: 0;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: clamp(10px, 0.9vw, 13px);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--blue);
+    pointer-events: none;
+  }
+
+  /* The lens fades as the chapter is left rather than riding up the page to be
+     cut off at the seam. By the time 01 arrives there is nothing of it left,
+     and the cursor is a plain cursor for the rest of the page. */
+  .lens {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    pointer-events: none;
+    opacity: clamp(0, calc(1 - var(--section-progress, 0) * 3), 1);
+  }
+
+  #lens3d { z-index: 3; }
+  #lens2d { z-index: 2; }
+
+  /* ---------- layout ----------
+     Grid overlap (two items sharing one cell) rather than absolute
+     positioning. `position: relative` here keeps the inner z-indexes to
+     themselves, so .upper cannot climb over the lenses. */
+  .content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    padding: 3.9% 4.1%;
+  }
+
+  .upper {
+    display: grid;
+    grid-template-columns: 30.3% 8.9% 38% 22.8%;
+    border-bottom: 1px solid var(--rule);
+    z-index: 2;
+  }
+
+  .col { display: flex; flex-direction: column; min-width: 0; }
+  .col-a { border-right: 1px solid var(--rule); padding-right: 3%; }
+  .col-b { border-right: 1px solid var(--rule); }
+
+  .label {
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 0.78vw, 15px);
+    letter-spacing: 0.2em;
+    line-height: 1.85;
+    margin: 0;
+  }
+
+  .dash { width: 1.1em; height: 2px; background: var(--blue); }
+  .label + .dash { margin-top: clamp(8px, 1.1vw, 20px); }
+
+  .plus {
+    font-family: var(--font-mono);
+    font-size: clamp(13px, 1.15vw, 22px);
+    line-height: 1;
+    color: var(--blue);
+  }
+
+  /* left column ---------------------------------------------------- */
+  .headline-wrap { margin-top: 19%; }
+  .headline {
+    font-size: clamp(19px, 2.78vw, 54px);
+    font-weight: 800;
+    letter-spacing: -0.015em;
+    line-height: 1.09;
+    margin: clamp(10px, 1.5vw, 26px) 0 0;
+  }
+
+  /* The four lines drift apart as the chapter is scrolled, each one a little
+     further than the one above it. They start at rest, so the sentence is whole
+     the moment the page opens — the movement is a departure, not an entrance.
+
+     Bound to scroll position rather than to a timer: stop, and the lines stop
+     where you left them. The painter is told to redraw when they move, or the
+     bubble would refract the sentence from where it used to be. */
+  .headline span {
+    display: block;
+    transform: translateY(calc(var(--section-progress, 0) * var(--i, 0) * -16px));
+    opacity: calc(1 - var(--section-progress, 0) * var(--i, 0) * 0.11);
+  }
+
+  /* centre graphic --------------------------------------------------- */
+  .arrow {
+    grid-column: 3;
+    grid-row: 1;
+    display: flex;
+    align-items: center;
+    z-index: 1;
+  }
+  .arrow svg { width: 88%; height: auto; display: block; }
+
+  .wordmark {
+    grid-column: 3;
+    grid-row: 1;
+    z-index: 3;
+    position: relative;
+    margin-top: -2%;
+  }
+
+  /* The wordmark rolls down the hero and wraps back in at the top, the way it
+     does on the earlier variants. Copies of it are stacked exactly one period
+     apart and the whole stack is moved, so the loop has no seam and the hero's
+     own overflow does the clipping.
+
+     Taken out of flow on purpose: the stack is several screens tall, and the
+     row it sits in is sized by its contents, so leaving it in would let the
+     wordmark push the rest of the hero off the page. */
+  .roll {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 13%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: clamp(64px, 12vw, 232px);
+    /* The run is longer than its row. In em, so the lift tracks the type at
+       every size. This is the knob: more negative lifts it further. */
+    margin-top: -0.34em;
+    will-change: transform;
+  }
+
+  .roll span {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    font-weight: 800;
+    letter-spacing: -0.055em;
+    line-height: 0.8;
+    white-space: nowrap; /* vertical text wraps into a 2nd column otherwise */
+    color: var(--blue);
+  }
+
+  /* Only the first copy is the wordmark. The rest are scenery: not read out,
+     not selectable, and never picked up by the painter. */
+  .roll .ghost { user-select: none; }
+
+  /* A blue thread dropped from the foot of the wordmark. It draws itself
+     downward as the chapter is scrolled and runs off the bottom of the screen,
+     where chapter 01 picks the same line up again at the same x. The two are
+     separate elements in separate pinned panels — they cannot literally be one
+     line — but they meet at the seam, so the wordmark reads as reaching into
+     the next chapter rather than stopping at it.
+
+     A pseudo-element on purpose: the painter walks real elements, so this stays
+     out of the plate and out of the bubble. */
+  .wordmark::after {
+    content: "";
+    position: absolute;
+    /* The glyphs sit at 43.5% of this cell, not its middle: .roll is inset 13%
+       on the right. Matching that is what puts the thread under the letters. */
+    left: 43.5%;
+    top: 100%;
+    width: 2px;
+    height: 60svh;
+    margin-left: -1px;
+    background: var(--blue);
+    transform: scaleY(clamp(0, calc(var(--section-progress, 0) * 2.4), 1));
+    transform-origin: top;
+  }
+
+  /* right column ----------------------------------------------------- */
+  .col-d { align-items: flex-start; }
+  .gateway {
+    margin-top: auto;
+    width: 100%;
+    border-top: 1px solid var(--rule);
+    border-left: 1px solid var(--rule);
+    padding: clamp(10px, 1.6vw, 30px) 0 0 clamp(12px, 2vw, 36px);
+    display: flex;
+    flex-direction: column;
+  }
+  .gateway h2 {
+    font-size: clamp(12px, 1.16vw, 23px);
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    margin: clamp(8px, 1.2vw, 22px) 0 clamp(10px, 1.5vw, 26px);
+  }
+  .gateway ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 0.78vw, 15px);
+    letter-spacing: 0.14em;
+    line-height: 2.15;
+  }
+
+  /* bottom strip ----------------------------------------------------- */
+  .bottom {
+    display: grid;
+    grid-template-columns: 19.9% 43% 17.6% 19.5%;
+    padding-top: clamp(12px, 1.8vw, 32px);
+    z-index: 1;
+  }
+  .bcol { display: flex; flex-direction: column; min-width: 0; }
+  .bcol:nth-child(1), .bcol:nth-child(3) { border-right: 1px solid var(--rule); }
+  .bcol:nth-child(2), .bcol:nth-child(4) { padding-left: 4%; }
+  .bcol p {
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 0.78vw, 15px);
+    letter-spacing: 0.14em;
+    line-height: 1.75;
+    margin: clamp(10px, 1.5vw, 26px) 0 0;
+  }
+  .bcol .dash { margin-bottom: 0; }
+
+  /* ---------- mobile ---------- */
+  /* ---------- 02 VOICES: vertical scroll turned sideways ----------
+     Ported from gateway-codex3.html. The chapter is a tall track holding one
+     pinned panel; inside it a full-bleed window clips a row four scenes wide,
+     and the row is moved left in step with how far the track has been scrolled.
+
+     Nothing is hijacked to do this: no wheel or touchmove handler, no
+     preventDefault, no snap. The page scrolls the way the browser scrolls it,
+     and the only thing listening is a passive scroll listener that writes one
+     length, --voices-shift, which CSS spends on a transform. */
+
+  .voices-sticky-wrap {
+    position: relative;
+    min-height: 258svh;
+  }
+
+  .voices-sticky-panel {
+    z-index: 1;
+    overflow: hidden;
+  }
+
+  .voices-sticky-panel::before {
+    z-index: 0;
+    right: auto;
+    left: clamp(18px, 5vw, 72px);
+    bottom: clamp(22px, 4vw, 52px);
+    color: #f7f2e8;
+    font-size: clamp(110px, 26vw, 430px);
+    opacity: calc(0.08 + var(--section-progress) * 0.08);
+    transform: translateX(calc((1 - var(--section-progress)) * 8vw));
+  }
+
+  .voices-sticky-panel .chapter {
+    position: relative;
+    z-index: 1;
+    padding-top: clamp(24px, 3.2vw, 44px);
+    padding-bottom: 0;
+  }
+
+  .voices-sticky-panel .section-title {
+    margin-top: clamp(6px, 0.8vw, 10px);
+    font-size: clamp(34px, calc(5vw + var(--section-progress) * 0.9vw), 96px);
+  }
+
+  .voices-sticky-panel .microcopy {
+    margin-top: clamp(8px, 1vw, 12px);
+    max-width: 42ch;
+    line-height: 1.55;
+  }
+
+  .voices-photo-stage {
+    position: relative;
+    left: 50%;
+    z-index: 2;
+    width: 100vw;
+    min-height: clamp(300px, 39vw, 480px);
+    margin-top: clamp(0px, 0.8vw, 10px);
+    margin-left: -50vw;
+    overflow: hidden;
+    background: transparent;
+  }
+
+  .voices-photo-track {
+    display: flex;
+    align-items: center;
+    gap: clamp(12vw, 14vw, 18vw);
+    min-width: 320vw;
+    height: 100%;
+    padding: 0 16vw 0 12vw;
+    transform: translateX(calc(var(--voices-shift) * -1));
+    will-change: transform;
+  }
+
+  .voices-scene {
+    position: relative;
+    flex: 0 0 clamp(65vw, 72vw, 80vw);
+    min-height: clamp(260px, 34vw, 430px);
+    transform: scale(calc(0.985 + var(--section-progress) * 0.015));
+  }
+
+  .voices-scene::before,
+  .voices-scene::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .voices-scene::before {
+    background:
+      linear-gradient(90deg, rgba(247, 242, 232, 0.34) 1px, transparent 1px) 0 0 / 11vw 100%,
+      linear-gradient(rgba(247, 242, 232, 0.22) 1px, transparent 1px) 0 0 / 100% 18%;
+    opacity: 0.38;
+  }
+
+  .voices-ascii {
+    margin: 0;
+    color: #f7f2e8;
+    font-family: var(--font-mono);
+    font-size: clamp(12px, 1.28vw, 22px);
+    line-height: 1.05;
+    white-space: pre;
+  }
+
+  .voices-scene-title {
+    position: absolute;
+    left: 0;
+    bottom: clamp(24px, 3.4vw, 48px);
+    margin: 0;
+    color: #f7f2e8;
+    font-size: clamp(38px, 6.5vw, 108px);
+    line-height: 0.9;
+    font-weight: 900;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  .voices-fragments {
+    display: grid;
+    grid-template-columns: 1.1fr 0.72fr 0.9fr;
+    gap: clamp(12px, 2.8vw, 42px);
+    align-items: center;
+    min-height: inherit;
+  }
+
+  .voices-fragment {
+    position: relative;
+    overflow: hidden;
+    min-height: clamp(180px, 31vw, 420px);
+    mix-blend-mode: multiply;
+  }
+
+  .voices-fragment:nth-child(2) {
+    min-height: clamp(150px, 24vw, 330px);
+    margin-top: clamp(80px, 10vw, 150px);
+  }
+
+  .voices-fragment img,
+  .voices-observed img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(1) contrast(1.45) brightness(1.08) sepia(1) saturate(3.4) hue-rotate(185deg);
+    opacity: 0.72;
+  }
+
+  .voices-observed {
+    position: absolute;
+    inset: 6% 8% 14% 10%;
+    overflow: hidden;
+    mix-blend-mode: multiply;
+  }
+
+  .voices-observed-lines {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(90deg, transparent 0 18%, rgba(247, 242, 232, 0.82) 18% 18.35%, transparent 18.35% 58%, rgba(247, 242, 232, 0.72) 58% 58.2%, transparent 58.2%),
+      linear-gradient(0deg, transparent 0 36%, rgba(247, 242, 232, 0.72) 36% 36.25%, transparent 36.25% 72%, rgba(247, 242, 232, 0.58) 72% 72.18%, transparent 72.18%);
+  }
+
+  .voices-gate {
+    display: grid;
+    place-items: center;
+    min-height: inherit;
+  }
+
+  .voices-gate-mark {
+    position: relative;
+    width: min(56vw, 760px);
+    aspect-ratio: 1.8;
+    border-top: 1px solid currentColor;
+    border-bottom: 1px solid currentColor;
+  }
+
+  .voices-gate-mark::before,
+  .voices-gate-mark::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 44%;
+    height: 1px;
+    background: currentColor;
+  }
+
+  .voices-gate-mark::before { left: 0; }
+  .voices-gate-mark::after { right: 0; }
+
+  .voices-gate-mark span {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    color: #f7f2e8;
+    font-family: var(--font-mono);
+    font-size: clamp(10px, 1vw, 14px);
+    letter-spacing: 0.16em;
+    line-height: 1.6;
+    text-align: center;
+    text-transform: uppercase;
+    transform: translate(-50%, -50%);
+  }
+
+  .voices-flow-copy {
+    position: relative;
+    z-index: 2;
+    width: min(920px, 100%);
+    margin: 0 auto;
+    padding: clamp(32px, 5vw, 64px) clamp(18px, 5vw, 72px) clamp(82px, 12vw, 150px);
+  }
+
+  .voices-flow-copy .placeholder-list {
+    max-width: 460px;
+    margin-left: auto;
+  }
+
+  /* ---------- the hero on a phone ----------
+     A miniature of the composition rather than a stack of its parts. The panel
+     is pinned at every width now, so anything taller than one screen would have
+     its foot held off the bottom by the pinning and never be scrolled to.
+     Everything below is therefore sized to fit inside 100svh: the row that
+     holds the mark is the only one that grows, and it takes whatever the
+     sentence above it and the strip below it leave.
+
+     The four-column band folds to two, and the pairing the hero is built around
+     survives the fold — the wordmark rolling down over the triangle on the
+     left, the gateway list ruled off to the right. The same picture arrives,
+     smaller, rather than a different one that happens to fit. */
+  @media (max-width: 820px) {
+    .bubble-stage {
+      width: 100%;
+      aspect-ratio: auto;
+      height: 100svh;
+      max-height: none;
+    }
+
+    /* Clear of the prototype label, which is fixed over the top-left corner. */
+    .content { padding: 46px 18px 18px; }
+
+    .upper {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 0.66fr);
+      grid-template-rows: auto minmax(0, 1fr);
+      column-gap: 14px;
+      min-height: 0;
+    }
+
+    /* Over the wordmark, and on its own block of paper. On a desktop the mark
+       has a column to itself and crosses nothing but the mono strip at the
+       foot; folded into two columns it would roll straight down through the
+       sentence. So the sentence keeps its own ground and the mark rolls out
+       from behind it, which is the reading the hero already has at the foot. */
+    .col-a {
+      position: relative;
+      z-index: 4;
+      grid-column: 1 / -1;
+      grid-row: 1;
+      border-right: 0;
+      padding-right: 0;
+      padding-bottom: clamp(10px, 2svh, 20px);
+      background: var(--bg);
+    }
+
+    .col-b { display: none; }
+
+    /* Still one cell shared by two things, exactly as on a desktop. */
+    .arrow, .wordmark { grid-column: 1; grid-row: 2; }
+    .arrow { overflow: hidden; }
+    .arrow svg { width: 54%; }
+
+    .wordmark { margin-top: 0; min-height: 0; }
+
+    /* Centred in its cell rather than inset to the left of it: the inset exists
+       to line the glyphs up with the blue thread, and the thread is not drawn at
+       this width. Still vertical, so it still rolls. */
+    .roll {
+      right: 0;
+      font-size: clamp(38px, 12.5vw, 60px);
+    }
+
+    .headline-wrap { margin-top: clamp(12px, 2.6svh, 24px); }
+
+    /* Against the width, so the sentence keeps its four lines, and against the
+       height, so a short screen does not have to find room the screen has not
+       got. Every size in this fold is set the same way; between them the hero
+       closes up rather than spilling out of the panel that pins it. */
+    .headline { font-size: clamp(19px, min(6.4vw, 3.4svh), 30px); }
+
+    .col-d { grid-column: 2; grid-row: 2; min-height: 0; }
+
+    /* The nine words are the tallest thing in this row, and the row is whatever
+       the sentence above and the strip below have left. So their leading is set
+       against the height of the screen rather than as a multiple of the type:
+       on a short phone they close up, and the list still ends inside the rule
+       it hangs from instead of running down over the foot. */
+    .gateway { padding-top: clamp(6px, 1.1svh, 30px); }
+
+    .gateway ul {
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      line-height: clamp(11px, 1.9svh, 19px);
+    }
+
+    .gateway h2 { margin: clamp(6px, 1svh, 22px) 0 clamp(6px, 1.2svh, 26px); }
+
+    .bottom { grid-template-columns: 1fr 1fr; gap: clamp(8px, 1.6svh, 18px) 0; }
+    .bcol:nth-child(1), .bcol:nth-child(3) { border-right: 0; }
+    .bcol:nth-child(2), .bcol:nth-child(4) { padding-left: 0; }
+    .label, .bcol p { font-size: clamp(10px, 1.4svh, 11px); }
+    .bcol p { line-height: 1.65; }
+  }
+
+  .placeholder-section {
+    min-height: 168svh;
+    margin-top: -18svh;
+    color: #f9f9f2;
+  }
+
+  /* The one chapter that does not slide over the one before it. Everywhere
+     else an incoming panel cutting across the outgoing one is the whole point,
+     but the hero is a fixed composition held still by its pinning, so that edge
+     travelled up through the wordmark and sliced the triangle in half. Flush
+     with the hero instead: the two move together and nothing gets cut.
+
+     02 and 03 keep the shared overlap — chapters that are already moving can
+     take an edge crossing them. */
+  .placeholder-section[data-gateway-section="01-community-pulse"] {
+    --accent: #9ef0c8;
+    background: #141414;
+    margin-top: 0;
+  }
+
+  /* The other half of the wordmark's thread. Same x as .wordmark::after, so
+     the blue line appears to carry through the seam and end on the chapter
+     number, which is what it was pointing at all along. */
+  .placeholder-section[data-gateway-section="01-community-pulse"] .placeholder-panel::after {
+    content: "";
+    position: absolute;
+    z-index: 2;
+    left: 55.3%;
+    top: 0;
+    width: 2px;
+    height: clamp(90px, 16svh, 190px);
+    /* Lifted off the token: #1737ff on #141414 is all but invisible. */
+    background: #5f74ff;
+    transform: scaleY(clamp(0, calc(var(--section-progress, 0) * 3.2), 1));
+    transform-origin: top;
+  }
+
+  .placeholder-section[data-gateway-section="02-voices-podcast"] {
+    --accent: #f7f2e8;
+    background: #1737ff;
+    /* The chapter is now sized by the horizontal track inside it, not by the
+       shared placeholder height. */
+    min-height: auto;
+    --voices-shift: 0px;
+  }
+
+  .placeholder-section[data-gateway-section="03-frequency"] {
+    --accent: #1737ff;
+    background: var(--paper-warm);
+    color: var(--ink);
+  }
+
+  .placeholder-panel {
+    position: sticky;
+    min-height: 100svh;
+    background: inherit;
+    color: inherit;
+    transform: translateY(24px);
+    opacity: 0;
+    transition:
+      opacity 0.7s var(--ease-out),
+      transform 0.7s var(--ease-out);
+  }
+
+  .placeholder-panel::before {
+    content: attr(data-panel-label);
+    position: absolute;
+    right: clamp(18px, 5vw, 72px);
+    bottom: clamp(22px, 5vw, 76px);
+    z-index: -1;
+    color: var(--accent, currentColor);
+    font-size: clamp(92px, 20vw, 360px);
+    font-weight: 900;
+    line-height: 0.75;
+    letter-spacing: 0;
+    opacity: calc(0.06 + var(--section-progress) * 0.11);
+    transform:
+      translateX(calc((1 - var(--section-progress)) * 16vw))
+      translateY(calc(var(--section-progress) * -5vh));
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  .placeholder-panel.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .placeholder-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(220px, 0.85fr);
+    gap: clamp(18px, 4vw, 56px);
+    margin-top: clamp(28px, 6vw, 72px);
+    transform: translateY(calc((1 - var(--section-progress)) * 24px));
+  }
+
+  .media-block {
+    position: relative;
+    min-height: clamp(260px, 45vw, 560px);
+    border: 1px solid currentColor;
+    overflow: hidden;
+    background:
+      linear-gradient(135deg, currentColor 0 1px, transparent 1px) 0 0 / 34px 34px,
+      rgba(255, 255, 255, 0.08);
+    opacity: 0.46;
+    transform:
+      translateX(calc((0.5 - var(--section-progress)) * -10vw))
+      scale(calc(0.96 + var(--section-progress) * 0.055));
+    transform-origin: center;
+  }
+
+  .media-block::before,
+  .media-block::after {
+    content: "";
+    position: absolute;
+    inset: 10%;
+    border: 1px solid currentColor;
+    opacity: 0.38;
+    transform:
+      translateX(calc((var(--section-progress) - 0.5) * 12vw))
+      rotate(calc((var(--section-progress) - 0.5) * 6deg));
+  }
+
+  .media-block::after {
+    inset: 24% 18%;
+    background: var(--accent, currentColor);
+    opacity: 0.18;
+    transform:
+      translateY(calc((0.5 - var(--section-progress)) * 12vh))
+      scale(calc(0.88 + var(--section-progress) * 0.2));
+  }
+
+  .placeholder-list {
+    display: grid;
+    gap: 10px;
+    align-content: start;
+  }
+
+  .placeholder-card {
+    border-top: 1px solid currentColor;
+    padding: 16px 0 18px;
+    opacity: calc(0.45 + var(--section-progress) * 0.55);
+    transform: translateX(calc((1 - var(--section-progress)) * 42px));
+  }
+
+  .placeholder-card:nth-child(2) {
+    transform: translateX(calc((1 - var(--section-progress)) * 70px));
+  }
+
+  .placeholder-card:nth-child(3) {
+    transform: translateX(calc((1 - var(--section-progress)) * 98px));
+  }
+
+  .placeholder-card strong {
+    display: block;
+    font-size: clamp(18px, 2.2vw, 32px);
+    line-height: 1.1;
+  }
+
+  .placeholder-card span {
+    display: block;
+    margin-top: 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.72;
+  }
+
+  /* ---------- 03 into 04: the light going out ----------
+     The darkening belongs to 04, because 04 is what rises over 03. Its section
+     opens at exactly the warm paper 03 ends on and reaches black well before
+     the pinned panel centres its text, so the words are never light-on-light.
+     The panel itself is transparent: the gradient behind it belongs to the
+     section, which keeps scrolling, so the picture darkens while the text holds
+     still.
+
+     Black by a fifth of the chapter, not a third. The stops kept their spacing
+     and the fade its shape; it simply finishes sooner. That is not a colour
+     decision but a timing one: the threshold card decrypts as it climbs into
+     the panel, well before the panel pins, and it can only do that if there is
+     already dark behind it when it starts. The old third put black under the
+     card at the point it settled, which was the right answer for a card that
+     broke at the foot of the page. See gateway-v1-claude-decrypt.js. */
+  .threshold-section {
+    --paper-out: #f7f2e8;
+    --black-out: #05060a;
+    min-height: 165svh;
+    margin-top: -10svh;
+    background: linear-gradient(
+      180deg,
+      var(--paper-out) 0,
+      #6b6a63 7.8%,
+      #16181e 14.4%,
+      var(--black-out) 20%,
+      var(--black-out) 100%
+    );
+    color: #f4f2ec;
+  }
+
+  .threshold-panel {
+    display: grid;
+    place-items: center;
+    min-height: 100svh;
+    padding: clamp(28px, 6vw, 88px);
+    background: transparent;
+    transform: translateY(calc((1 - var(--threshold-progress)) * 18px));
+  }
+
+  /* 04 is the quietest thing on the page: one block, dead centre, nothing else.
+     No sentence, no chapter mark above it. By here the page has said what it
+     has to say and all that is left is the way through.
+
+     Built from the parts the rest of the page is already made of — a hairline
+     rule, mono micro-labels tracked wide, one blue dash, the hero's triangle,
+     and the faint grid the hero lays under itself. The terminal window this
+     replaces borrowed its look from an operating system rather than from
+     HENKAKU, which is why it sat on the page like a sticker. */
+  .threshold-inner {
+    width: min(680px, 100%);
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .gate {
+    --gate-line: rgba(244, 242, 236, 0.26);
+    --gate-blue: #4d63ff;
+    position: relative;
+    border: 1px solid var(--gate-line);
+    text-align: left;
+    background:
+      linear-gradient(90deg, rgba(244, 242, 236, 0.045) 1px, transparent 1px) 0 0 / 25% 100%,
+      linear-gradient(rgba(244, 242, 236, 0.03) 1px, transparent 1px) 0 0 / 100% 33.33%;
+    transition:
+      border-color 0.7s var(--ease-out),
+      background-color 0.7s var(--ease-out);
+  }
+
+  /* The block lights up as a whole, because the link inside covers most of it
+     and a border that stayed dead while the line woke up would read as two
+     separate things. */
+  .gate:hover {
+    border-color: rgba(244, 242, 236, 0.62);
+    background-color: rgba(77, 99, 255, 0.07);
+  }
+
+  /* The border, drawn as box-drawing characters instead of as CSS lines, so
+     that the frame can be enciphered along with the words it surrounds. It is
+     built from measurements by gateway-v1-claude-decrypt.js; until that has
+     succeeded the class below is absent and the CSS border above stands in, so
+     a card whose frame could not be measured still has one. */
+  .gate-frame {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    margin: 0;
+    overflow: hidden;
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 0.85vw, 12px);
+    line-height: 1;
+    letter-spacing: 0;
+    white-space: pre;
+    color: var(--gate-line);
+    pointer-events: none;
+    user-select: none;
+    transition: color 0.7s var(--ease-out);
+  }
+
+  .gate.has-frame {
+    border-color: transparent;
+  }
+
+  .gate.has-frame .gate-head { border-bottom-color: transparent; }
+  .gate.has-frame .gate-path { border-top-color: transparent; }
+
+  .gate:hover .gate-frame { color: rgba(244, 242, 236, 0.62); }
+
+  /* Above the frame, which fills the whole card behind them. */
+  .gate-head,
+  .gate .button-primary,
+  .gate-path {
+    position: relative;
+    z-index: 1;
+  }
+
+  .gate-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: clamp(11px, 1.3vw, 16px) clamp(14px, 1.8vw, 24px);
+    border-bottom: 1px solid var(--gate-line);
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 0.85vw, 12px);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #949cb0;
+  }
+
+  .gate-head span:last-child { color: #8f9dff; }
+
+  /* The line is the link, full width of the block, so there is no small control
+     to hunt for inside a large frame. */
+  .button-primary {
+    display: flex;
+    align-items: center;
+    gap: clamp(14px, 2vw, 26px);
+    padding: clamp(28px, 4.4vw, 52px) clamp(14px, 1.8vw, 24px);
+    color: #f4f2ec;
+    font-size: clamp(20px, 2.9vw, 40px);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    text-decoration: none;
+  }
+
+  /* The same blue dash that marks every label in the hero. */
+  .button-primary::before {
+    content: "";
+    flex: none;
+    width: clamp(18px, 2.4vw, 34px);
+    height: 2px;
+    background: var(--gate-blue);
+    transition: width 0.7s var(--ease-out);
+  }
+
+  .button-primary:hover::before,
+  .button-primary:focus-visible::before {
+    width: clamp(28px, 3.8vw, 54px);
+  }
+
+  /* The same triangle the hero points with, shrunk to a cursor. It is the only
+     movement this chapter has, and it only moves when reached for. */
+  .button-primary svg {
+    display: block;
+    flex: none;
+    margin-left: auto;
+    width: clamp(11px, 1.15vw, 17px);
+    height: auto;
+    transition: transform 0.7s var(--ease-out);
+  }
+
+  .button-primary:hover svg,
+  .button-primary:focus-visible svg {
+    transform: translateX(7px);
+  }
+
+  /* Where the button actually leads, named in the app's own route order, so
+     pressing it is not a step into the dark. */
+  .gate-path {
+    margin: 0;
+    padding: clamp(11px, 1.3vw, 16px) clamp(14px, 1.8vw, 24px);
+    border-top: 1px solid var(--gate-line);
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 0.85vw, 12px);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #7d8496;
+  }
+
+  /* The label is its own box so the decrypt can pin a width to it while the
+     characters are still noise. */
+  .gate-label { display: inline-block; }
+
+  .threshold-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .button-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    margin-top: clamp(22px, 3.2vw, 38px);
+    color: #9aa1b8;
+    font-size: clamp(12px, 1.1vw, 14px);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(154, 161, 184, 0.36);
+  }
+
+  .button-secondary:hover { color: #f4f2ec; }
+
+  .button-primary:focus-visible {
+    outline: 2px solid #8f9dff;
+    outline-offset: -6px;
+  }
+
+  .button-secondary:focus-visible {
+    outline: 3px solid #8f9dff;
+    outline-offset: 4px;
+  }
+
+  /* ---------- the page on a phone ----------
+     The chapters keep their pinning, their overlap, and everything they draw
+     from scroll position. What a phone changes is proportion, not structure:
+     the columns fold, the holds are shortened because a screen of picture that
+     costs two and a half screens of scrolling is a different, slower page on a
+     thumb, and the one or two things that are literally desktop-shaped are
+     dropped where folding them would not mean anything.
+
+     This is the whole of the difference. Anything not named below is the page
+     as it is at any other width. */
+  @media (max-width: 820px) {
+    .prototype-label {
+      top: 10px;
+      left: 10px;
+      font-size: 9px;
+    }
+
+    /* The holds were set against a landscape screen. A phone's is taller than
+       it is wide, so the same figures in svh buy far more scrolling for the
+       same picture; each chapter is brought back in. */
+    .gateway-hero { min-height: 150svh; }
+    .placeholder-section { min-height: 150svh; margin-top: -12svh; }
+    .threshold-section { min-height: 150svh; margin-top: -8svh; }
+    .voices-sticky-wrap { min-height: 205svh; }
+
+    .chapter {
+      grid-template-columns: 1fr;
+      gap: 10px;
+      padding-top: 68px;
+    }
+
+    /* The chapter's own top padding is small so the strip below it has room;
+       on a phone the fixed label would land on the title without this. 02 also
+       closes the gap under its title harder than the other chapters do, and at
+       this width, with the title set solid, that reads as the paragraph sitting
+       on the baseline rather than under it. */
+    .voices-sticky-panel .chapter { padding-top: 62px; }
+    .voices-sticky-panel .microcopy { margin-top: 20px; }
+
+    .placeholder-grid { grid-template-columns: 1fr; }
+
+    .media-block { min-height: 200px; }
+
+    /* The title arrives from below while the paragraph under it stands still.
+       On a wide screen the two are far enough apart for that to read as depth;
+       at this width, with the title wrapping to two lines, 28px of travel puts
+       it on top of the paragraph. The scaling goes with it — 3.5% of a title
+       this size is not a movement, it is a rounding error. */
+    .section-title {
+      margin-bottom: 12px;
+      transform: translateY(calc((1 - var(--section-progress)) * 10px));
+    }
+
+    /* The giant chapter word is set in vw and has already scaled. It only needs
+       to stop travelling further than the screen it slides across. */
+    .placeholder-panel::before {
+      right: clamp(12px, 4vw, 24px);
+      font-size: 26vw;
+      transform:
+        translateX(calc((1 - var(--section-progress)) * 22vw))
+        translateY(calc(var(--section-progress) * -4vh));
+    }
+
+    /* 02 keeps its sideways run — it is the one chapter whose idea *is* the
+       motion, and stacking it would leave nothing behind. The scenes go nearly
+       full width and the air between them is cut, so four of them still cross
+       inside the travel the chapter has been given. */
+    /* Sized against the screen rather than in pixels, so the strip fills the
+       panel it is pinned inside instead of sitting in the top half of it with
+       half a screen of empty colour underneath. */
+    .voices-photo-stage { min-height: 52svh; }
+
+    .voices-photo-track {
+      gap: 10vw;
+      padding: 0 10vw 0 8vw;
+    }
+
+    .voices-scene { flex: 0 0 84vw; min-height: 50svh; }
+    .voices-scene-title { bottom: 12px; font-size: clamp(30px, 9vw, 46px); }
+    .voices-ascii { font-size: 9px; }
+    .voices-fragments { gap: 10px; }
+    .voices-fragment { min-height: 170px; }
+
+    .voices-fragment:nth-child(2) {
+      min-height: 120px;
+      margin-top: 60px;
+    }
+
+    .voices-gate-mark { width: 100%; }
+    .voices-flow-copy .placeholder-list { margin-left: 0; }
+
+    /* The hero's half of the thread is the one thing here that cannot fold: it
+       is drawn to leave a wordmark standing at a fixed place in a four-column
+       band, and that band is not what this width has. 01 keeps its half and
+       moves it to the gutter, where the chapter number now is, so the blue line
+       still arrives at the thing it was pointing at. */
+    .wordmark::after { display: none; }
+
+    .placeholder-section[data-gateway-section="01-community-pulse"] .placeholder-panel::after {
+      /* Half a gutter in from the chapter's own left edge, so the line runs
+         down beside the number rather than through the nought. */
+      left: calc(clamp(18px, 5vw, 72px) - 9px);
+    }
+
+    .button-primary {
+      gap: 14px;
+      padding: 26px 16px;
+      font-size: 19px;
+    }
+
+    .gate-head { flex-direction: column; gap: 4px; }
+
+    /* Narrow enough and a character frame costs more than it gives: the cells
+       are wider than the hairline it replaces and the card is small. The CSS
+       border does the job instead. */
+    .gate-frame { display: none; }
+    .gate.has-frame { border-color: var(--gate-line); }
+    .gate.has-frame .gate-head { border-bottom-color: var(--gate-line); }
+    .gate.has-frame .gate-path { border-top-color: var(--gate-line); }
+
+    /* The card is the chapter at every width, so it stays centred here too.
+       The left-aligning rules this replaces belonged to the sentence that used
+       to sit above it. */
+    .threshold-inner {
+      width: 100%;
+    }
+
+    /* The card is sized by the words inside it, and on a wide screen those are
+       large enough to make it a card. Set at 19px they are not, and it centres
+       as a small box adrift in a black screen, so at this width it takes the
+       whole of the column it is centred in. */
+    .threshold-actions .gate { align-self: stretch; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition: none !important;
+      animation: none !important;
+      scroll-behavior: auto !important;
+    }
+
+    .hero-panel,
+    .placeholder-panel,
+    .placeholder-panel::before,
+    .section-title,
+    .placeholder-grid,
+    .media-block,
+    .media-block::before,
+    .media-block::after,
+    .placeholder-card,
+    .voices-photo-track,
+    .voices-scene,
+    .voices-fragment img,
+    .voices-observed img,
+    .threshold-panel {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+
+    /* Freezing the sideways move is not enough on its own: the row would stop
+       at scene one while the pinned panel still ate 258svh of scrolling, and
+       scenes two to four would be unreachable. So the chapter gives up its
+       track and its pinning too, and the scenes read as a column. */
+    .voices-sticky-wrap { min-height: auto; }
+
+    .voices-sticky-panel { position: static; }
+
+    .voices-photo-stage {
+      left: auto;
+      width: auto;
+      min-height: auto;
+      margin-left: 0;
+      overflow: visible;
+    }
+
+    .voices-photo-track {
+      display: grid;
+      gap: 28px;
+      min-width: 0;
+      padding: 24px 0 0;
+    }
+
+    .voices-scene { flex-basis: auto; min-height: 320px; }
+
+    /* Everything keyed to scroll position holds its resting state: the headline
+       stays one block, the thread is not drawn, and the chapters simply follow
+       one another. The cursor bubble is never created at all. */
+    .headline span,
+    .hero-scroll {
+      transform: none !important;
+      opacity: 1 !important;
+    }
+
+    .wordmark::after,
+    .placeholder-section[data-gateway-section="01-community-pulse"] .placeholder-panel::after,
+    .hero-panel::after {
+      display: none !important;
+    }
+
+    /* The gradient is a scroll effect: with nothing moving behind the pinned
+       text there is nothing to fade, so 04 is simply the black it was heading
+       for, and the sentence keeps its contrast. */
+    .threshold-section {
+      min-height: auto;
+      margin-top: 0;
+      background: var(--black-out);
+    }
+
+    /* The hero handles this setting itself: its script drops from the moving
+       WebGL bubble to a still one, or to no bubble at all, and stops its render
+       loop with it. Hiding anything here would only fight that. */
+  }
+</style>
+</head>
+<body>
+<p class="prototype-label">PUBLIC GATEWAY PROTOTYPE / V1 CLAUDE</p>
+<main aria-label="HENKAKU Public Gateway prototype">
+  <section class="gateway-section gateway-hero" data-gateway-section="00-gateway" aria-labelledby="gateway-title">
+    <div class="gateway-panel hero-panel">
+      <div class="bubble-stage" id="stage">
+        <canvas class="lens" id="lens2d" aria-hidden="true"></canvas>
+        <canvas class="lens" id="lens3d" aria-hidden="true"></canvas>
+
+        <div class="content" id="content">
+
+          <div class="upper">
+            <div class="col col-a">
+              <p class="label">HENKAKU<br />COMMUNITY</p>
+              <div class="dash"></div>
+              <div class="headline-wrap">
+                <div class="dash"></div>
+                <h1 class="headline" id="gateway-title"><span style="--i: 0">A LIVING</span><span style="--i: 1">INFRASTRUCTURE</span><span style="--i: 2">FOR COLLECTIVE</span><span style="--i: 3">TRANSFORMATION</span></h1>
+              </div>
+            </div>
+
+            <div class="col col-b"></div>
+
+            <div class="arrow">
+              <svg viewBox="0 0 515 692" aria-hidden="true">
+                <path d="M0 0 L515 417 L0 692 Z" fill="#0a0a0a" />
+              </svg>
+            </div>
+            <div class="wordmark"><div class="roll" id="roll"><span id="mark">HENKAKU</span></div></div>
+
+            <div class="col col-d">
+              <p class="label">JOIN THE<br />HENKAKU NETWORK</p>
+              <div class="dash"></div>
+              <div class="gateway">
+                <div class="dash"></div>
+                <h2>PUBLIC GATEWAY</h2>
+                <ul>
+                  <li>CO-CREATION</li>
+                  <li>DIALOGUE</li>
+                  <li>EXPERIMENTATION</li>
+                  <li>ART</li>
+                  <li>HACKER</li>
+                  <li>AI AGENTS</li>
+                  <li>CARE</li>
+                  <li>OPENNESS</li>
+                  <li>GOVERNANCE</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="bottom">
+            <div class="bcol">
+              <span class="plus">+</span>
+              <p>PEOPLE<br />IDEAS<br />SYSTEMS<br />FUTURES</p>
+            </div>
+            <div class="bcol">
+              <span class="plus">+</span>
+              <p>SHARED OWNERSHIP<br />TRANSPARENT SYSTEMS<br />DISTRIBUTED IMPACT</p>
+            </div>
+            <div class="bcol">
+              <span class="plus">+</span>
+              <p>BUILD<br />CONNECT<br />ITERATE<br />EVOLVE</p>
+            </div>
+            <div class="bcol">
+              <div class="dash"></div>
+              <p>CO-CREATE THE FUTURE</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <p class="hero-scroll">Scroll to enter</p>
+    </div>
+  </section>
+
+  <section class="gateway-section placeholder-section" data-gateway-section="01-community-pulse" aria-labelledby="pulse-title">
+    <div class="gateway-panel placeholder-panel reveal-once" data-panel-label="PULSE">
+      <div class="chapter">
+        <span class="chapter-number">01</span>
+        <div class="chapter-body">
+          <p class="kicker">Community Pulse</p>
+          <h2 class="section-title" id="pulse-title">COMMUNITY PULSE</h2>
+          <p class="microcopy">第2段階で、最近動いているプロジェクト、投稿、クエスト、Check-in を短いカードとして順に現れる構成へ差し替えます。</p>
+          <div class="placeholder-grid" aria-label="Community Pulse placeholder">
+            <div class="media-block" aria-hidden="true"></div>
+            <div class="placeholder-list" data-pulse-list></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="gateway-section placeholder-section" data-gateway-section="02-voices-podcast" aria-labelledby="voices-title">
+    <div class="voices-sticky-wrap" data-voices-scroll>
+      <div class="gateway-panel placeholder-panel voices-sticky-panel reveal-once" data-panel-label="VOICE">
+        <div class="chapter">
+          <span class="chapter-number">02</span>
+          <div class="chapter-body">
+            <p class="kicker">Voices / Podcast</p>
+            <h2 class="section-title" id="voices-title">VOICES / PODCAST</h2>
+            <p class="microcopy">縦スクロールの途中で、場面だけが横へ流れる比較用セクションです。音声の自動再生は行いません。</p>
+            <div class="voices-photo-stage" aria-label="Voices horizontal scene strip">
+              <div class="voices-photo-track" data-photo-strip>
+                <div class="voices-scene" aria-label="Scene 1 ASCII signal">
+                  <pre class="voices-ascii" aria-hidden="true">
+          H E N K A K U
+        +---------------+
+   -----|  . . . . . .  |-----
+        |  .  VOICE  .  |
+        |  .  ROOM   .  |
+   -----|  . . . . . .  |-----
+        +---------------+
+             //  //  //
+                  </pre>
+                  <p class="voices-scene-title">LISTENING ROOM</p>
+                </div>
+                <div class="voices-scene" aria-label="Scene 2 fragmented image">
+                  <div class="voices-fragments" aria-hidden="true">
+                    <div class="voices-fragment"><img src="thumbs/riso.png" alt="" loading="lazy" /></div>
+                    <div class="voices-fragment"><img src="thumbs/hero.png" alt="" loading="lazy" /></div>
+                    <div class="voices-fragment"><img src="thumbs/liquid.png" alt="" loading="lazy" /></div>
+                  </div>
+                  <p class="voices-scene-title">FRAGMENTS</p>
+                </div>
+                <div class="voices-scene" aria-label="Scene 3 observed image">
+                  <div class="voices-observed" aria-hidden="true">
+                    <img src="thumbs/hero.png" alt="" loading="lazy" />
+                    <div class="voices-observed-lines"></div>
+                  </div>
+                  <pre class="voices-ascii" aria-hidden="true">
+OBSERVE: 02
+SIGNAL:  ACTIVE
+LINES:   COMMUNITY / VOICE / TRACE
+                  </pre>
+                  <p class="voices-scene-title">OBSERVED</p>
+                </div>
+                <div class="voices-scene" aria-label="Scene 4 initiation entrance">
+                  <div class="voices-gate" aria-hidden="true">
+                    <div class="voices-gate-mark"><span>next signal<br />initiation threshold</span></div>
+                  </div>
+                  <p class="voices-scene-title">ENTER</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="voices-flow-copy" aria-label="Podcast placeholder">
+      <div class="placeholder-list" data-podcast-card></div>
+    </div>
+  </section>
+
+  <section class="gateway-section placeholder-section" data-gateway-section="03-frequency" aria-labelledby="frequency-title">
+    <div class="gateway-panel placeholder-panel reveal-once" data-panel-label="PLAYED">
+      <div class="chapter">
+        <span class="chapter-number">03</span>
+        <div class="chapter-body">
+          <p class="kicker">Frequency / Recently Played</p>
+          <h2 class="section-title" id="frequency-title">FREQUENCY</h2>
+          <p class="microcopy">第2段階で、権利確認前の抽象プレースホルダーを使い、3〜5曲の再生ログを個人情報なしで表示します。</p>
+          <div class="placeholder-grid" aria-label="Recently played placeholder">
+            <div class="media-block" aria-hidden="true"></div>
+            <div class="placeholder-list" data-track-list></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="gateway-section threshold-section" data-gateway-section="04-threshold" aria-labelledby="threshold-title">
+    <div class="gateway-panel threshold-panel">
+      <div class="threshold-inner">
+        <h2 class="sr-only" id="threshold-title">04 Threshold</h2>
+        <div class="threshold-actions">
+          <div class="gate" data-decrypt-scope>
+            <pre class="gate-frame" data-decrypt data-decrypt-frame aria-hidden="true"></pre>
+            <p class="gate-head">
+              <span data-decrypt>04 / Threshold</span>
+              <span data-decrypt>Entry : Open</span>
+            </p>
+            <a class="button-primary" href="index.html" data-app-href="/setup"><span class="gate-label" data-decrypt>joiN</span><svg viewBox="0 0 515 692" aria-hidden="true"><path d="M0 0 L515 417 L0 692 Z" fill="currentColor" /></svg></a>
+            <p class="gate-path" data-decrypt>Setup → Initiation → Check-in</p>
+          </div>
+          <a class="button-secondary" href="/initiation">参加の流れを見る</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<script type="module" src="gateway-v1-claude-bubble.js"></script>
+<script type="module" src="gateway-v1-claude-decrypt.js"></script>
+<script src="gateway-v1-claude-data.js"></script>
+<script>
+  const root = document.documentElement;
+  const threshold = document.querySelector("[data-gateway-section='04-threshold']");
+  const heroSection = document.querySelector("[data-gateway-section='00-gateway']");
+  const voicesSection = document.querySelector("[data-gateway-section='02-voices-podcast']");
+  const voicesScroll = document.querySelector("[data-voices-scroll]");
+  const photoStrip = document.querySelector("[data-photo-strip]");
+  const scrollSections = Array.from(document.querySelectorAll("[data-gateway-section]"));
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const narrow = window.matchMedia("(max-width: 820px)");
+
+  function card({ label, title, detail }) {
+    const item = document.createElement("div");
+    item.className = "placeholder-card";
+    item.innerHTML = `<span>${label}</span><strong>${title}</strong><span>${detail}</span>`;
+    return item;
+  }
+
+  if (window.gatewayMock) {
+    const pulseList = document.querySelector("[data-pulse-list]");
+    window.gatewayMock.pulse.forEach((item) => pulseList.append(card(item)));
+
+    const podcastCard = document.querySelector("[data-podcast-card]");
+    podcastCard.append(card({
+      label: window.gatewayMock.podcast.date,
+      title: window.gatewayMock.podcast.title,
+      detail: window.gatewayMock.podcast.summary,
+    }));
+
+    const trackList = document.querySelector("[data-track-list]");
+    window.gatewayMock.tracks.forEach((track) => trackList.append(card({
+      label: track.time,
+      title: track.title,
+      detail: track.artist,
+    })));
+  }
+
+  function progressFor(section) {
+    const rect = section.getBoundingClientRect();
+    const travel = Math.max(1, rect.height - window.innerHeight);
+    return Math.min(1, Math.max(0, -rect.top / travel));
+  }
+
+  /* How far chapter 02's row of scenes has to travel, and how much of that
+     travel the reader has paid for. The whole sideways move is this one length:
+     the browser scrolls vertically as it always does, and CSS spends the number
+     on a transform. Stop scrolling and the row stops with you. */
+  function updateVoicesShift() {
+    if (!voicesSection || !voicesScroll || !photoStrip) return;
+    const windowWidth = photoStrip.parentElement.clientWidth;
+    const distance = Math.max(0, photoStrip.scrollWidth - windowWidth);
+    const shift = distance * progressFor(voicesScroll);
+    voicesSection.style.setProperty("--voices-shift", `${shift.toFixed(2)}px`);
+  }
+
+  /* The headline drifts as chapter 00 is scrolled, and the bubble refracts a
+     canvas copy of the hero that was painted before it moved. So the copy has
+     to be redrawn — but redrawing on every frame would be paying a full repaint
+     for a one-pixel change, so it happens in steps, when the drift has actually
+     moved far enough to see. */
+  /* How far the hero has gone once its pinning is over. --section-progress
+     finishes at exactly the moment the panel unpins, so the exit needs its own
+     measure: 0 there, 1 by the time the chapter has left the screen. */
+  function updateHeroExit() {
+    if (!heroSection) return;
+    const rect = heroSection.getBoundingClientRect();
+    const gone = (window.innerHeight - rect.bottom) / window.innerHeight;
+    const exit = gone < 0 ? 0 : gone > 1 ? 1 : gone;
+    heroSection.style.setProperty("--hero-exit", exit.toFixed(3));
+  }
+
+  let platedAt = -1;
+  function keepHeroPlateInStep() {
+    if (!heroSection || typeof window.gatewayHeroRelayout !== "function") return;
+    const progress = progressFor(heroSection);
+    // The lens has faded to nothing by a third of the way through the hold, and
+    // repainting a copy that no longer shows is work for no picture.
+    if (progress > 0.34) return;
+    // Fewer steps on a phone. A repaint costs the same there as anywhere — the
+    // whole hero is walked and redrawn into a canvas — but the machine doing it
+    // has less to spare, and the drift being repainted is a few pixels of type.
+    const step = Math.round(progress * (narrow.matches ? 9 : 22));
+    if (step === platedAt) return;
+    platedAt = step;
+    window.gatewayHeroRelayout();
+  }
+
+  let ticking = false;
+  function updateScrollState() {
+    ticking = false;
+    if (reduceMotion.matches) {
+      root.style.setProperty("--threshold-progress", "1");
+      // Parked at zero: whenever less motion is asked for the scenes are a
+      // plain column and must not be pushed off to one side.
+      if (voicesSection) voicesSection.style.setProperty("--voices-shift", "0px");
+      // Nothing moves behind the hero, so there is no exit to dim.
+      if (heroSection) heroSection.style.setProperty("--hero-exit", "0");
+      scrollSections.forEach((section) => section.style.setProperty("--section-progress", "1"));
+      return;
+    }
+    root.style.setProperty("--threshold-progress", progressFor(threshold).toFixed(4));
+    scrollSections.forEach((section) => {
+      section.style.setProperty("--section-progress", progressFor(section).toFixed(4));
+    });
+    updateVoicesShift();
+    updateHeroExit();
+    keepHeroPlateInStep();
+  }
+
+  function requestScrollUpdate() {
+    if (ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(updateScrollState);
+  }
+
+  window.addEventListener("scroll", requestScrollUpdate, { passive: true });
+  window.addEventListener("resize", requestScrollUpdate);
+  reduceMotion.addEventListener("change", requestScrollUpdate);
+  narrow.addEventListener("change", requestScrollUpdate);
+  requestScrollUpdate();
+
+  /* The cursor belongs to the hero now. gateway-v1-claude-bubble.js listens on
+     the stage itself and moves a real refraction bubble, so the CSS-circle
+     version that used to live here has gone with the markup it followed. */
+
+  const revealObserver = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      entry.target.classList.add("is-visible");
+      revealObserver.unobserve(entry.target);
+    }
+  }, { threshold: 0, rootMargin: "0px 0px -15% 0px" });
+
+  document.querySelectorAll(".reveal-once").forEach((item) => revealObserver.observe(item));
+</script>
+</body>
+</html>

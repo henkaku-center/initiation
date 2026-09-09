@@ -1,37 +1,31 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   dispatchDemo,
   navigateDemo,
   useDemo,
   useDemoScreen,
 } from "@/lib/demo/useDemo";
-import type { DemoState } from "@/lib/demo/state";
 import { DemoWallet } from "./DemoWallet";
 import { DemoJourney } from "./DemoJourney";
 import { DemoPassport } from "./DemoPassport";
-import { CommunityCards, DemoCommunity } from "./DemoCommunity";
+import { DemoCommunity } from "./DemoCommunity";
 import { DemoDialog } from "./DemoDialog";
-import { DemoBubbles } from "./DemoBubbles";
-import {
-  GatewayVoices,
-  GatewayFrequency,
-  GatewayThreshold,
-} from "./GatewaySections";
+import { ReferenceGateway } from "./ReferenceGateway";
 import "./portal-demo.css";
 import "./experience.css";
-import "./gateway-refinement.css";
+import "./reference-gateway.css";
 
 export function DemoMark() {
   return (
     <svg
       className="pd-mark"
-      viewBox="0 0 36 36"
+      viewBox="0 0 48 60"
       fill="currentColor"
       aria-hidden="true"
     >
-      <path d="M3 3 25 18 3 33l6-15L3 3Zm14 0 16 15-16 15 6-15-6-15Z" />
+      <path d="M0 0 L48 37 L19 37 L0 60 Z" />
     </svg>
   );
 }
@@ -46,11 +40,7 @@ export function PortalDemo() {
     null,
   );
   const audioRef = useRef<HTMLAudioElement>(null);
-  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
-  const attachAudio = useCallback((node: HTMLAudioElement | null) => {
-    audioRef.current = node;
-    setAudio(node);
-  }, []);
+
 
   useEffect(() => {
     if (state.readStatus !== "loading") return;
@@ -84,11 +74,6 @@ export function PortalDemo() {
       setMessage("音楽を再生できませんでした。もう一度お試しください。");
     }
   };
-  const seekAudio = (seconds: number) => {
-    const player = audioRef.current;
-    if (player && Number.isFinite(player.duration))
-      player.currentTime = Math.max(0, Math.min(player.duration, seconds));
-  };
   const simulate = (
     scenario: "error" | "other" | "member" | "disconnected" | "normal",
   ) => {
@@ -116,7 +101,7 @@ export function PortalDemo() {
       className={
         "portal-demo " +
         (screen === "journey" ? "pd-dark " : "") +
-        (still ? "pd-still" : "")
+        (still ? "pd-still" : "") + (screen === "home" ? " pd-reference-home" : "")
       }
     >
       <a
@@ -165,17 +150,7 @@ export function PortalDemo() {
         </nav>
       </header>
       <main id="demo-main" tabIndex={-1}>
-        {screen === "home" && (
-          <Gateway
-            state={state}
-            still={still}
-            setStill={setStill}
-            audio={audio}
-            sound={sound}
-            toggleSound={toggleSound}
-            seekAudio={seekAudio}
-          />
-        )}
+        {screen === "home" && <ReferenceGateway />}
         {screen === "setup" && <DemoWallet state={state} notify={setMessage} />}
         {screen === "journey" && (
           <DemoJourney
@@ -218,7 +193,7 @@ export function PortalDemo() {
         </div>
       )}
       <audio
-        ref={attachAudio}
+        ref={audioRef}
         src="/demo-assets/breeze-zero.m4a"
         preload="none"
         loop
@@ -303,7 +278,7 @@ export function PortalDemo() {
           <div className="pd-credits">
             <h3>Backgrounds</h3>
             <p>
-              夜の遺跡・夕暮れの都市：OpenAI image_genによる仮素材。HENKAKU
+              夜の遺跡・夕暮れの都市、CommunityとPassportの画像：OpenAI image_genによる生成素材。HENKAKU
               portal demo / CC BY 4.0（権利が成立する範囲）。
             </p>
             <h3>Music</h3>
@@ -315,11 +290,11 @@ export function PortalDemo() {
             <h3>Design references</h3>
             <p>
               <a
-                href="https://henkaku-ui.vercel.app/bubble-multi"
+                href="https://henkaku-ui.vercel.app/liquid"
                 target="_blank"
                 rel="noreferrer"
               >
-                複数バブルのGateway案 ↗
+                Liquid / Bubble Decrypt Reveal ↗
               </a>
               <br />
               <a href="https://henkaku-ui.vercel.app/gateway-v1-claude" target="_blank" rel="noreferrer">
@@ -335,10 +310,10 @@ export function PortalDemo() {
               </a>
             </p>
             <p>
-              泡と図形は独自実装です。参考Artifactの画像は収録していません。
+              トップページは参照元のソースを基に構成し、元のライセンス表記を保持しています。
             </p>
             <a
-              href="/demo-assets/asset-provenance.json"
+              href="/demo-assets/polished-provenance.json"
               target="_blank"
               rel="noreferrer"
             >
@@ -347,159 +322,6 @@ export function PortalDemo() {
           </div>
         </DemoDialog>
       )}
-    </div>
-  );
-}
-
-function Gateway({
-  state,
-  still,
-  setStill,
-  audio,
-  sound,
-  toggleSound,
-  seekAudio,
-}: {
-  audio: HTMLAudioElement | null;
-  sound: boolean;
-  toggleSound: () => void;
-  seekAudio: (seconds: number) => void;
-  state: DemoState;
-  still: boolean;
-  setStill: (value: boolean) => void;
-}) {
-  const gatewayRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const nodes = gatewayRef.current?.querySelectorAll<HTMLElement>(
-      ".pd-home-community .pd-community-card, .pd-voices-heading, .pd-frequency-title, .pd-threshold",
-    );
-    if (!nodes) return;
-    if (still || matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      nodes.forEach((node) => {
-        node.dataset.gatewayReveal = "seen";
-      });
-      return;
-    }
-    const observer = new IntersectionObserver(
-      (entries) =>
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            (entry.target as HTMLElement).dataset.gatewayReveal = "seen";
-            observer.unobserve(entry.target);
-          }
-        }),
-      { rootMargin: "0px 0px -25px 0px", threshold: 0.05 },
-    );
-    nodes.forEach((node) => {
-      node.dataset.gatewayReveal =
-        node.getBoundingClientRect().top > innerHeight * 0.95
-          ? "waiting"
-          : "seen";
-      observer.observe(node);
-    });
-    return () => {
-      observer.disconnect();
-      nodes.forEach((node) => {
-        node.dataset.gatewayReveal = "seen";
-      });
-    };
-  }, [still]);
-  return (
-    <div className="pd-gateway" ref={gatewayRef}>
-      <section className="pd-hero">
-        <div className="pd-hero-top pd-mono">
-          <span>PUBLIC GATEWAY / 001</span>
-          <span>PEOPLE. IDEAS. POSSIBILITIES.</span>
-        </div>
-        <div className="pd-hero-grid">
-          <div className="pd-hero-copy">
-            <p className="pd-eyebrow">A COMMUNITY IN THE MAKING</p>
-            <h1>
-              集まって、
-              <br />
-              変わって、
-              <br />
-              <span>また、はじまる。</span>
-            </h1>
-            <p className="pd-hero-description">
-              ひとつの問いから、まだない何かが生まれる。
-              <br />
-              あなたの好奇心を、HENKAKUへ。
-            </p>
-            <a
-              className="pd-primary"
-              href={
-                state.completed
-                  ? "#passport"
-                  : state.stage > 0
-                    ? "#journey"
-                    : "#setup"
-              }
-            >
-              {state.completed
-                ? "あなたのパスポートへ"
-                : state.stage > 0
-                  ? "旅のつづきへ"
-                  : "体験をはじめる"}
-              <span>↗</span>
-            </a>
-          </div>
-          <div className="pd-hero-art">
-            <DemoBubbles still={still} />
-            <span className="pd-art-coordinate pd-mono">
-              PEOPLE → POSSIBILITIES
-              <br />
-              CONNECTED, NOT COMPLETED.
-            </span>
-          </div>
-        </div>
-        <div className="pd-hero-bottom">
-          <span className="pd-mono">SCROLL TO EXPLORE ↓</span>
-          <div className="pd-tags">
-            <span>CO-CREATION</span>
-            <span>ART</span>
-            <span>AI</span>
-            <span>DAO</span>
-            <span>OPENNESS</span>
-          </div>
-          <button
-            onClick={() => setStill(!still)}
-            className="pd-text-button"
-            aria-pressed={still}
-          >
-            {still ? "動きを再開" : "動きを止める"} {still ? "▷" : "Ⅱ"}
-          </button>
-        </div>
-      </section>
-      <section className="pd-home-community">
-        <div className="pd-section-heading">
-          <div>
-            <span className="pd-eyebrow">01 / COMMUNITY PULSE</span>
-            <h2>その好奇心の、となりに。</h2>
-          </div>
-          <a href="#community" className="pd-text-link">
-            コミュニティを見る <span>↗</span>
-          </a>
-        </div>
-        <p className="pd-section-intro">
-          小さな実験が、あちこちではじまっています。
-          <span className="pd-tag">SAMPLE ACTIVITIES</span>
-        </p>
-        <CommunityCards state={state} compact />
-      </section>
-      <GatewayVoices still={still} />
-      <GatewayFrequency
-        audio={audio}
-        sound={sound}
-        toggleSound={toggleSound}
-        seekAudio={seekAudio}
-      />
-      <GatewayThreshold
-        still={still}
-        href={
-          state.completed ? "#passport" : state.signedIn ? "#journey" : "#setup"
-        }
-      />
     </div>
   );
 }

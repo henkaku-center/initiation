@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Image from "next/image";
 import { type DemoState } from "@/lib/demo/state";
 import { dispatchDemo, navigateDemo } from "@/lib/demo/useDemo";
 import { DemoDialog } from "./DemoDialog";
@@ -66,7 +67,7 @@ export function DemoPassport({
             <span>{state.participantNFT ? "✓" : "◇"}</span>
           </div>
           <div
-            className={`pd-nft-art ${state.participantNFT ? "is-claimed" : ""}`}
+            className={`pd-nft-art pd-nft-generated ${state.participantNFT ? "is-claimed" : ""}`}
           >
             <div className="pd-nft-lines" />
             <span className="pd-nft-top">
@@ -99,13 +100,8 @@ export function DemoPassport({
             <span>02 / ALLOWLIST</span>
             <span>{state.application === "approved" ? "✓" : "↗"}</span>
           </div>
-          <div className="pd-reward-visual pd-allowlist-visual">
-            <span className="pd-lines-card">
-              <i />
-              <i />
-              <i />
-              <b>✓</b>
-            </span>
+          <div className="pd-reward-visual pd-generated-visual">
+            <Image className="pd-passport-image" src="/demo-assets/passport-allowlist.webp" alt="" width={1024} height={1024} sizes="(max-width: 620px) 90vw, (max-width: 1100px) 42vw, 21vw" />
           </div>
           <h2>コミュニティへ申請</h2>
           <p>
@@ -163,10 +159,8 @@ export function DemoPassport({
             <span>03 / HENKAKU</span>
             <span>{state.rewardClaimed ? "✓" : "⊕"}</span>
           </div>
-          <div className="pd-reward-visual">
-            <div className="pd-reward-coin">
-              <span>H</span>
-            </div>
+          <div className="pd-reward-visual pd-generated-visual">
+            <Image className="pd-passport-image" src="/demo-assets/passport-token.webp" alt="" width={1024} height={1024} sizes="(max-width: 620px) 90vw, (max-width: 1100px) 42vw, 21vw" />
           </div>
           <h2>はじまりのHENKAKU</h2>
           <p>承認されたら、コミュニティでの一歩を後押しするトークンを。</p>
@@ -208,9 +202,8 @@ export function DemoPassport({
             <span>04 / MEMBERSHIP</span>
             <span>{state.rewardClaimed ? "✓" : "✳"}</span>
           </div>
-          <div className="pd-reward-visual pd-membership-visual">
-            <span>✳</span>
-            <i>YOU BELONG HERE</i>
+          <div className="pd-reward-visual pd-generated-visual">
+            <Image className="pd-passport-image" src="/demo-assets/passport-membership.webp" alt="" width={1024} height={1024} sizes="(max-width: 620px) 90vw, (max-width: 1100px) 42vw, 21vw" />
           </div>
           <h2>ここから、一緒に。</h2>
           <p>次はあなたの活動が、新しく来る誰かの入口になります。</p>

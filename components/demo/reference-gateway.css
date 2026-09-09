@@ -1,0 +1,18 @@
+.pd-reference-home { height:100dvh;min-height:0;overflow:hidden; }
+.pd-reference-home > .pd-demo-notice,
+.pd-reference-home > .pd-header,
+.pd-reference-home > .pd-footer,
+.pd-reference-home > .pd-demo-controls { display:none; }
+.pd-reference-home > main { height:100%; }
+.pd-reference-gateway { display:block;width:100%;height:100%;border:0;background:#f4f4f4; }
+.pd-header .pd-mark { color:#333; }
+.pd-dark .pd-header .pd-mark { color:#e8eff5; }
+.pd-community-image { display:block;width:100%;height:220px;object-fit:cover;margin-top:20px; }
+.pd-passport-image { display:block;width:100%;height:100%;object-fit:cover; }
+.pd-nft-art.pd-nft-generated { background:linear-gradient(0deg,#071324c9,transparent 40%,transparent 65%,#071324b0),url('/demo-assets/passport-nft.webp') center/cover; }
+.pd-nft-generated .pd-nft-top { text-shadow:0 1px 8px #001b38; }
+.pd-nft-generated .pd-nft-symbol { display:none; }
+.pd-reward-visual.pd-generated-visual { background:#eeece5; }
+.pd-reward-card .pd-generated-visual,.pd-reward-card .pd-nft-generated { height:auto;aspect-ratio:1; }
+@media(max-width:800px) and (min-width:621px){.pd-community-image{grid-column:1;grid-row:1/4;margin:0;height:160px}}
+@media(max-width:620px){.pd-community-image{height:210px}}

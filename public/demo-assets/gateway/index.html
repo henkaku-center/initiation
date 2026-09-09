@@ -1,0 +1,2411 @@
+<!doctype html>
+<!-- Adapted from henkaku-ui.vercel.app/liquid and gateway-v1-claude. See CREDITS.md and LICENSE-canvas-ui.txt. -->
+<html lang="ja"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow"/><title>HENKAKU Community Gateway</title>
+<style>
+  :root {
+    --paper: #f4f4f0;
+    --paper-warm: #f7f2e8;
+    --ink: #080808;
+    --muted: #5d625f;
+    --blue: #1737ff;
+    --line: rgba(8, 8, 8, 0.22);
+    --dark: #07090f;
+    --quiet: #f9f7f0;
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --threshold-progress: 0;
+    --font-sans: "Helvetica Neue", Helvetica, Arial, "Hiragino Kaku Gothic ProN",
+      "Yu Gothic", "Noto Sans JP", sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  html {
+    min-height: 100%;
+    scroll-behavior: auto;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    overflow-x: hidden;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  a { color: inherit; }
+
+  .prototype-label {
+    position: fixed;
+    z-index: 20;
+    top: 14px;
+    left: 14px;
+    border: 1px solid currentColor;
+    background: rgba(244, 244, 240, 0.86);
+    color: var(--blue);
+    padding: 7px 9px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.13em;
+    line-height: 1;
+    text-transform: uppercase;
+    backdrop-filter: blur(10px);
+  }
+
+  main { position: relative; }
+
+  /* The bubble is chapter 00's and nobody else's. It needs the hero redrawn as
+     pixels to bend the type through, that copy only exists for chapter 00, and
+     a plain circle trailing the cursor through the rest of the page turned out
+     to be a different, lesser thing pretending to be the same one. So past the
+     hero the cursor is just a cursor. */
+
+  .gateway-section {
+    position: relative;
+    min-height: 100svh;
+    isolation: isolate;
+    --section-progress: 0;
+  }
+
+  .gateway-panel {
+    position: sticky;
+    top: 0;
+    min-height: 100svh;
+    overflow: hidden;
+  }
+
+  .chapter {
+    display: grid;
+    grid-template-columns: minmax(70px, 0.25fr) minmax(0, 1fr);
+    gap: clamp(16px, 4vw, 64px);
+    width: min(1520px, 100%);
+    margin: 0 auto;
+    padding: clamp(54px, 7vw, 92px) clamp(18px, 5vw, 72px);
+  }
+
+  .chapter-number {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: currentColor;
+  }
+
+  .chapter-body {
+    min-width: 0;
+    border-top: 1px solid currentColor;
+    padding-top: clamp(18px, 2.4vw, 34px);
+  }
+
+  .kicker {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .section-title {
+    margin: clamp(12px, 2vw, 22px) 0 0;
+    font-size: clamp(38px, calc(7vw + var(--section-progress) * 2.6vw), 148px);
+    line-height: 0.95;
+    font-weight: 800;
+    letter-spacing: 0;
+    text-transform: uppercase;
+    transform:
+      translateY(calc((1 - var(--section-progress)) * 28px))
+      scale(calc(0.965 + var(--section-progress) * 0.035));
+    transform-origin: left top;
+  }
+
+  .microcopy {
+    max-width: 52ch;
+    margin: clamp(16px, 2.4vw, 28px) 0 0;
+    color: var(--muted);
+    font-size: clamp(14px, 1.3vw, 17px);
+    line-height: 1.75;
+  }
+
+  /* ---------- 02 VOICES: vertical scroll turned sideways ----------
+     Ported from gateway-codex3.html. The chapter is a tall track holding one
+     pinned panel; inside it a full-bleed window clips a row four scenes wide,
+     and the row is moved left in step with how far the track has been scrolled.
+
+     Nothing is hijacked to do this: no wheel or touchmove handler, no
+     preventDefault, no snap. The page scrolls the way the browser scrolls it,
+     and the only thing listening is a passive scroll listener that writes one
+     length, --voices-shift, which CSS spends on a transform. */
+
+  .voices-sticky-wrap {
+    position: relative;
+    min-height: 258svh;
+  }
+
+  .voices-sticky-panel {
+    z-index: 1;
+    overflow: hidden;
+  }
+
+  .voices-sticky-panel::before {
+    z-index: 0;
+    right: auto;
+    left: clamp(18px, 5vw, 72px);
+    bottom: clamp(22px, 4vw, 52px);
+    color: #f7f2e8;
+    font-size: clamp(110px, 26vw, 430px);
+    opacity: calc(0.08 + var(--section-progress) * 0.08);
+    transform: translateX(calc((1 - var(--section-progress)) * 8vw));
+  }
+
+  .voices-sticky-panel .chapter {
+    position: relative;
+    z-index: 1;
+    padding-top: clamp(24px, 3.2vw, 44px);
+    padding-bottom: 0;
+  }
+
+  .voices-sticky-panel .section-title {
+    margin-top: clamp(6px, 0.8vw, 10px);
+    font-size: clamp(34px, calc(5vw + var(--section-progress) * 0.9vw), 96px);
+  }
+
+  .voices-sticky-panel .microcopy {
+    margin-top: clamp(8px, 1vw, 12px);
+    max-width: 42ch;
+    line-height: 1.55;
+  }
+
+  .voices-photo-stage {
+    position: relative;
+    left: 50%;
+    z-index: 2;
+    width: 100vw;
+    min-height: clamp(300px, 39vw, 480px);
+    margin-top: clamp(0px, 0.8vw, 10px);
+    margin-left: -50vw;
+    overflow: hidden;
+    background: transparent;
+  }
+
+  .voices-photo-track {
+    display: flex;
+    align-items: center;
+    gap: clamp(12vw, 14vw, 18vw);
+    min-width: 320vw;
+    height: 100%;
+    padding: 0 16vw 0 12vw;
+    transform: translateX(calc(var(--voices-shift) * -1));
+    will-change: transform;
+  }
+
+  .voices-scene {
+    position: relative;
+    flex: 0 0 clamp(65vw, 72vw, 80vw);
+    min-height: clamp(260px, 34vw, 430px);
+    transform: scale(calc(0.985 + var(--section-progress) * 0.015));
+  }
+
+  .voices-scene::before,
+  .voices-scene::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .voices-scene::before {
+    background:
+      linear-gradient(90deg, rgba(247, 242, 232, 0.34) 1px, transparent 1px) 0 0 / 11vw 100%,
+      linear-gradient(rgba(247, 242, 232, 0.22) 1px, transparent 1px) 0 0 / 100% 18%;
+    opacity: 0.38;
+  }
+
+  .voices-ascii {
+    margin: 0;
+    color: #f7f2e8;
+    font-family: var(--font-mono);
+    font-size: clamp(12px, 1.28vw, 22px);
+    line-height: 1.05;
+    white-space: pre;
+  }
+
+  .voices-scene-title {
+    position: absolute;
+    left: 0;
+    bottom: clamp(24px, 3.4vw, 48px);
+    margin: 0;
+    color: #f7f2e8;
+    font-size: clamp(38px, 6.5vw, 108px);
+    line-height: 0.9;
+    font-weight: 900;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  .voices-fragments {
+    display: grid;
+    grid-template-columns: 1.1fr 0.72fr 0.9fr;
+    gap: clamp(12px, 2.8vw, 42px);
+    align-items: center;
+    min-height: inherit;
+  }
+
+  .voices-fragment {
+    position: relative;
+    overflow: hidden;
+    min-height: clamp(180px, 31vw, 420px);
+    mix-blend-mode: multiply;
+  }
+
+  .voices-fragment:nth-child(2) {
+    min-height: clamp(150px, 24vw, 330px);
+    margin-top: clamp(80px, 10vw, 150px);
+  }
+
+  .voices-fragment img,
+  .voices-observed img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(1) contrast(1.45) brightness(1.08) sepia(1) saturate(3.4) hue-rotate(185deg);
+    opacity: 0.72;
+  }
+
+  .voices-observed {
+    position: absolute;
+    inset: 6% 8% 14% 10%;
+    overflow: hidden;
+    mix-blend-mode: multiply;
+  }
+
+  .voices-observed-lines {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(90deg, transparent 0 18%, rgba(247, 242, 232, 0.82) 18% 18.35%, transparent 18.35% 58%, rgba(247, 242, 232, 0.72) 58% 58.2%, transparent 58.2%),
+      linear-gradient(0deg, transparent 0 36%, rgba(247, 242, 232, 0.72) 36% 36.25%, transparent 36.25% 72%, rgba(247, 242, 232, 0.58) 72% 72.18%, transparent 72.18%);
+  }
+
+  .voices-gate {
+    display: grid;
+    place-items: center;
+    min-height: inherit;
+  }
+
+  .voices-gate-mark {
+    position: relative;
+    width: min(56vw, 760px);
+    aspect-ratio: 1.8;
+    border-top: 1px solid currentColor;
+    border-bottom: 1px solid currentColor;
+  }
+
+  .voices-gate-mark::before,
+  .voices-gate-mark::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 44%;
+    height: 1px;
+    background: currentColor;
+  }
+
+  .voices-gate-mark::before { left: 0; }
+  .voices-gate-mark::after { right: 0; }
+
+  .voices-gate-mark span {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    color: #f7f2e8;
+    font-family: var(--font-mono);
+    font-size: clamp(10px, 1vw, 14px);
+    letter-spacing: 0.16em;
+    line-height: 1.6;
+    text-align: center;
+    text-transform: uppercase;
+    transform: translate(-50%, -50%);
+  }
+
+  .voices-flow-copy {
+    position: relative;
+    z-index: 2;
+    width: min(920px, 100%);
+    margin: 0 auto;
+    padding: clamp(32px, 5vw, 64px) clamp(18px, 5vw, 72px) clamp(82px, 12vw, 150px);
+  }
+
+  .voices-flow-copy .placeholder-list {
+    max-width: 460px;
+    margin-left: auto;
+  }
+
+
+  .placeholder-section {
+    min-height: 168svh;
+    margin-top: -18svh;
+    color: #f9f9f2;
+  }
+
+  /* The one chapter that does not slide over the one before it. Everywhere
+     else an incoming panel cutting across the outgoing one is the whole point,
+     but the hero is a fixed composition held still by its pinning, so that edge
+     travelled up through the wordmark and sliced the triangle in half. Flush
+     with the hero instead: the two move together and nothing gets cut.
+
+     02 and 03 keep the shared overlap — chapters that are already moving can
+     take an edge crossing them. */
+  .placeholder-section[data-gateway-section="01-community-pulse"] {
+    --accent: #9ef0c8;
+    background: #141414;
+    margin-top: 0;
+  }
+
+  /* The other half of the wordmark's thread. Same x as .wordmark::after, so
+     the blue line appears to carry through the seam and end on the chapter
+     number, which is what it was pointing at all along. */
+  .placeholder-section[data-gateway-section="01-community-pulse"] .placeholder-panel::after {
+    content: "";
+    position: absolute;
+    z-index: 2;
+    left: 55.3%;
+    top: 0;
+    width: 2px;
+    height: clamp(90px, 16svh, 190px);
+    /* Lifted off the token: #1737ff on #141414 is all but invisible. */
+    background: #5f74ff;
+    transform: scaleY(clamp(0, calc(var(--section-progress, 0) * 3.2), 1));
+    transform-origin: top;
+  }
+
+  .placeholder-section[data-gateway-section="02-voices-podcast"] {
+    --accent: #f7f2e8;
+    background: #1737ff;
+    /* The chapter is now sized by the horizontal track inside it, not by the
+       shared placeholder height. */
+    min-height: auto;
+    --voices-shift: 0px;
+  }
+
+  .placeholder-section[data-gateway-section="03-frequency"] {
+    --accent: #1737ff;
+    background: var(--paper-warm);
+    color: var(--ink);
+  }
+
+  .placeholder-panel {
+    position: sticky;
+    min-height: 100svh;
+    background: inherit;
+    color: inherit;
+    transform: translateY(24px);
+    opacity: 0;
+    transition:
+      opacity 0.7s var(--ease-out),
+      transform 0.7s var(--ease-out);
+  }
+
+  .placeholder-panel::before {
+    content: attr(data-panel-label);
+    position: absolute;
+    right: clamp(18px, 5vw, 72px);
+    bottom: clamp(22px, 5vw, 76px);
+    z-index: -1;
+    color: var(--accent, currentColor);
+    font-size: clamp(92px, 20vw, 360px);
+    font-weight: 900;
+    line-height: 0.75;
+    letter-spacing: 0;
+    opacity: calc(0.06 + var(--section-progress) * 0.11);
+    transform:
+      translateX(calc((1 - var(--section-progress)) * 16vw))
+      translateY(calc(var(--section-progress) * -5vh));
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  .placeholder-panel.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .placeholder-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(220px, 0.85fr);
+    gap: clamp(18px, 4vw, 56px);
+    margin-top: clamp(28px, 6vw, 72px);
+    transform: translateY(calc((1 - var(--section-progress)) * 24px));
+  }
+
+  .media-block {
+    position: relative;
+    min-height: clamp(260px, 45vw, 560px);
+    border: 1px solid currentColor;
+    overflow: hidden;
+    background:
+      linear-gradient(135deg, currentColor 0 1px, transparent 1px) 0 0 / 34px 34px,
+      rgba(255, 255, 255, 0.08);
+    opacity: 0.46;
+    transform:
+      translateX(calc((0.5 - var(--section-progress)) * -10vw))
+      scale(calc(0.96 + var(--section-progress) * 0.055));
+    transform-origin: center;
+  }
+
+  .media-block::before,
+  .media-block::after {
+    content: "";
+    position: absolute;
+    inset: 10%;
+    border: 1px solid currentColor;
+    opacity: 0.38;
+    transform:
+      translateX(calc((var(--section-progress) - 0.5) * 12vw))
+      rotate(calc((var(--section-progress) - 0.5) * 6deg));
+  }
+
+  .media-block::after {
+    inset: 24% 18%;
+    background: var(--accent, currentColor);
+    opacity: 0.18;
+    transform:
+      translateY(calc((0.5 - var(--section-progress)) * 12vh))
+      scale(calc(0.88 + var(--section-progress) * 0.2));
+  }
+
+  .placeholder-list {
+    display: grid;
+    gap: 10px;
+    align-content: start;
+  }
+
+  .placeholder-card {
+    border-top: 1px solid currentColor;
+    padding: 16px 0 18px;
+    opacity: calc(0.45 + var(--section-progress) * 0.55);
+    transform: translateX(calc((1 - var(--section-progress)) * 42px));
+  }
+
+  .placeholder-card:nth-child(2) {
+    transform: translateX(calc((1 - var(--section-progress)) * 70px));
+  }
+
+  .placeholder-card:nth-child(3) {
+    transform: translateX(calc((1 - var(--section-progress)) * 98px));
+  }
+
+  .placeholder-card strong {
+    display: block;
+    font-size: clamp(18px, 2.2vw, 32px);
+    line-height: 1.1;
+  }
+
+  .placeholder-card span {
+    display: block;
+    margin-top: 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.72;
+  }
+
+  /* ---------- 03 into 04: the light going out ----------
+     The darkening belongs to 04, because 04 is what rises over 03. Its section
+     opens at exactly the warm paper 03 ends on and reaches black well before
+     the pinned panel centres its text, so the words are never light-on-light.
+     The panel itself is transparent: the gradient behind it belongs to the
+     section, which keeps scrolling, so the picture darkens while the text holds
+     still.
+
+     Black by a fifth of the chapter, not a third. The stops kept their spacing
+     and the fade its shape; it simply finishes sooner. That is not a colour
+     decision but a timing one: the threshold card decrypts as it climbs into
+     the panel, well before the panel pins, and it can only do that if there is
+     already dark behind it when it starts. The old third put black under the
+     card at the point it settled, which was the right answer for a card that
+     broke at the foot of the page. See gateway-v1-claude-decrypt.js. */
+  .threshold-section {
+    --paper-out: #f7f2e8;
+    --black-out: #05060a;
+    min-height: 165svh;
+    margin-top: -10svh;
+    background: linear-gradient(
+      180deg,
+      var(--paper-out) 0,
+      #6b6a63 7.8%,
+      #16181e 14.4%,
+      var(--black-out) 20%,
+      var(--black-out) 100%
+    );
+    color: #f4f2ec;
+  }
+
+  .threshold-panel {
+    display: grid;
+    place-items: center;
+    min-height: 100svh;
+    padding: clamp(28px, 6vw, 88px);
+    background: transparent;
+    transform: translateY(calc((1 - var(--threshold-progress)) * 18px));
+  }
+
+  /* 04 is the quietest thing on the page: one block, dead centre, nothing else.
+     No sentence, no chapter mark above it. By here the page has said what it
+     has to say and all that is left is the way through.
+
+     Built from the parts the rest of the page is already made of — a hairline
+     rule, mono micro-labels tracked wide, one blue dash, the hero's triangle,
+     and the faint grid the hero lays under itself. The terminal window this
+     replaces borrowed its look from an operating system rather than from
+     HENKAKU, which is why it sat on the page like a sticker. */
+  .threshold-inner {
+    width: min(680px, 100%);
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .gate {
+    --gate-line: rgba(244, 242, 236, 0.26);
+    --gate-blue: #4d63ff;
+    position: relative;
+    border: 1px solid var(--gate-line);
+    text-align: left;
+    background:
+      linear-gradient(90deg, rgba(244, 242, 236, 0.045) 1px, transparent 1px) 0 0 / 25% 100%,
+      linear-gradient(rgba(244, 242, 236, 0.03) 1px, transparent 1px) 0 0 / 100% 33.33%;
+    transition:
+      border-color 0.7s var(--ease-out),
+      background-color 0.7s var(--ease-out);
+  }
+
+  /* The block lights up as a whole, because the link inside covers most of it
+     and a border that stayed dead while the line woke up would read as two
+     separate things. */
+  .gate:hover {
+    border-color: rgba(244, 242, 236, 0.62);
+    background-color: rgba(77, 99, 255, 0.07);
+  }
+
+  /* The border, drawn as box-drawing characters instead of as CSS lines, so
+     that the frame can be enciphered along with the words it surrounds. It is
+     built from measurements by gateway-v1-claude-decrypt.js; until that has
+     succeeded the class below is absent and the CSS border above stands in, so
+     a card whose frame could not be measured still has one. */
+  .gate-frame {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    margin: 0;
+    overflow: hidden;
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 0.85vw, 12px);
+    line-height: 1;
+    letter-spacing: 0;
+    white-space: pre;
+    color: var(--gate-line);
+    pointer-events: none;
+    user-select: none;
+    transition: color 0.7s var(--ease-out);
+  }
+
+  .gate.has-frame {
+    border-color: transparent;
+  }
+
+  .gate.has-frame .gate-head { border-bottom-color: transparent; }
+  .gate.has-frame .gate-path { border-top-color: transparent; }
+
+  .gate:hover .gate-frame { color: rgba(244, 242, 236, 0.62); }
+
+  /* Above the frame, which fills the whole card behind them. */
+  .gate-head,
+  .gate .button-primary,
+  .gate-path {
+    position: relative;
+    z-index: 1;
+  }
+
+  .gate-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: clamp(11px, 1.3vw, 16px) clamp(14px, 1.8vw, 24px);
+    border-bottom: 1px solid var(--gate-line);
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 0.85vw, 12px);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #949cb0;
+  }
+
+  .gate-head span:last-child { color: #8f9dff; }
+
+  /* The line is the link, full width of the block, so there is no small control
+     to hunt for inside a large frame. */
+  .button-primary {
+    display: flex;
+    align-items: center;
+    gap: clamp(14px, 2vw, 26px);
+    padding: clamp(28px, 4.4vw, 52px) clamp(14px, 1.8vw, 24px);
+    color: #f4f2ec;
+    font-size: clamp(20px, 2.9vw, 40px);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    text-decoration: none;
+  }
+
+  /* The same blue dash that marks every label in the hero. */
+  .button-primary::before {
+    content: "";
+    flex: none;
+    width: clamp(18px, 2.4vw, 34px);
+    height: 2px;
+    background: var(--gate-blue);
+    transition: width 0.7s var(--ease-out);
+  }
+
+  .button-primary:hover::before,
+  .button-primary:focus-visible::before {
+    width: clamp(28px, 3.8vw, 54px);
+  }
+
+  /* The same triangle the hero points with, shrunk to a cursor. It is the only
+     movement this chapter has, and it only moves when reached for. */
+  .button-primary svg {
+    display: block;
+    flex: none;
+    margin-left: auto;
+    width: clamp(11px, 1.15vw, 17px);
+    height: auto;
+    transition: transform 0.7s var(--ease-out);
+  }
+
+  .button-primary:hover svg,
+  .button-primary:focus-visible svg {
+    transform: translateX(7px);
+  }
+
+  /* Where the button actually leads, named in the app's own route order, so
+     pressing it is not a step into the dark. */
+  .gate-path {
+    margin: 0;
+    padding: clamp(11px, 1.3vw, 16px) clamp(14px, 1.8vw, 24px);
+    border-top: 1px solid var(--gate-line);
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 0.85vw, 12px);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #7d8496;
+  }
+
+  /* The label is its own box so the decrypt can pin a width to it while the
+     characters are still noise. */
+  .gate-label { display: inline-block; }
+
+  .threshold-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .button-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    margin-top: clamp(22px, 3.2vw, 38px);
+    color: #9aa1b8;
+    font-size: clamp(12px, 1.1vw, 14px);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(154, 161, 184, 0.36);
+  }
+
+  .button-secondary:hover { color: #f4f2ec; }
+
+  .button-primary:focus-visible {
+    outline: 2px solid #8f9dff;
+    outline-offset: -6px;
+  }
+
+  .button-secondary:focus-visible {
+    outline: 3px solid #8f9dff;
+    outline-offset: 4px;
+  }
+
+  /* ---------- the page on a phone ----------
+     The chapters keep their pinning, their overlap, and everything they draw
+     from scroll position. What a phone changes is proportion, not structure:
+     the columns fold, the holds are shortened because a screen of picture that
+     costs two and a half screens of scrolling is a different, slower page on a
+     thumb, and the one or two things that are literally desktop-shaped are
+     dropped where folding them would not mean anything.
+
+     This is the whole of the difference. Anything not named below is the page
+     as it is at any other width. */
+  @media (max-width: 820px) {
+    .prototype-label {
+      top: 10px;
+      left: 10px;
+      font-size: 9px;
+    }
+
+    /* The holds were set against a landscape screen. A phone's is taller than
+       it is wide, so the same figures in svh buy far more scrolling for the
+       same picture; each chapter is brought back in. */
+    .gateway-hero { min-height: 150svh; }
+    .placeholder-section { min-height: 150svh; margin-top: -12svh; }
+    .threshold-section { min-height: 150svh; margin-top: -8svh; }
+    .voices-sticky-wrap { min-height: 205svh; }
+
+    .chapter {
+      grid-template-columns: 1fr;
+      gap: 10px;
+      padding-top: 68px;
+    }
+
+    /* The chapter's own top padding is small so the strip below it has room;
+       on a phone the fixed label would land on the title without this. 02 also
+       closes the gap under its title harder than the other chapters do, and at
+       this width, with the title set solid, that reads as the paragraph sitting
+       on the baseline rather than under it. */
+    .voices-sticky-panel .chapter { padding-top: 62px; }
+    .voices-sticky-panel .microcopy { margin-top: 20px; }
+
+    .placeholder-grid { grid-template-columns: 1fr; }
+
+    .media-block { min-height: 200px; }
+
+    /* The title arrives from below while the paragraph under it stands still.
+       On a wide screen the two are far enough apart for that to read as depth;
+       at this width, with the title wrapping to two lines, 28px of travel puts
+       it on top of the paragraph. The scaling goes with it — 3.5% of a title
+       this size is not a movement, it is a rounding error. */
+    .section-title {
+      margin-bottom: 12px;
+      transform: translateY(calc((1 - var(--section-progress)) * 10px));
+    }
+
+    /* The giant chapter word is set in vw and has already scaled. It only needs
+       to stop travelling further than the screen it slides across. */
+    .placeholder-panel::before {
+      right: clamp(12px, 4vw, 24px);
+      font-size: 26vw;
+      transform:
+        translateX(calc((1 - var(--section-progress)) * 22vw))
+        translateY(calc(var(--section-progress) * -4vh));
+    }
+
+    /* 02 keeps its sideways run — it is the one chapter whose idea *is* the
+       motion, and stacking it would leave nothing behind. The scenes go nearly
+       full width and the air between them is cut, so four of them still cross
+       inside the travel the chapter has been given. */
+    /* Sized against the screen rather than in pixels, so the strip fills the
+       panel it is pinned inside instead of sitting in the top half of it with
+       half a screen of empty colour underneath. */
+    .voices-photo-stage { min-height: 52svh; }
+
+    .voices-photo-track {
+      gap: 10vw;
+      padding: 0 10vw 0 8vw;
+    }
+
+    .voices-scene { flex: 0 0 84vw; min-height: 50svh; }
+    .voices-scene-title { bottom: 12px; font-size: clamp(30px, 9vw, 46px); }
+    .voices-ascii { font-size: 9px; }
+    .voices-fragments { gap: 10px; }
+    .voices-fragment { min-height: 170px; }
+
+    .voices-fragment:nth-child(2) {
+      min-height: 120px;
+      margin-top: 60px;
+    }
+
+    .voices-gate-mark { width: 100%; }
+    .voices-flow-copy .placeholder-list { margin-left: 0; }
+
+    /* The hero's half of the thread is the one thing here that cannot fold: it
+       is drawn to leave a wordmark standing at a fixed place in a four-column
+       band, and that band is not what this width has. 01 keeps its half and
+       moves it to the gutter, where the chapter number now is, so the blue line
+       still arrives at the thing it was pointing at. */
+    .wordmark::after { display: none; }
+
+    .placeholder-section[data-gateway-section="01-community-pulse"] .placeholder-panel::after {
+      /* Half a gutter in from the chapter's own left edge, so the line runs
+         down beside the number rather than through the nought. */
+      left: calc(clamp(18px, 5vw, 72px) - 9px);
+    }
+
+    .button-primary {
+      gap: 14px;
+      padding: 26px 16px;
+      font-size: 19px;
+    }
+
+    .gate-head { flex-direction: column; gap: 4px; }
+
+    /* Narrow enough and a character frame costs more than it gives: the cells
+       are wider than the hairline it replaces and the card is small. The CSS
+       border does the job instead. */
+    .gate-frame { display: none; }
+    .gate.has-frame { border-color: var(--gate-line); }
+    .gate.has-frame .gate-head { border-bottom-color: var(--gate-line); }
+    .gate.has-frame .gate-path { border-top-color: var(--gate-line); }
+
+    /* The card is the chapter at every width, so it stays centred here too.
+       The left-aligning rules this replaces belonged to the sentence that used
+       to sit above it. */
+    .threshold-inner {
+      width: 100%;
+    }
+
+    /* The card is sized by the words inside it, and on a wide screen those are
+       large enough to make it a card. Set at 19px they are not, and it centres
+       as a small box adrift in a black screen, so at this width it takes the
+       whole of the column it is centred in. */
+    .threshold-actions .gate { align-self: stretch; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition: none !important;
+      animation: none !important;
+      scroll-behavior: auto !important;
+    }
+
+    .hero-panel,
+    .placeholder-panel,
+    .placeholder-panel::before,
+    .section-title,
+    .placeholder-grid,
+    .media-block,
+    .media-block::before,
+    .media-block::after,
+    .placeholder-card,
+    .voices-photo-track,
+    .voices-scene,
+    .voices-fragment img,
+    .voices-observed img,
+    .threshold-panel {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+
+    /* Freezing the sideways move is not enough on its own: the row would stop
+       at scene one while the pinned panel still ate 258svh of scrolling, and
+       scenes two to four would be unreachable. So the chapter gives up its
+       track and its pinning too, and the scenes read as a column. */
+    .voices-sticky-wrap { min-height: auto; }
+
+    .voices-sticky-panel { position: static; }
+
+    .voices-photo-stage {
+      left: auto;
+      width: auto;
+      min-height: auto;
+      margin-left: 0;
+      overflow: visible;
+    }
+
+    .voices-photo-track {
+      display: grid;
+      gap: 28px;
+      min-width: 0;
+      padding: 24px 0 0;
+    }
+
+    .voices-scene { flex-basis: auto; min-height: 320px; }
+
+    /* Everything keyed to scroll position holds its resting state: the headline
+       stays one block, the thread is not drawn, and the chapters simply follow
+       one another. The cursor bubble is never created at all. */
+    .headline span,
+    .hero-scroll {
+      transform: none !important;
+      opacity: 1 !important;
+    }
+
+    .wordmark::after,
+    .placeholder-section[data-gateway-section="01-community-pulse"] .placeholder-panel::after,
+    .hero-panel::after {
+      display: none !important;
+    }
+
+    /* The gradient is a scroll effect: with nothing moving behind the pinned
+       text there is nothing to fade, so 04 is simply the black it was heading
+       for, and the sentence keeps its contrast. */
+    .threshold-section {
+      min-height: auto;
+      margin-top: 0;
+      background: var(--black-out);
+    }
+
+    /* The hero handles this setting itself: its script drops from the moving
+       WebGL bubble to a still one, or to no bubble at all, and stops its render
+       loop with it. Hiding anything here would only fight that. */
+  }
+</style><style>
+  :root {
+    --liquid-bg: #f4f4f4;
+    --liquid-ink: #0a0a0a;
+    --liquid-blue: #1b34f5;
+    --liquid-rule: #bcbcbc;
+    --font-sans: "Helvetica Neue", Helvetica, Arial, "Hiragino Kaku Gothic ProN",
+      "Yu Gothic", "Noto Sans JP", sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    background: var(--liquid-bg);
+    color: var(--liquid-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- hero shell = the DecryptReveal host ---------- */
+  .hero {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    max-height: 100svh;
+    background: var(--liquid-bg);
+    overflow: hidden;
+    touch-action: none;
+  }
+
+  .hero > canvas.source { display: none; }
+  /* While the canvas draws the UI, the DOM is hidden AND inert, so nothing
+     invisible can be clicked by accident. */
+  .hero.captured .content {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.14s linear;
+  }
+  .hero.playing { cursor: pointer; }
+  .hero > canvas.output {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .hero > canvas.bubble-source { display: none; }
+  .hero > canvas.bubble-output {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 4;
+  }
+
+  /* ---------- layout ----------
+     Built on CSS Grid overlap (two items sharing one cell) rather than
+     absolute positioning: Safari misplaces positioned elements inside
+     <foreignObject>, which is how the snapshot fallback rasterises. */
+  .content {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    padding: 3.9% 4.1%;
+  }
+
+  .upper {
+    display: grid;
+    grid-template-columns: 30.3% 8.9% 38% 22.8%;
+    border-bottom: 1px solid var(--liquid-rule);
+    z-index: 2;
+  }
+
+  .col { display: flex; flex-direction: column; min-width: 0; }
+  .col-a { border-right: 1px solid var(--liquid-rule); padding-right: 3%; }
+  .col-b { border-right: 1px solid var(--liquid-rule); }
+
+  .label {
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 0.78vw, 15px);
+    letter-spacing: 0.2em;
+    line-height: 1.85;
+    margin: 0;
+  }
+
+  .dash { width: 1.1em; height: 2px; background: var(--liquid-blue); }
+  .label + .dash { margin-top: clamp(8px, 1.1vw, 20px); }
+
+  .plus {
+    font-family: var(--font-mono);
+    font-size: clamp(13px, 1.15vw, 22px);
+    line-height: 1;
+    color: var(--liquid-blue);
+  }
+
+  /* left column ---------------------------------------------------- */
+  .headline-wrap { margin-top: 19%; }
+  .headline {
+    font-size: clamp(19px, 2.78vw, 54px);
+    font-weight: 800;
+    letter-spacing: -0.015em;
+    line-height: 1.09;
+    margin: clamp(10px, 1.5vw, 26px) 0 0;
+  }
+
+  /* centre graphic --------------------------------------------------- */
+  .arrow {
+    grid-column: 3;
+    grid-row: 1;
+    display: flex;
+    align-items: center;
+    z-index: 1;
+  }
+  .arrow svg { width: 88%; height: auto; display: block; }
+
+  .wordmark {
+    grid-column: 3;
+    grid-row: 1;
+    z-index: 3;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-right: 13%;
+    margin-top: -2%;
+  }
+  .wordmark span {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    font-size: clamp(64px, 12vw, 232px);
+    font-weight: 800;
+    letter-spacing: -0.055em;
+    line-height: 0.8;
+    white-space: nowrap; /* vertical text wraps into a 2nd column otherwise */
+    color: var(--liquid-blue);
+  }
+
+  /* right column ----------------------------------------------------- */
+  .col-d { align-items: flex-start; }
+  .gateway {
+    margin-top: auto;
+    width: 100%;
+    border-top: 1px solid var(--liquid-rule);
+    border-left: 1px solid var(--liquid-rule);
+    padding: clamp(10px, 1.6vw, 30px) 0 0 clamp(12px, 2vw, 36px);
+    display: flex;
+    flex-direction: column;
+  }
+  .gateway h2 {
+    font-size: clamp(12px, 1.16vw, 23px);
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    margin: clamp(8px, 1.2vw, 22px) 0 clamp(10px, 1.5vw, 26px);
+  }
+  .gateway ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 0.78vw, 15px);
+    letter-spacing: 0.14em;
+    line-height: 2.15;
+  }
+
+  /* bottom strip ----------------------------------------------------- */
+  .bottom {
+    display: grid;
+    grid-template-columns: 19.9% 43% 17.6% 19.5%;
+    padding-top: clamp(12px, 1.8vw, 32px);
+    z-index: 1;
+  }
+  .bcol { display: flex; flex-direction: column; min-width: 0; }
+  .bcol:nth-child(1), .bcol:nth-child(3) { border-right: 1px solid var(--liquid-rule); }
+  .bcol:nth-child(2), .bcol:nth-child(4) { padding-left: 4%; }
+  .bcol p {
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 0.78vw, 15px);
+    letter-spacing: 0.14em;
+    line-height: 1.75;
+    margin: clamp(10px, 1.5vw, 26px) 0 0;
+  }
+  .bcol .dash { margin-bottom: 0; }
+
+  /* ---------- mobile ---------- */
+  @media (max-width: 820px) {
+    .hero { aspect-ratio: auto; min-height: 100svh; max-height: none; }
+    .content { grid-template-rows: 1fr auto; padding: 28px 20px; }
+    .upper { grid-template-columns: 1fr; }
+    .col-a { border-right: 0; padding-right: 0; padding-bottom: 24px; }
+    .col-b { display: none; }
+    .arrow, .wordmark { grid-column: 1; grid-row: auto; }
+    .arrow { justify-content: center; padding: 18px 0; }
+    .arrow svg { width: 46%; }
+    .wordmark {
+      padding-right: 0;
+      margin-top: -14%;
+      margin-bottom: 6%;
+      justify-content: center;
+    }
+    .wordmark span {
+      writing-mode: horizontal-tb;
+      font-size: 15vw;
+      letter-spacing: -0.03em;
+    }
+    .headline-wrap { margin-top: 26px; }
+    .headline { font-size: 30px; }
+    .gateway { margin-top: 24px; border-left: 0; padding-left: 0; }
+    .gateway ul { line-height: 1.95; }
+    .bottom { grid-template-columns: 1fr 1fr; gap: 20px 0; }
+    .bcol:nth-child(1), .bcol:nth-child(3) { border-right: 0; }
+    .bcol:nth-child(2), .bcol:nth-child(4) { padding-left: 0; }
+    .label, .gateway ul, .bcol p { font-size: 11px; }
+  }
+
+  /* ---------- demo chrome (not part of the hero) ---------- */
+  .notice {
+    padding: 14px 4.1%;
+    background: #e8f0fe;
+    border-bottom: 1px solid #b9cdf3;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  .notice.warn { background: #fff5d6; border-bottom-color: #e8d79a; }
+  .notice code { font-family: var(--font-mono); background: #00000010; padding: 1px 5px; border-radius: 4px; }
+  .notice[hidden] { display: none; }
+
+  .hint { padding: 14px 4.1%; color: #6b7078; font-size: 13px; margin: 0; }
+  .credit-line { padding-top: 0; font-size: 11px; }
+  .credit-line a { color: inherit; }
+
+  .panelbox {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    width: 250px;
+    max-height: 76svh;
+    overflow: auto;
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(8px);
+    border: 1px solid #dcdee2;
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 12px;
+    box-shadow: 0 16px 40px -22px rgba(0, 0, 0, 0.5);
+    z-index: 10;
+  }
+  .panelbox h2 { font-size: 12px; margin: 0; display: flex; justify-content: space-between; align-items: center; }
+  .panelbox button.toggle { border: 0; background: none; cursor: pointer; font-size: 14px; padding: 0 2px; }
+  .panelbox .rows { margin-top: 10px; display: grid; gap: 8px; }
+  .panelbox[data-open="false"] .rows { display: none; }
+
+  /* Collapsed: a blue tab, because everything inside it is live and worth a tap. */
+  .panelbox[data-open="false"] {
+    background: var(--liquid-blue);
+    border-color: var(--liquid-blue);
+    color: #fff;
+    cursor: pointer;
+  }
+  .panelbox[data-open="false"] button.toggle { color: #fff; }
+  .panelbox[data-open="false"] .cue { display: block; }
+  .panelbox .cue {
+    display: none;
+    margin: 3px 0 0;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    opacity: 0.92;
+  }
+
+  .row { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; align-items: center; }
+  .row label { color: #43474e; }
+  .row output { font-family: var(--font-mono); color: #14161a; }
+  .row input[type="range"] { grid-column: 1 / -1; width: 100%; }
+  .row input[type="color"] { width: 44px; height: 22px; padding: 0; border: 1px solid #ccc; border-radius: 4px; background: none; }
+</style><style>
+/* Integration only: keep the two source compositions and their viewport math. */
+.liquid-hero-section { min-height:0; color:var(--liquid-ink); background:var(--liquid-bg); }
+.liquid-hero-section .hero { touch-action:pan-y; }
+.arrow { color:#333; }
+.label a,.gateway a,.bcol a { color:inherit; text-decoration:none; }
+.gateway a:hover,.gateway a:focus-visible,.bcol a:hover { text-decoration:underline; text-underline-offset:4px; }
+.panelbox { z-index:40; }
+.panelbox .row { min-width:0; }
+.panelbox .row label { font-size:12px; }
+.placeholder-card { color:inherit; text-decoration:none; }
+.pulse-grid { display:block; }
+.pulse-grid .placeholder-list { grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(18px,3vw,38px); }
+a.placeholder-card:hover,a.placeholder-card:focus-visible { color:var(--accent); outline-offset:4px; }
+[data-pulse-list] .placeholder-card { opacity:calc(.18 + var(--card-progress,0)*.82); transform:translateX(calc((1 - var(--card-progress,0))*60px)); transition:opacity .16s linear,transform .16s linear; }
+[data-pulse-list] .placeholder-card:focus-visible { opacity:1; transform:none; }
+[data-track-list] .placeholder-card { position:relative; padding-left:68px; min-height:82px; }
+[data-track-list] .placeholder-card::before { content:""; position:absolute; left:0; top:18px; width:48px; height:48px; border:1px solid #2228; background:repeating-linear-gradient(135deg,#1737ff 0 2px,transparent 2px 10px),#e3dcd0; }
+[data-track-list] [data-abstract="02"]::before { background:radial-gradient(circle,#eee5d8 18%,#141414 19% 36%,#cab8a2 37% 44%,#141414 45%); }
+[data-track-list] [data-abstract="03"]::before { background:conic-gradient(from 45deg,#1737ff,#f7f2e8,#141414,#f7f2e8,#1737ff); }
+[data-track-list] [data-abstract="04"]::before { background:repeating-linear-gradient(0deg,#111 0 1px,transparent 1px 8px),repeating-linear-gradient(90deg,#111 0 1px,#dbd7ce 1px 8px); }
+@media(prefers-reduced-motion:reduce){[data-pulse-list] .placeholder-card{opacity:1;transform:none}}
+@media(max-width:820px){.pulse-grid .placeholder-list{grid-template-columns:1fr;gap:6px}}
+</style></head><body>
+<p class="prototype-label">PUBLIC GATEWAY / DEMO</p>
+<main aria-label="HENKAKU Community Gateway"><section class="gateway-section liquid-hero-section" data-gateway-section="00-gateway" aria-labelledby="gateway-title"><div class="notice" id="notice" hidden></div>
+
+<!-- DecryptReveal host -->
+<div class="hero" id="reveal">
+  <!-- HTML-in-canvas source. Content lives here when the API is available. -->
+  <canvas class="source" id="src" layoutsubtree="true">
+    <div class="content" id="content">
+
+      <div class="upper">
+        <div class="col col-a">
+          <p class="label"><a href="/#home" target="_top">HENKAKU<br />COMMUNITY</a></p>
+          <div class="dash"></div>
+          <div class="headline-wrap">
+            <div class="dash"></div>
+            <h1 class="headline" id="gateway-title">A LIVING<br />INFRASTRUCTURE<br />FOR COLLECTIVE<br />TRANSFORMATION</h1>
+          </div>
+        </div>
+
+        <div class="col col-b"></div>
+
+        <div class="arrow">
+          <svg viewBox="0 0 48 60" aria-hidden="true"><path d="M0 0 L48 37 L19 37 L0 60 Z" fill="currentColor" /></svg>
+        </div>
+        <div class="wordmark"><span>HENKAKU</span></div>
+
+        <div class="col col-d">
+          <p class="label">JOIN THE<br />HENKAKU NETWORK</p>
+          <div class="dash"></div>
+          <div class="gateway">
+            <div class="dash"></div>
+            <h2>PUBLIC GATEWAY</h2>
+            <ul>
+  <li><a href="/#setup" target="_top">WALLET SETUP</a></li>
+  <li><a href="/#journey" target="_top">INITIATION</a></li>
+  <li><a href="/#community" target="_top">COMMUNITY</a></li>
+  <li><a href="/#community" target="_top">CHECK-IN</a></li>
+  <li><a href="/#passport" target="_top">ALLOWLIST</a></li>
+  <li><a href="/#passport" target="_top">HENKAKU</a></li>
+  <li><a href="/#passport" target="_top">MY PASSPORT</a></li>
+</ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="bottom">
+        <div class="bcol">
+          <span class="plus">+</span>
+          <p>CONNECT<br />SIGN IN<br />POLYGON<br />HENKAKU</p>
+        </div>
+        <div class="bcol">
+          <span class="plus">+</span>
+          <p>INITIATION<br />ALLOWLIST APPLICATION<br />MEMBERSHIP</p>
+        </div>
+        <div class="bcol">
+          <span class="plus">+</span>
+          <p>COMMUNITY<br />CHECK-IN<br />MY PASSPORT</p>
+        </div>
+        <div class="bcol">
+          <div class="dash"></div>
+          <p><a href="/#journey" target="_top">BEGIN INITIATION →</a></p>
+        </div>
+      </div>
+
+    </div>
+  </canvas>
+
+  <canvas class="output" id="out" aria-hidden="true"></canvas>
+  <canvas class="bubble-source" id="bubble-src" aria-hidden="true"></canvas>
+  <canvas class="bubble-output" id="bubble" aria-hidden="true"></canvas>
+</div>
+
+<p class="hint">八の字に解読が進みます。画面をタップ / クリックすると一気に全体が解読されます。</p>
+<p class="hint credit-line">出典・参考：<a href="https://github.com/DavidHDev/canvas-ui" target="_blank" rel="noopener noreferrer">DavidHDev / canvas-ui</a> — Copyright (c) 2026 David Haz, MIT + Commons Clause License Condition v1.0 (<a href="LICENSE-canvas-ui.txt" target="_blank" rel="noopener noreferrer">full text</a>)</p>
+
+</section>  <section class="gateway-section placeholder-section" data-gateway-section="01-community-pulse" aria-labelledby="pulse-title">
+    <div class="gateway-panel placeholder-panel reveal-once" data-panel-label="PULSE">
+      <div class="chapter">
+        <span class="chapter-number">01</span>
+        <div class="chapter-body">
+          <p class="kicker">Community Pulse</p>
+          <h2 class="section-title" id="pulse-title">COMMUNITY PULSE</h2>
+          <p class="microcopy">プロジェクト、投稿、クエスト、Check-in。コミュニティの動きを、短いカードで。</p>
+          <div class="placeholder-grid pulse-grid" aria-label="最近のプロジェクト、投稿、クエスト、Check-in">
+            <div class="placeholder-list" data-pulse-list></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="gateway-section placeholder-section" data-gateway-section="02-voices-podcast" aria-labelledby="voices-title">
+    <div class="voices-sticky-wrap" data-voices-scroll>
+      <div class="gateway-panel placeholder-panel voices-sticky-panel reveal-once" data-panel-label="VOICE">
+        <div class="chapter">
+          <span class="chapter-number">02</span>
+          <div class="chapter-body">
+            <p class="kicker">Voices / Podcast</p>
+            <h2 class="section-title" id="voices-title">VOICES / PODCAST</h2>
+            <p class="microcopy">縦スクロールの途中で、場面だけが横へ流れる比較用セクションです。音声の自動再生は行いません。</p>
+            <div class="voices-photo-stage" aria-label="Voices horizontal scene strip">
+              <div class="voices-photo-track" data-photo-strip>
+                <div class="voices-scene" aria-label="Scene 1 ASCII signal">
+                  <pre class="voices-ascii" aria-hidden="true">
+          H E N K A K U
+        +---------------+
+   -----|  . . . . . .  |-----
+        |  .  VOICE  .  |
+        |  .  ROOM   .  |
+   -----|  . . . . . .  |-----
+        +---------------+
+             //  //  //
+                  </pre>
+                  <p class="voices-scene-title">LISTENING ROOM</p>
+                </div>
+                <div class="voices-scene" aria-label="Scene 2 fragmented image">
+                  <div class="voices-fragments" aria-hidden="true">
+                    <div class="voices-fragment"><img src="thumbs/riso.png" alt="" loading="lazy" /></div>
+                    <div class="voices-fragment"><img src="thumbs/hero.png" alt="" loading="lazy" /></div>
+                    <div class="voices-fragment"><img src="thumbs/liquid.png" alt="" loading="lazy" /></div>
+                  </div>
+                  <p class="voices-scene-title">FRAGMENTS</p>
+                </div>
+                <div class="voices-scene" aria-label="Scene 3 observed image">
+                  <div class="voices-observed" aria-hidden="true">
+                    <img src="thumbs/hero.png" alt="" loading="lazy" />
+                    <div class="voices-observed-lines"></div>
+                  </div>
+                  <pre class="voices-ascii" aria-hidden="true">
+OBSERVE: 02
+SIGNAL:  ACTIVE
+LINES:   COMMUNITY / VOICE / TRACE
+                  </pre>
+                  <p class="voices-scene-title">OBSERVED</p>
+                </div>
+                <div class="voices-scene" aria-label="Scene 4 initiation entrance">
+                  <div class="voices-gate" aria-hidden="true">
+                    <div class="voices-gate-mark"><span>next signal<br />initiation threshold</span></div>
+                  </div>
+                  <p class="voices-scene-title">ENTER</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="voices-flow-copy" aria-label="Podcast placeholder">
+      <div class="placeholder-list" data-podcast-card></div>
+    </div>
+  </section>
+
+  <section class="gateway-section placeholder-section" data-gateway-section="03-frequency" aria-labelledby="frequency-title">
+    <div class="gateway-panel placeholder-panel reveal-once" data-panel-label="PLAYED">
+      <div class="chapter">
+        <span class="chapter-number">03</span>
+        <div class="chapter-body">
+          <p class="kicker">Frequency / Recently Played</p>
+          <h2 class="section-title" id="frequency-title">FREQUENCY</h2>
+          <p class="microcopy">4つの音のしるし。権利確認前の抽象プレースホルダーと、個人情報を含まない仮の再生ログです。</p>
+          <div class="placeholder-grid" aria-label="個人情報を含まない4件の仮再生ログ">
+            <div class="media-block" aria-hidden="true"></div>
+            <div class="placeholder-list" data-track-list></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="gateway-section threshold-section" data-gateway-section="04-threshold" aria-labelledby="threshold-title">
+    <div class="gateway-panel threshold-panel">
+      <div class="threshold-inner">
+        <h2 class="sr-only" id="threshold-title">04 Threshold</h2>
+        <div class="threshold-actions">
+          <div class="gate" data-decrypt-scope>
+            <pre class="gate-frame" data-decrypt data-decrypt-frame aria-hidden="true"></pre>
+            <p class="gate-head">
+              <span data-decrypt>04 / Threshold</span>
+              <span data-decrypt>Entry : Open</span>
+            </p>
+            <a class="button-primary" href="/#setup" target="_top"><span class="gate-label" data-decrypt>joiN</span><svg viewBox="0 0 48 60" aria-hidden="true"><path d="M0 0 L48 37 L19 37 L0 60 Z" fill="currentColor" /></svg></a>
+            <p class="gate-path" data-decrypt>Setup → Initiation → Check-in</p>
+          </div>
+          <a class="button-secondary" href="/#journey" target="_top">参加の流れを見る</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<div class="panelbox" id="controls" data-open="false">
+  <h2>Decrypt Reveal <button class="toggle" id="toggle" type="button" aria-label="toggle">+</button></h2>
+  <p class="cue">クリックして動きを調整</p>
+  <div class="rows" id="rows"></div>
+</div>
+
+
+<script type="module">
+
+  import { createDecryptReveal } from "./decrypt-reveal.js";
+  import { createBubble } from "./bubble.js";
+
+  const card = document.getElementById("reveal");
+  const source = document.getElementById("src");
+  const content = document.getElementById("content");
+  const output = document.getElementById("out");
+  const bubble = document.getElementById("bubble");
+  const bubbleSource = document.getElementById("bubble-src");
+  const notice = document.getElementById("notice");
+  const rows = document.getElementById("rows");
+  // The roll depends on how frames are composited, so pin the snapshot path.
+  const supported = false;
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (supported) {
+    // Content stays inside the canvas; the canvas covers the card.
+    source.style.cssText = "position:absolute;inset:0;width:100%;height:100%;";
+  } else {
+    // Fallback: pull the content out of the canvas so it renders normally.
+    card.insertBefore(content, output);
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Rolling snapshot: two plates instead of one.
+   *
+   * The wordmark has to roll through the page while it stays encrypted,
+   * but re-serialising the DOM every frame costs 50-150ms. So the page is
+   * rasterised once into two layers:
+   *
+   *   plate A  the hero with the wordmark hidden
+   *   plate B  the wordmark alone, transparent everywhere else
+   *
+   * Compositing B over A at an offset moves only the wordmark.
+   * ------------------------------------------------------------------ */
+
+  const roll = { y: 0 };
+  let plateBase = null;
+  let plateMark = null;
+  let plateSize = { w: 0, h: 0 };
+  let markPeriod = 0;
+  let domPeriod = 0; // the type's own advance, a floor for the period
+  let rollable = false;
+
+  const WORDMARK_FILL = 0.88;
+
+  function fitWordmark() {
+    const span = content.querySelector(".wordmark span");
+    if (!span) return;
+    span.style.fontSize = "";
+    const vertical = getComputedStyle(span).writingMode.startsWith("vertical");
+    rollable = vertical;
+
+    const hero = card.getBoundingClientRect();
+    const rect = span.getBoundingClientRect();
+    const extent = vertical ? rect.height : rect.width;
+    if (!extent || !hero.height) return;
+
+    const offset = vertical ? rect.top - hero.top : rect.left - hero.left;
+    const span_of = vertical ? hero.height : hero.width;
+    const room = Math.max(span_of * WORDMARK_FILL - offset, span_of * 0.2);
+
+    const base = parseFloat(getComputedStyle(span).fontSize) || 16;
+    span.style.fontSize = `${base * (room / extent)}px`;
+    const fitted = span.getBoundingClientRect();
+    domPeriod = vertical ? fitted.height : fitted.width;
+    if (!markPeriod) markPeriod = domPeriod;
+  }
+
+  function rasterise(w, h, mutate) {
+    const css = Array.from(document.querySelectorAll("style"))
+      .map((node) => node.textContent)
+      .join("\n");
+
+    const clone = content.cloneNode(true);
+    mutate(clone);
+
+    const wrapper = document.createElement("div");
+    wrapper.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
+    wrapper.setAttribute("style", `width:${w}px;height:${h}px;`);
+    const styleNode = document.createElement("style");
+    styleNode.textContent = css;
+    wrapper.appendChild(styleNode);
+    wrapper.appendChild(clone);
+
+    const xml = new XMLSerializer().serializeToString(wrapper);
+    // Safari refuses to render a foreignObject without explicit width/height.
+    const svg =
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">` +
+      `<foreignObject x="0" y="0" width="${w}" height="${h}">${xml}</foreignObject></svg>`;
+
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error("plate failed to rasterise"));
+      img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+    });
+  }
+
+  /** Cheap "did anything actually render?" probe, downscaled to 32x32. */
+  const probe = document.createElement("canvas");
+  probe.width = probe.height = 32;
+  function looksPainted(bitmap) {
+    try {
+      const ctx = probe.getContext("2d", { willReadFrequently: true });
+      ctx.clearRect(0, 0, 32, 32);
+      ctx.drawImage(bitmap, 0, 0, 32, 32);
+      const data = ctx.getImageData(0, 0, 32, 32).data;
+      let ink = 0;
+      for (let i = 3; i < data.length; i += 4) if (data[i] > 8) ink++;
+      return ink > 32; // at least ~3% of the card carries content
+    } catch {
+      return false;
+    }
+  }
+
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  /**
+   * Vertical extent of the ink on a plate, in CSS pixels, read straight from
+   * the rasterised bitmap. Measuring the DOM box instead lets a mismatch
+   * creep in, and a period even slightly short makes the stamped copies of
+   * the wordmark sit on top of each other.
+   */
+  function inkExtent(plate, w, h) {
+    const scale = 0.25;
+    const cw = Math.max(1, Math.round(w * scale));
+    const ch = Math.max(1, Math.round(h * scale));
+    const sheet = document.createElement("canvas");
+    sheet.width = cw;
+    sheet.height = ch;
+    const ctx = sheet.getContext("2d", { willReadFrequently: true });
+    ctx.clearRect(0, 0, cw, ch);
+    ctx.drawImage(plate, 0, 0, cw, ch);
+    let data;
+    try {
+      data = ctx.getImageData(0, 0, cw, ch).data;
+    } catch {
+      return 0;
+    }
+    let top = -1;
+    let bottom = -1;
+    for (let y = 0; y < ch; y++) {
+      for (let x = 0; x < cw; x++) {
+        if (data[(y * cw + x) * 4 + 3] > 12) {
+          if (top < 0) top = y;
+          bottom = y;
+          break;
+        }
+      }
+    }
+    if (top < 0) return 0;
+    return (bottom - top + 1) / scale;
+  }
+
+
+  async function buildPlates(w, h) {
+    fitWordmark();
+    const base = await rasterise(w, h, (clone) => {
+      const mark = clone.querySelector(".wordmark");
+      if (mark) mark.style.visibility = "hidden";
+    });
+    const mark = await rasterise(w, h, (clone) => {
+      clone.style.visibility = "hidden";
+      const node = clone.querySelector(".wordmark");
+      if (node) node.style.visibility = "visible";
+    });
+    if (!looksPainted(base)) throw new Error("base plate came back blank");
+    plateBase = base;
+    plateMark = mark;
+    plateSize = { w, h };
+
+    // A touch of air between repeats, so the loop reads as a word
+    // rolling past rather than one continuous ribbon of letters.
+    // The period can never be shorter than the type's own advance: that
+    // is exactly what makes consecutive stamps sit on top of each other.
+    // If the plate clipped the ink, the DOM figure carries the day.
+    const measured = inkExtent(mark, w, h);
+    markPeriod = Math.max(measured * 1.06, domPeriod) || markPeriod;
+  }
+
+  /**
+   * iOS Safari is documented to fail the first foreignObject rasterisation
+   * and succeed on a later attempt, so retry before giving up.
+   */
+  async function paintPlates(canvas, dpr) {
+    const w = Math.max(1, content.clientWidth);
+    const h = Math.max(1, content.clientHeight);
+
+    if (!plateBase || plateSize.w !== w || plateSize.h !== h) {
+      let lastError = null;
+      let ok = false;
+      for (let attempt = 0; attempt < 3 && !ok; attempt++) {
+        try {
+          await buildPlates(w, h);
+          ok = true;
+        } catch (err) {
+          lastError = err;
+          await sleep(80 * (attempt + 1));
+        }
+      }
+      if (!ok) {
+        degrade("スナップショットに失敗しました（このブラウザでは非対応の可能性）");
+        throw lastError ?? new Error("plates failed");
+      }
+    }
+
+    compositePlates(canvas, dpr);
+    if (!handedBack) card.classList.add("captured");
+  }
+
+  /**
+   * The page as it currently stands: base plate plus the rolling wordmark.
+   * The decrypt shader turns this into cipher; the bubble refracts the very
+   * same frame untouched, so the lens shows the real page through it.
+   */
+  function compositePlates(canvas, dpr) {
+    if (!plateBase || !plateMark) return;
+    const w = Math.max(1, content.clientWidth);
+    const h = Math.max(1, content.clientHeight);
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = getComputedStyle(card).backgroundColor || "#f4f4f4";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(plateBase, 0, 0, w * dpr, h * dpr);
+
+    const period = markPeriod || h;
+    const shift = ((roll.y % period) + period) % period;
+    for (let k = -1; k <= 1; k++) {
+      ctx.drawImage(plateMark, 0, (shift + k * period) * dpr, w * dpr, h * dpr);
+    }
+  }
+
+  /** The bubble refracts the untouched page, not the cipher drawn over it. */
+  function paintBubble(canvas, dpr) {
+    compositePlates(canvas, dpr);
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Hero choreography.
+   *
+   *   Touch (coarse pointer)  figure-eight intro -> tap expands -> plain DOM.
+   *                           Always ends, so the GPU work is bounded.
+   *
+   *   Desktop (fine pointer)  figure-eight intro -> settles, still encrypted.
+   *                           Moving the cursor takes the circle over.
+   *                           Clicking toggles the encryption off / on.
+   *
+   * Every state eventually parks with the render loop stopped, so an idle
+   * hero costs nothing. That is what keeps a long-lived hero battery-safe.
+   * ------------------------------------------------------------------ */
+
+  const desktop = matchMedia("(hover: hover) and (pointer: fine)").matches;
+
+  const TOUR_LAPS = 2;
+  const LAP_MS = 4200;
+  const ROLL_MS = 5200;
+  const ROLL_FPS = 20; // one cell pass per captured frame, so cap the rate
+  const EXPAND_MS = 850;
+  const IDLE_MS = 2600; // cursor held still -> freeze the cipher
+  const REARM_MS = 1400; // cursor left -> replay the attract loop
+
+  const options = {
+    paint: paintPlates,
+    forceSnapshot: true,
+    onContextLost: () => degrade("GPU コンテキストが失われたため、通常表示に戻しました"),
+    interactive: false, // the intro drives the circle until the user does
+    radius: 400,
+    softness: 0.5,
+    cell: 10,
+    aspect: 0.75,
+    colored: 1,
+    color: "#1b34f5",
+    brightness: 1,
+    legibility: 1,
+    contrast: 1,
+    exposure: 1,
+    scramble: 0.12,
+    scrambleSpeed: 6,
+    edgeWidth: 0.2,
+    edgeFlicker: 1,
+    edgeGlow: 1.2,
+    edgeTint: 0.75,
+    aberration: 8,
+    passthrough: 0.1,
+    threshold: 0.025,
+    background: "#f4f4f4",
+    smoothing: 0.12,
+  };
+
+  const BASE_SCRAMBLE = options.scramble;
+
+  /* Official Bubble defaults, matching canvasui.dev/docs/components/bubble.
+     The vanilla API takes colours as 0-1 triples rather than hex. */
+  const BUBBLE = {
+    forceSnapshot: true,
+    paint: paintBubble,
+    listenTarget: card, // the captured DOM is inert while the canvas draws
+    size: 30,
+    trail: 24,
+    follow: 0.5,
+    blend: 14,
+    speed: 2,
+    refraction: 80,
+    dispersion: 1,
+    frost: 0,
+    shine: 0.25,
+    rim: 0.5,
+    iridescence: 1,
+    intensity: 0.9,
+    tint: [1, 1, 1],
+    tintStrength: 0,
+    colorA: [0.2902, 0.4549, 0.7216],
+    colorB: [0.4118, 0.4118, 0.4157],
+  };
+
+  let bubbleInstance = null;
+
+  function startBubble() {
+    if (bubbleInstance || reducedMotion) return;
+    bubbleInstance = createBubble(
+      { source: bubbleSource, content, output: bubble },
+      BUBBLE,
+    );
+  }
+
+  function stopBubble() {
+    bubbleInstance?.destroy();
+    bubbleInstance = null;
+    bubble.style.opacity = "0";
+  }
+
+  let instance = null;
+  let phase = "init"; // init | tour | hold | follow | expand | done | failed
+  let raf = 0;
+  let rollRaf = 0;
+  let idleTimer = 0;
+  let rearmTimer = 0;
+  let frozen = false;
+  // True once the DOM owns the pixels again. Guards against a capture
+  // that was already in flight re-hiding the page after the hand-back.
+  let handedBack = false;
+
+  function setRoll(y) {
+    if (handedBack || roll.y === y) return;
+    roll.y = y;
+    instance?.invalidate();
+    bubbleInstance?.invalidate(); // the lens must refract the same frame
+  }
+
+  function box() {
+    return { w: Math.max(card.clientWidth, 1), h: Math.max(card.clientHeight, 1) };
+  }
+
+  function setNotice(html, warn) {
+    notice.hidden = false;
+    notice.className = warn ? "notice warn" : "notice";
+    notice.innerHTML = html;
+  }
+
+  function stopMotion() {
+    cancelAnimationFrame(raf);
+    clearTimeout(idleTimer);
+    clearTimeout(rearmTimer);
+  }
+
+  /** Freezing the glyph churn lets the render loop settle and stop entirely. */
+  function freeze() {
+    if (frozen || !instance) return;
+    frozen = true;
+    instance.setOptions({ scramble: 0 });
+  }
+
+  function thaw() {
+    if (!frozen || !instance) return;
+    frozen = false;
+    instance.setOptions({ scramble: BASE_SCRAMBLE });
+  }
+
+  /** Any failure path ends the same way: the real, readable UI. */
+  function degrade(reason) {
+    if (phase === "failed") return;
+    phase = "failed";
+    handedBack = true;
+    stopBubble();
+    stopMotion();
+    stopRoll();
+    card.classList.remove("captured", "playing");
+    output.style.opacity = "0";
+    setNotice(`<b>エフェクトを停止しました。</b> ${reason} 通常の UI を表示しています。`, true);
+  }
+
+  /** Success path: hand the pixels back to the DOM and free the GPU. */
+  function finish() {
+    if (phase === "done" || phase === "failed") return;
+    phase = "done";
+    handedBack = true;
+    stopMotion();
+    stopRoll();
+    card.classList.remove("captured", "playing");
+    output.style.opacity = "0";
+    setTimeout(() => {
+      instance?.destroy(); // stops the render loop and releases all textures
+      instance = null;
+    }, 320);
+  }
+
+  /** Grow the reveal circle until it covers the hero, then drop to plain DOM. */
+  function decryptAll(px, py) {
+    if (phase === "expand" || phase === "done" || phase === "failed") return;
+    if (!instance) return;
+    phase = "expand";
+    stopMotion();
+    thaw();
+    instance.setOptions({ interactive: false });
+    card.classList.remove("playing");
+
+    const { w, h } = box();
+    const x = px ?? w / 2;
+    const y = py ?? h / 2;
+    instance.setPointer(x, y, 1);
+
+    // Full reveal only happens inside radius * (1 - softness), so overshoot
+    // far enough that the furthest corner lands inside that inner disc.
+    const far = Math.max(
+      Math.hypot(x, y),
+      Math.hypot(w - x, y),
+      Math.hypot(x, h - y),
+      Math.hypot(w - x, h - y),
+    );
+    const from = options.radius;
+    const to = (far / Math.max(1 - options.softness, 0.05)) * 1.06;
+
+    // Ease the type back to its home position over the same beat, so it
+    // comes to rest exactly where the static design puts it rather than
+    // snapping there the moment the DOM takes over again.
+    stopRoll();
+    const rollFrom = roll.y;
+    const rollTo = markPeriod
+      ? Math.ceil(roll.y / markPeriod) * markPeriod
+      : roll.y;
+    const t0 = performance.now();
+
+    const step = (now) => {
+      if (phase !== "expand") return;
+      const k = Math.min((now - t0) / EXPAND_MS, 1);
+      const eased = 1 - Math.pow(1 - k, 3);
+      instance.setOptions({ radius: from + (to - from) * eased });
+      setRoll(rollFrom + (rollTo - rollFrom) * eased);
+      if (k < 1) {
+        raf = requestAnimationFrame(step);
+        return;
+      }
+      setRoll(0);
+      finish();
+    };
+    raf = requestAnimationFrame(step);
+  }
+
+  /** Desktop resting state: fully encrypted, circle closed, loop stopped. */
+  function hold() {
+    if (phase === "failed" || phase === "done" || !instance) return;
+    phase = "hold";
+    stopMotion();
+    card.classList.add("playing");
+    instance.setPointer(box().w / 2, box().h / 2, 0); // fade the circle away
+    idleTimer = setTimeout(freeze, 900); // then let the loop settle
+  }
+
+  /** The cursor takes the circle over from the scripted intro. */
+  function takeOver(x, y) {
+    if (phase !== "tour" && phase !== "hold") return;
+    phase = "follow";
+    stopMotion();
+    thaw();
+    card.classList.add("playing");
+    instance.snapPointer(x, y); // start under the cursor, not mid-flight
+    instance.setPointer(x, y, 1);
+    instance.setOptions({ interactive: true });
+    armIdle();
+  }
+
+  function armIdle() {
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => {
+      if (phase === "follow") freeze();
+    }, IDLE_MS);
+  }
+
+  /**
+   * The roll runs on its own clock, deliberately separate from the reveal
+   * circle: the cursor drives one and must never interrupt the other. It
+   * keeps looping for as long as the page is still encrypted.
+   */
+  function startRoll() {
+    if (!rollable || !markPeriod || rollRaf) return;
+    const frameGap = 1000 / ROLL_FPS;
+    let last = 0;
+    const step = (now) => {
+      rollRaf = requestAnimationFrame(step);
+      if (document.hidden) return; // a backgrounded tab rolls nothing
+      if (last && now - last < frameGap) return;
+      const delta = last ? Math.min(now - last, 200) : frameGap;
+      last = now;
+      setRoll((roll.y + (markPeriod * delta) / ROLL_MS) % markPeriod);
+    };
+    rollRaf = requestAnimationFrame(step);
+  }
+
+  function stopRoll() {
+    cancelAnimationFrame(rollRaf);
+    rollRaf = 0;
+  }
+
+  function beginTour() {
+    if (phase === "failed" || !instance) return;
+    phase = "tour";
+    stopMotion();
+    thaw();
+    card.classList.add("playing");
+    instance.setOptions({ interactive: false });
+
+    const start = box();
+    const x0 = start.w * 0.5 + start.w * 0.3;
+    const y0 = start.h * 0.5;
+    instance.snapPointer(x0, y0); // avoid flying in from off-screen
+    instance.setPointer(x0, y0, 1);
+
+    const t0 = performance.now();
+    const step = (now) => {
+      if (phase !== "tour") return;
+      const elapsed = now - t0;
+      const t = (elapsed / LAP_MS) * Math.PI * 2;
+      const { w, h } = box();
+      // Gerono lemniscate — a clean horizontal figure eight.
+      const x = w * 0.5 + Math.cos(t) * w * 0.3;
+      const y = h * 0.5 + (Math.sin(t * 2) / 2) * h * 0.32;
+      instance.setPointer(x, y, 1);
+      if (elapsed >= LAP_MS * TOUR_LAPS) {
+        // Desktop keeps the door shut and waits; touch has no cursor to wait
+        // for, so it opens by itself.
+        if (desktop) hold();
+        else decryptAll(x, y);
+        return;
+      }
+      raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+  }
+
+  /** Re-lock the hero after it was decrypted. */
+  function reEncrypt() {
+    stopMotion();
+    stopRoll();
+    roll.y = 0;
+    instance?.destroy();
+    instance = null;
+    frozen = false;
+    card.classList.remove("captured", "playing");
+    boot();
+  }
+
+  /** In snapshot mode the tour must wait for the first capture. */
+  function whenReady(callback) {
+    if (supported) return callback();
+    const deadline = performance.now() + 5000;
+    const poll = () => {
+      if (phase === "failed") return;
+      if (card.classList.contains("captured")) return callback();
+      if (performance.now() > deadline) {
+        degrade("スナップショットがタイムアウトしました。");
+        return;
+      }
+      requestAnimationFrame(poll);
+    };
+    poll();
+  }
+
+  function boot() {
+    phase = "init";
+    frozen = false;
+    handedBack = false;
+    output.style.opacity = "1";
+
+    if (reducedMotion) {
+      setNotice(
+        "<b>「視差効果を減らす」設定が有効なため、エフェクトは再生しません。</b> " +
+          "通常の UI を表示しています（アクセシビリティ対応）。",
+      );
+      return;
+    }
+
+    instance = createDecryptReveal({ source, content, output }, options);
+    if (!instance) {
+      degrade("この環境では WebGL2 が利用できません。");
+      return;
+    }
+
+    const mode =
+      instance.mode === "html-in-canvas"
+        ? "<b>モード: HTML-in-canvas（ネイティブ）</b>"
+        : "<b>モード: スナップショット（全ブラウザ対応・無料・恒久）</b>";
+
+    setNotice(
+      desktop
+        ? `${mode} ／ <b>PC の操作</b>：青い HENKAKU が<b>暗号化されたまま縦に1周ロール</b>（約5秒）したあと、暗号化された状態で静止します。` +
+            "<b>カーソルを動かすと解読の円が追従</b>し、カーソルが離れると八の字に戻ります。" +
+            "<b>クリックで暗号化オン / オフ</b>を切り替えられます（解読後は本物の HTML に戻り GPU 負荷ゼロ）。"
+        : `${mode} ／ <b>スマホの操作</b>：青い HENKAKU が<b>暗号化されたまま縦に1周ロール</b>したあと、自動で全体が解読されます。` +
+            "<b>タップすれば即座に解読</b>。解読後は本物の HTML に戻り GPU 負荷はゼロになります。",
+    );
+
+    whenReady(() => {
+      startRoll();
+      startBubble(); // needs the plates, so only once they exist
+      beginTour();
+    });
+  }
+
+  // --- input ------------------------------------------------------------
+
+  // Touch: a tap opens the hero straight away.
+  card.addEventListener("pointerdown", (event) => {
+    if (desktop || phase !== "tour") return;
+    const rect = output.getBoundingClientRect();
+    decryptAll(event.clientX - rect.left, event.clientY - rect.top);
+  });
+
+  // Desktop: the cursor takes over the reveal circle.
+  card.addEventListener(
+    "pointermove",
+    (event) => {
+      if (!desktop) return;
+      const rect = output.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      if (phase === "tour" || phase === "hold") {
+        takeOver(x, y);
+        return;
+      }
+      if (phase === "follow") {
+        thaw();
+        armIdle();
+      }
+    },
+    { passive: true },
+  );
+
+  // Desktop: leaving the hero replays the attract loop.
+  card.addEventListener("pointerleave", () => {
+    if (!desktop || phase !== "follow") return;
+    stopMotion();
+    rearmTimer = setTimeout(() => {
+      if (phase === "follow") beginTour();
+    }, REARM_MS);
+  });
+
+  // Desktop: click is the on/off switch for the encryption.
+  card.addEventListener("click", (event) => {
+    if (event.target.closest?.("a")) return;
+    if (!desktop || phase === "failed" || phase === "expand") return;
+    if (phase === "done") {
+      reEncrypt();
+      return;
+    }
+    const rect = output.getBoundingClientRect();
+    decryptAll(event.clientX - rect.left, event.clientY - rect.top);
+  });
+
+  // Keyboard users tabbing into the (currently invisible) UI get it revealed.
+  content.addEventListener("focusin", () => {
+    if (phase === "tour" || phase === "hold" || phase === "follow") decryptAll();
+  });
+
+  boot();
+
+  /* ------------------------------------------------------------------ *
+   * Tuning panel — evaluation aid, not part of the hero itself.
+   * ------------------------------------------------------------------ */
+
+  const SLIDERS = [
+    ["radius", "Radius", 60, 700, 10],
+    ["softness", "Softness", 0.05, 1, 0.05],
+    ["cell", "Cell size", 6, 32, 1],
+    ["aspect", "Cell aspect", 0.35, 1.25, 0.05],
+    ["colored", "Colored", 0, 1, 0.05],
+    ["brightness", "Brightness", 0.2, 3, 0.05],
+    ["legibility", "Legibility", 0, 1, 0.05],
+    ["contrast", "Contrast", 0.3, 3, 0.05],
+    ["exposure", "Exposure", 0.2, 3, 0.05],
+    ["scramble", "Scramble", 0, 1, 0.02],
+    ["scrambleSpeed", "Scramble speed", 0, 30, 0.5],
+    ["edgeWidth", "Edge width", 0, 1, 0.02],
+    ["edgeFlicker", "Edge flicker", 0, 1, 0.02],
+    ["edgeGlow", "Edge glow", 0, 3, 0.05],
+    ["edgeTint", "Edge tint", 0, 1, 0.02],
+    ["aberration", "Aberration", 0, 24, 0.5],
+    ["passthrough", "Passthrough", 0, 1, 0.02],
+    ["threshold", "Threshold", 0.005, 0.3, 0.005],
+    ["smoothing", "Smoothing", 0, 1, 0.05],
+  ];
+
+  const replayRow = document.createElement("div");
+  replayRow.className = "row";
+  replayRow.innerHTML =
+    `<button type="button" style="grid-column:1/-1;padding:7px;cursor:pointer;font-weight:700">▶ イントロをもう一度再生</button>`;
+  rows.appendChild(replayRow);
+  replayRow.querySelector("button").addEventListener("click", () => {
+    cancelAnimationFrame(raf);
+    stopRoll();
+    roll.y = 0;
+    instance?.destroy();
+    instance = null;
+    card.classList.remove("captured", "playing");
+    boot();
+  });
+
+  for (const [key, label, min, max, step] of SLIDERS) {
+    const row = document.createElement("div");
+    row.className = "row";
+    row.innerHTML =
+      `<label for="c-${key}">${label}</label><output id="o-${key}">${options[key]}</output>` +
+      `<input id="c-${key}" type="range" min="${min}" max="${max}" step="${step}" value="${options[key]}">`;
+    rows.appendChild(row);
+    const out = row.querySelector("output");
+    row.querySelector("input").addEventListener("input", (event) => {
+      const value = Number(event.target.value);
+      options[key] = value;
+      out.textContent = value;
+      instance?.setOptions({ [key]: value });
+    });
+  }
+
+  const colorRow = document.createElement("div");
+  colorRow.className = "row";
+  colorRow.innerHTML =
+    `<label for="c-color">Cipher color</label><input id="c-color" type="color" value="${options.color}">`;
+  rows.appendChild(colorRow);
+  colorRow.querySelector("input").addEventListener("input", (event) => {
+    options.color = event.target.value;
+    instance?.setOptions({ color: event.target.value });
+  });
+
+  // --- bubble controls, so the lens can be dialled in by eye -------------
+  const BUBBLE_SLIDERS = [
+    ["size", "Size", 12, 140, 2],
+    ["trail", "Trail", 1, 24, 1],
+    ["follow", "Follow", 0.02, 1, 0.02],
+    ["blend", "Blend", 1, 24, 0.5],
+    ["speed", "Speed", 0, 6, 0.1],
+    ["refraction", "Refraction", -200, 200, 5],
+    ["dispersion", "Dispersion", 0, 3, 0.05],
+    ["frost", "Frost", 0, 1, 0.02],
+    ["shine", "Shine", 0, 2, 0.05],
+    ["rim", "Rim", 0, 2, 0.05],
+    ["iridescence", "Iridescence", 0, 2, 0.05],
+    ["intensity", "Intensity", 0, 2, 0.05],
+  ];
+
+  const bubbleHead = document.createElement("div");
+  bubbleHead.className = "row";
+  bubbleHead.innerHTML =
+    `<label style="grid-column:1/-1;font-weight:700;margin-top:6px">Bubble</label>`;
+  rows.appendChild(bubbleHead);
+
+  for (const [key, label, min, max, step] of BUBBLE_SLIDERS) {
+    const row = document.createElement("div");
+    row.className = "row";
+    row.innerHTML =
+      `<label for="b-${key}">${label}</label><output id="bo-${key}">${BUBBLE[key]}</output>` +
+      `<input id="b-${key}" type="range" min="${min}" max="${max}" step="${step}" value="${BUBBLE[key]}">`;
+    rows.appendChild(row);
+    const out = row.querySelector("output");
+    row.querySelector("input").addEventListener("input", (event) => {
+      const value = Number(event.target.value);
+      BUBBLE[key] = value;
+      out.textContent = value;
+      bubbleInstance?.setOptions({ [key]: value });
+    });
+  }
+
+  const panelBox = document.getElementById("controls");
+  const toggle = document.getElementById("toggle");
+
+  function setPanelOpen(open) {
+    panelBox.dataset.open = String(open);
+    toggle.textContent = open ? "−" : "+";
+  }
+
+  toggle.addEventListener("click", (event) => {
+    event.stopPropagation();
+    setPanelOpen(panelBox.dataset.open === "false");
+  });
+
+  // While collapsed the whole tab is the button: a 250px target, not a 14px one.
+  panelBox.addEventListener("click", () => {
+    if (panelBox.dataset.open === "false") setPanelOpen(true);
+  });
+</script>
+<script type="module" src="./gateway-v1-claude-decrypt.js"></script>
+<script src="./gateway-data.js"></script><script>const root = document.documentElement;
+  const threshold = document.querySelector("[data-gateway-section='04-threshold']");
+  const heroSection = document.querySelector("[data-gateway-section='00-gateway']");
+  const voicesSection = document.querySelector("[data-gateway-section='02-voices-podcast']");
+  const voicesScroll = document.querySelector("[data-voices-scroll]");
+  const photoStrip = document.querySelector("[data-photo-strip]");
+  const scrollSections = Array.from(document.querySelectorAll("[data-gateway-section]"));
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const narrow = window.matchMedia("(max-width: 820px)");
+
+  function card({ label, title, detail, href, abstract }) {
+    const item = document.createElement(href ? "a" : "div");
+    if (href) { item.href = href; item.target = href.startsWith("/#") ? "_top" : "_blank"; item.rel = "noopener noreferrer"; }
+    item.className = "placeholder-card";
+    if (abstract) item.dataset.abstract = abstract;
+    item.innerHTML = `<span>${label}</span><strong>${title}</strong><span>${detail}</span>`;
+    return item;
+  }
+
+  if (window.gatewayMock) {
+    const pulseList = document.querySelector("[data-pulse-list]");
+    window.gatewayMock.pulse.forEach((item) => pulseList.append(card(item)));
+
+    const podcastCard = document.querySelector("[data-podcast-card]");
+    podcastCard.append(card({
+      label: window.gatewayMock.podcast.date,
+      title: window.gatewayMock.podcast.title,
+      href: window.gatewayMock.podcast.href,
+      detail: window.gatewayMock.podcast.summary,
+    }));
+
+    const trackList = document.querySelector("[data-track-list]");
+    window.gatewayMock.tracks.forEach((track) => trackList.append(card({
+      label: track.time,
+      title: track.title,
+      detail: track.detail,
+      abstract: track.abstract,
+    })));
+  }
+
+  function progressFor(section) {
+    const rect = section.getBoundingClientRect();
+    const travel = Math.max(1, rect.height - window.innerHeight);
+    return Math.min(1, Math.max(0, -rect.top / travel));
+  }
+
+  /* How far chapter 02's row of scenes has to travel, and how much of that
+     travel the reader has paid for. The whole sideways move is this one length:
+     the browser scrolls vertically as it always does, and CSS spends the number
+     on a transform. Stop scrolling and the row stops with you. */
+  function updateVoicesShift() {
+    if (!voicesSection || !voicesScroll || !photoStrip) return;
+    const windowWidth = photoStrip.parentElement.clientWidth;
+    const distance = Math.max(0, photoStrip.scrollWidth - windowWidth);
+    const shift = distance * progressFor(voicesScroll);
+    voicesSection.style.setProperty("--voices-shift", `${shift.toFixed(2)}px`);
+  }
+
+  /* The headline drifts as chapter 00 is scrolled, and the bubble refracts a
+     canvas copy of the hero that was painted before it moved. So the copy has
+     to be redrawn — but redrawing on every frame would be paying a full repaint
+     for a one-pixel change, so it happens in steps, when the drift has actually
+     moved far enough to see. */
+  /* How far the hero has gone once its pinning is over. --section-progress
+     finishes at exactly the moment the panel unpins, so the exit needs its own
+     measure: 0 there, 1 by the time the chapter has left the screen. */
+  function updateHeroExit() {
+    if (!heroSection) return;
+    const rect = heroSection.getBoundingClientRect();
+    const gone = (window.innerHeight - rect.bottom) / window.innerHeight;
+    const exit = gone < 0 ? 0 : gone > 1 ? 1 : gone;
+    heroSection.style.setProperty("--hero-exit", exit.toFixed(3));
+  }
+
+  let platedAt = -1;
+  function keepHeroPlateInStep() {
+    if (!heroSection || typeof window.gatewayHeroRelayout !== "function") return;
+    const progress = progressFor(heroSection);
+    // The lens has faded to nothing by a third of the way through the hold, and
+    // repainting a copy that no longer shows is work for no picture.
+    if (progress > 0.34) return;
+    // Fewer steps on a phone. A repaint costs the same there as anywhere — the
+    // whole hero is walked and redrawn into a canvas — but the machine doing it
+    // has less to spare, and the drift being repainted is a few pixels of type.
+    const step = Math.round(progress * (narrow.matches ? 9 : 22));
+    if (step === platedAt) return;
+    platedAt = step;
+    window.gatewayHeroRelayout();
+  }
+
+  let ticking = false;
+  function updateScrollState() {
+    ticking = false;
+    if (reduceMotion.matches) {
+      root.style.setProperty("--threshold-progress", "1");
+      // Parked at zero: whenever less motion is asked for the scenes are a
+      // plain column and must not be pushed off to one side.
+      if (voicesSection) voicesSection.style.setProperty("--voices-shift", "0px");
+      // Nothing moves behind the hero, so there is no exit to dim.
+      if (heroSection) heroSection.style.setProperty("--hero-exit", "0");
+      scrollSections.forEach((section) => section.style.setProperty("--section-progress", "1"));
+      return;
+    }
+    root.style.setProperty("--threshold-progress", progressFor(threshold).toFixed(4));
+    scrollSections.forEach((section) => {
+      section.style.setProperty("--section-progress", progressFor(section).toFixed(4));
+    });
+    updateVoicesShift();
+    updateHeroExit();
+    keepHeroPlateInStep();
+  }
+
+  function requestScrollUpdate() {
+    if (ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(updateScrollState);
+  }
+
+  window.addEventListener("scroll", requestScrollUpdate, { passive: true });
+  window.addEventListener("resize", requestScrollUpdate);
+  reduceMotion.addEventListener("change", requestScrollUpdate);
+  narrow.addEventListener("change", requestScrollUpdate);
+  requestScrollUpdate();
+
+  /* The cursor belongs to the hero now. gateway-v1-claude-bubble.js listens on
+     the stage itself and moves a real refraction bubble, so the CSS-circle
+     version that used to live here has gone with the markup it followed. */
+
+  const revealObserver = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      entry.target.classList.add("is-visible");
+      revealObserver.unobserve(entry.target);
+    }
+  }, { threshold: 0, rootMargin: "0px 0px -15% 0px" });
+
+  document.querySelectorAll(".reveal-once").forEach((item) => revealObserver.observe(item));
+
+
+const pulseSection = document.querySelector('[data-gateway-section="01-community-pulse"]');
+const pulseCards = [...document.querySelectorAll('[data-pulse-list] .placeholder-card')];
+function updatePulseCards() {
+  const progress = reduceMotion.matches ? 1 : progressFor(pulseSection);
+  pulseCards.forEach((item, index) => item.style.setProperty('--card-progress', String(Math.min(1, Math.max(0, (progress - index * 0.12) / 0.28)))));
+}
+window.addEventListener('scroll', updatePulseCards, { passive:true });
+window.addEventListener('resize', updatePulseCards);
+reduceMotion.addEventListener('change', updatePulseCards);
+updatePulseCards();
+</script>
+</body></html>
