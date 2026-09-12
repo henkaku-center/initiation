@@ -1,5 +1,5 @@
-// ABOUTME: Initiationの質問・クエスト定義。画面と進捗保存の唯一のコンテンツソース。
-// ABOUTME: 本文は仮。公開前にコミュニティで確定した文面に差し替える(構造は変えない)。
+// ABOUTME: Retain the four legacy question IDs for existing completion records.
+// ABOUTME: Current questions and accepted save inputs are defined in journey.ts.
 
 export type InitiationStep =
   | { id: string; kind: "question"; title: string; prompt: string }

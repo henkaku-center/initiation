@@ -2,23 +2,29 @@
 // ABOUTME: 破棄したときは理由と次の操作を画面に残す(Issue #67)。署名拒否も画面エラーにする。
 "use client";
 
-import { useEffect, useState } from "react";
-import { SiweMessage } from "siwe";
-import { useAccount, useSignMessage } from "wagmi";
+import { useEffect, useRef, useState } from "react";
+import { useAccount, useConfig, useSignMessage } from "wagmi";
+import { getConnection } from "wagmi/actions";
 import { polygon } from "wagmi/chains";
 import { shouldDiscardSessionForChain, signInBlockedByChain } from "@/lib/domain/walletSession";
 import { buttonStyles } from "@/lib/ui";
 import { useRefreshSession, useSession, useSignOut } from "@/lib/useSession";
+import { signInWithWallet, type SignInPhase } from "@/lib/auth/signInWithWallet";
 
 export function SignInWithEthereum() {
   const { address, chainId } = useAccount();
+  const config = useConfig();
   const { signMessageAsync } = useSignMessage();
   // 表示の根拠はサーバーのセッション。Reactの状態だけで持つと、再読み込みで
   // サインイン済みが消え、期限切れ後も「サインイン済み」と出てしまう(Issue #40)。
-  const { data: session, isPending } = useSession();
+  const { data: session, isPending, isError, refetch } = useSession();
   const refreshSession = useRefreshSession();
   const signOut = useSignOut();
   const [error, setError] = useState<string | null>(null);
+  const [phase, setPhase] = useState<SignInPhase | null>(null);
+  const busy = useRef(false);
+  const mounted = useRef(true);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
 
   // セッションのアドレスは正規化済みの小文字、wagmi 側はチェックサム表記なので、
   // そのまま比較すると常に不一致になる。
@@ -40,36 +46,27 @@ export function SignInWithEthereum() {
     ) {
       return;
     }
-    void signOut();
+    void signOut().catch(() => setError("サインアウトできませんでした。もう一度お試しください。"));
   }, [signedInAs, address, chainId, signOut]);
 
   async function signIn() {
+    if (busy.current || !address || chainId !== polygon.id || isError) return;
+    busy.current = true;
     setError(null);
     try {
-      const nonceResponse = await fetch("/api/auth/nonce");
-      if (!nonceResponse.ok) throw new Error("nonce の発行に失敗しました");
-      const { nonce } = (await nonceResponse.json()) as { nonce: string };
-
-      const message = new SiweMessage({
-        domain: window.location.host,
-        address: address!,
-        statement: "Sign in to HENKAKU Initiation",
-        uri: window.location.origin,
-        version: "1",
-        chainId: polygon.id,
-        nonce,
-        expirationTime: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
-      }).prepareMessage();
-      const signature = await signMessageAsync({ message });
-      const response = await fetch("/api/auth/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, signature }),
+      await signInWithWallet({
+        address, origin: window.location.origin, signMessage: signMessageAsync,
+        isCurrent: () => {
+          const current = getConnection(config);
+          return mounted.current && current.isConnected && current.address?.toLowerCase() === address.toLowerCase() && current.chainId === polygon.id;
+        },
+        refreshSession, signOut, onPhase: setPhase,
       });
-      if (!response.ok) throw new Error("サーバー検証に失敗しました");
-      await refreshSession();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "署名がキャンセルされました");
+      if (mounted.current) setError(cause instanceof Error ? cause.message : "認証の通信に失敗しました。もう一度お試しください。");
+    } finally {
+      busy.current = false;
+      if (mounted.current) setPhase(null);
     }
   }
 
@@ -79,7 +76,8 @@ export function SignInWithEthereum() {
   if (isPending) {
     return <p className="text-sm leading-6 text-muted">サインイン状態を確認しています…</p>;
   }
-  if (connectedMatchesSession) {
+  if (isError) return <div role="alert"><p>サインイン状態を取得できませんでした。</p><button type="button" className={buttonStyles.secondary} onClick={() => void refetch()}>再取得</button></div>;
+  if (connectedMatchesSession && chainId === polygon.id) {
     return (
       <p className="break-all rounded-lg bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200">
         サインイン済み: {address}
@@ -97,11 +95,12 @@ export function SignInWithEthereum() {
           role="alert"
         >
           Polygon以外のネットワークにつながっています。このまま署名してもサインインは完了しません。
-          「03 PolygonとHENKAKU」でPolygonに切り替えてから、署名してください。
+          Polygonに切り替えてから、署名してください。
         </p>
       )}
-      <button className={buttonStyles.primary} type="button" onClick={signIn}>
-        署名してサインイン
+      {chainId === undefined && <p role="status">ネットワークを確認しています…</p>}
+      <button className={buttonStyles.primary} type="button" disabled={phase !== null || chainId !== polygon.id} onClick={signIn}>
+        {phase === "nonce" ? "認証を準備しています…" : phase === "signing" ? "ウォレットでの署名を待っています…" : phase === "verifying" ? "署名を検証しています…" : "署名してサインイン"}
       </button>
       {error && (
         <p className="text-sm font-semibold text-rose-600 dark:text-rose-300" role="alert">

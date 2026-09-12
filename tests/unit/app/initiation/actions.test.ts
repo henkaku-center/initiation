@@ -34,9 +34,10 @@ describe("saveStep", () => {
   });
 
   it("saves an answer for a question step", async () => {
-    const result = await saveStep("q-introduction", "AIとハードウェアをやりたい");
+    const answer = { status: "answered", value: "AIとハードウェアをやりたい" };
+    const result = await saveStep("v2-curiosity", answer);
     expect(result.ok).toBe(true);
-    expect(saveMock).toHaveBeenCalledWith("m1", "q-introduction", "AIとハードウェアをやりたい");
+    expect(saveMock).toHaveBeenCalledWith("m1", "v2-curiosity", JSON.stringify(answer));
   });
 
   it("rejects an unknown step id", async () => {
@@ -46,26 +47,31 @@ describe("saveStep", () => {
   });
 
   it("rejects an empty answer for a question step", async () => {
-    const result = await saveStep("q-introduction", "   ");
+    const result = await saveStep("v2-curiosity", { status: "answered", value: "   " });
     expect(result.ok).toBe(false);
   });
 
-  it("accepts null answer for a quest step (completion mark)", async () => {
-    const result = await saveStep("quest-discord-hello", null);
+  it("accepts an explicit skip without fabricating an answer", async () => {
+    const result = await saveStep("v2-interests", { status: "skipped" });
     expect(result.ok).toBe(true);
-    expect(saveMock).toHaveBeenCalledWith("m1", "quest-discord-hello", null);
+    expect(saveMock).toHaveBeenCalledWith("m1", "v2-interests", '{"status":"skipped"}');
+  });
+
+  it.each(["q-introduction", "q-how-found", "quest-wallet-setup", "quest-discord-hello"])("does not accept fresh completion writes to retired ID %s", async (id) => {
+    expect((await saveStep(id, "legacy answer")).ok).toBe(false);
+    expect(saveMock).not.toHaveBeenCalled();
   });
 
   it("returns an authentication error when the member is not signed in", async () => {
     requireMemberMock.mockRejectedValueOnce(new MockUnauthenticatedError());
-    const result = await saveStep("q-introduction", "回答");
+    const result = await saveStep("v2-curiosity", { status: "answered", value: "回答" });
     expect(result).toEqual({ ok: false, error: "サインインしてください" });
     expect(saveMock).not.toHaveBeenCalled();
   });
 
   it("propagates repository failures for the server error boundary", async () => {
     saveMock.mockRejectedValueOnce(new Error("database unavailable"));
-    await expect(saveStep("q-introduction", "回答")).rejects.toThrow("database unavailable");
+    await expect(saveStep("v2-curiosity", { status: "answered", value: "回答" })).rejects.toThrow("database unavailable");
   });
 });
 

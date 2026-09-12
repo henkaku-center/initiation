@@ -1,6 +1,7 @@
 // ABOUTME: 管理者用の申請一覧を表示する。
 // ABOUTME: requireAdminで保護し、一般メンバーや未認証者には404相当を返す。
 import { AdminApplicationRow } from "@/components/AdminApplicationRow";
+import { MemberBoundary } from "@/components/portal/MemberBoundary";
 import { ForbiddenError, requireAdmin, UnauthenticatedError } from "@/lib/auth/guards";
 import {
   eventsByApplication,
@@ -8,12 +9,12 @@ import {
   latestTxIdsByApplication,
 } from "@/lib/domain/applicationEvents";
 import { getRepositories } from "@/lib/repositories";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
 export default async function AdminPage() {
-  if (process.env.HENKAKU_DEMO_ONLY === "1") redirect("/");
+  let address: string;
   try {
-    await requireAdmin();
+    ({ address } = await requireAdmin());
   } catch (error) {
     if (error instanceof ForbiddenError || error instanceof UnauthenticatedError) {
       notFound();
@@ -30,6 +31,7 @@ export default async function AdminPage() {
   const history = eventsByApplication(events);
 
   return (
+    <MemberBoundary address={address}>
     <main className="space-y-8">
       <header>
         <p className="text-sm font-bold uppercase tracking-[0.2em] text-brand">運営</p>
@@ -82,5 +84,6 @@ export default async function AdminPage() {
         </div>
       )}
     </main>
+    </MemberBoundary>
   );
 }

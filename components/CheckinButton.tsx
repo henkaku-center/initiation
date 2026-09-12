@@ -3,37 +3,48 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { checkin } from "@/app/checkin/actions";
 import { buttonStyles } from "@/lib/ui";
 
-export function CheckinButton() {
+export function CheckinButton({ checked = false }: { checked?: boolean }) {
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const router = useRouter();
+  const busy = useRef(false);
+  const [failed, setFailed] = useState(false);
 
   function submit() {
+    if (busy.current || checked) return;
+    busy.current = true;
     setMessage(null);
+    setFailed(false);
     startTransition(async () => {
-      const result = await checkin();
-      if (!result.ok) {
-        setMessage(result.error ?? "チェックインに失敗しました");
-      } else if (result.alreadyCheckedIn) {
-        setMessage("今日はチェックイン済みです");
-      } else {
-        setMessage("チェックインしました！");
-        router.refresh();
+      try {
+        const result = await checkin();
+        if (!result.ok) {
+          setFailed(true);
+          setMessage(result.error ?? "チェックインに失敗しました");
+        } else {
+          setMessage(result.alreadyCheckedIn ? "今日はチェックイン済みです" : "チェックインしました！");
+          router.refresh();
+        }
+      } catch {
+        setFailed(true);
+        setMessage("チェックイン結果を確認できませんでした。状態を再取得してからお試しください。");
+      } finally {
+        busy.current = false;
       }
     });
   }
 
   return (
-    <div className="rounded-2xl border border-brand/20 bg-brand/5 p-6">
-      <p className="text-sm font-semibold text-foreground">今日の参加を記録します。</p>
-      <button className={`${buttonStyles.primary} mt-4`} type="button" disabled={pending} onClick={submit}>
-        {pending ? "チェックイン中…" : "今日のチェックイン"}
+    <div className="portal-checkin-action">
+      <button className={`pd-checkin-button${checked ? " is-checked" : ""}`} type="button" disabled={pending || checked} onClick={submit} aria-label={pending ? "チェックイン中…" : checked ? "今日はチェックイン済みです" : "今日のチェックイン"}>
+        <span aria-hidden="true">{checked ? "✓" : "+"}</span>{pending ? "CHECKING IN…" : checked ? "CHECKED IN" : "CHECK IN"}
       </button>
-      {message && <p className="mt-3 text-sm font-semibold text-foreground" role="status">{message}</p>}
+      {message && <p className="mt-3 text-sm font-semibold text-foreground" role={failed ? "alert" : "status"}>{message}</p>}
+      {failed && <button className={`${buttonStyles.secondary} mt-3`} type="button" onClick={() => router.refresh()}>状態を再取得</button>}
     </div>
   );
 }

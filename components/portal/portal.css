@@ -1,0 +1,28 @@
+/* ABOUTME: Fit the shared portal artwork around real application forms and session status. */
+/* ABOUTME: Keep the five destinations and keyboard focus visible at narrow widths. */
+.portal-app .portal-content { flex:1; width:100%; min-width:0; }
+.portal-app .portal-home { flex:1; min-width:0; }
+.portal-app .portal-session { display:flex; flex-wrap:wrap; justify-content:flex-end; align-items:center; gap:8px; list-style:none; margin:0; padding:8px clamp(18px,4vw,48px); border-bottom:1px solid var(--pd-line); }
+.portal-app .portal-session:empty { display:none; }
+.portal-app .pd-header nav > a:first-child { display:inline-flex; }
+.portal-app .pd-header nav { flex-wrap:wrap; }
+.portal-app .pd-header nav a[aria-current="page"] { color:var(--pd-blue); }
+.portal-app .portal-error { color:var(--pd-warning); background:var(--pd-warning-surface); border:1px solid var(--pd-warning-line); padding:16px; margin-top:16px; }
+.portal-app .portal-muted { color:var(--pd-muted); line-height:1.8; }
+.portal-app .portal-actions { display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-top:24px; }
+.portal-app .portal-field { display:block; width:100%; border:1px solid var(--pd-line-strong); background:var(--pd-surface); color:var(--pd-ink); padding:12px; margin:10px 0; border-radius:8px; }
+.portal-app textarea.portal-field { min-height:150px; resize:vertical; }
+.portal-app .portal-section { margin-top:32px; }
+.portal-app .pd-gateway-shell { height:calc(100svh - 150px); }
+.portal-app .portal-status-list { margin:24px 0; }
+.portal-app .portal-status-list > div { display:grid; grid-template-columns:8rem minmax(0,1fr); padding:12px 0; border-bottom:1px solid var(--pd-line); }
+.portal-app .portal-status-list dt { color:var(--pd-muted); }
+.portal-app .portal-status-list dd { overflow-wrap:anywhere; }
+.portal-app .portal-setup-control { min-width:0;max-width:250px; }
+.portal-app .portal-setup-control p { font-size:12px;line-height:1.7; }
+.portal-app .portal-setup-control button { border:1px solid var(--pd-line);border-radius:0;background:var(--pd-surface);color:var(--pd-ink);padding:10px 14px;font-size:12px;box-shadow:none; }
+.portal-app .portal-wallet-step { list-style:none;font-size:12px; }
+.portal-app .portal-checkin-action { display:grid;justify-items:center;gap:12px;max-width:280px; }
+.portal-app .pd-reward-card .portal-status-list > div { grid-template-columns:minmax(0,1fr);gap:4px; }
+.portal-app .pd-reward-card .portal-status-list { margin:0; }
+@media(max-width:620px) { .portal-app .pd-header nav { gap:12px; } .portal-app .pd-header nav a { font-size:12px; } .portal-app .portal-session { justify-content:flex-start; } }

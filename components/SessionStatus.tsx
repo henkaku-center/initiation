@@ -4,6 +4,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useAccount } from "wagmi";
 import { shortenAddress } from "@/lib/domain/address";
 import { adminNavigation } from "@/lib/navigation";
 import { buttonStyles } from "@/lib/ui";
@@ -11,23 +12,31 @@ import { useSession, useSignOut } from "@/lib/useSession";
 import { useSignOutOnAccountChange } from "@/lib/useWalletSessionGuard";
 
 export function SessionStatus() {
-  const { data: session, isPending } = useSession();
+  const { data: session, isPending, isError, refetch } = useSession();
+  const wallet = useAccount();
   const discardSession = useSignOut();
   const [signingOut, setSigningOut] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // ウォレットのずれの検知をここへ置くのは、このコンポーネントだけが
   // ルートレイアウト経由で全ページに乗るため(Issue #44)。表示を出さない状態
   // (取得中・未サインイン)でも検知は動かす必要があるので、早期returnより前に呼ぶ。
-  useSignOutOnAccountChange(session?.address ?? null);
+  const guard = useSignOutOnAccountChange(session?.address ?? null);
 
   // セッションを確かめる前は何も出さない。未サインインの表示を一瞬見せてから
   // 差し替えると、サインイン済みの人には状態が揺れて見えるため。
-  if (isPending || !session) return null;
+  if (guard.error) return <li role="alert">{guard.error} <button type="button" onClick={() => void guard.retry()}>再試行</button></li>;
+  if (error) return <li role="alert">{error} <button type="button" disabled={signingOut} onClick={signOut}>再試行</button></li>;
+  if (isError) return <li role="alert">サインイン状態を取得できませんでした。 <button type="button" onClick={() => void refetch()}>再取得</button></li>;
+  if (isPending || !session || !wallet.isConnected || wallet.address?.toLowerCase() !== session.address) return null;
 
   async function signOut() {
     setSigningOut(true);
+    setError(null);
     try {
       await discardSession();
+    } catch {
+      setError("サインアウトできませんでした。もう一度お試しください。");
     } finally {
       setSigningOut(false);
     }

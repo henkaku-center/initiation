@@ -2,6 +2,8 @@
 // ABOUTME: 重複申請、監査イベント、日次チェックインをローカルDBで確認する。
 import { beforeEach, describe, expect, it } from "vitest";
 import { normalizeAddress } from "@/lib/domain/address";
+import { journeySteps } from "@/lib/initiation/journey";
+import { isInitiationComplete, isJourneyComplete } from "@/lib/initiation/complete";
 import {
   ConcurrentTransitionError,
   DuplicateApplicationError,
@@ -55,6 +57,26 @@ describe("repositories (local supabase)", () => {
     const entries = await progress.listByMember(m.id);
     expect(entries).toHaveLength(1);
     expect(entries[0]).toMatchObject({ stepId: "q1", answer: "書き直した回答" });
+  });
+
+  it("preserves legacy records when versioned answers are saved and edited", async () => {
+    const { members, progress } = getRepositories();
+    const a = await members.upsertByAddress(ADDR);
+    const b = await members.upsertByAddress(ADMIN);
+    for (const id of ["q-introduction", "q-how-found", "quest-wallet-setup", "quest-discord-hello"]) {
+      await progress.save(a.id, id, id.startsWith("q-") ? "Legacy answer" : null);
+    }
+    const legacy = await progress.listByMember(a.id);
+    expect(isInitiationComplete(legacy)).toBe(true);
+    expect(isJourneyComplete(legacy)).toBe(false);
+    for (const step of journeySteps) await progress.save(a.id, step.id, '{"status":"skipped"}');
+    await progress.save(a.id, "v2-curiosity", '{"status":"answered","value":"Edited music idea"}');
+    const saved = await progress.listByMember(a.id);
+    expect(saved).toHaveLength(9);
+    expect(saved.filter((entry) => !entry.stepId.startsWith("v2-"))).toEqual(legacy);
+    expect(isJourneyComplete(saved)).toBe(true);
+    expect(saved.find((entry) => entry.stepId === "v2-curiosity")?.answer).toBe('{"status":"answered","value":"Edited music idea"}');
+    expect(await progress.listByMember(b.id)).toEqual([]);
   });
 
   it("prevents duplicate active applications", async () => {

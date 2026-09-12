@@ -419,7 +419,7 @@ a:focus-visible, .panel summary:focus-visible, .panel button:focus-visible { out
 
     <div class="upper">
       <div class="col col-a">
-        <p class="label"><a href="/#home" target="_top" data-intro-screen="home">HENKAKU<br />COMMUNITY</a></p>
+        <p class="label"><a href="/" target="_top" data-intro-screen="home">HENKAKU<br />COMMUNITY</a></p>
         <div class="dash"></div>
         <div class="headline-wrap">
           <div class="dash"></div>
@@ -441,10 +441,10 @@ a:focus-visible, .panel summary:focus-visible, .panel button:focus-visible { out
           <div class="dash"></div>
           <h2>PUBLIC GATEWAY</h2>
           <ul aria-label="参加とコミュニティのメニュー">
-  <li><a href="/#setup" target="_top" data-intro-screen="setup">WALLET SETUP</a></li>
-  <li><a href="/#journey" target="_top" data-intro-screen="journey">BEGIN INITIATION</a></li>
-  <li><a href="/#community" target="_top" data-intro-screen="community">COMMUNITY</a></li>
-  <li><a href="/#passport" target="_top" data-intro-screen="passport">MY PASSPORT</a></li>
+  <li><a href="/setup" target="_top" data-intro-screen="setup">WALLET SETUP</a></li>
+  <li><a href="/initiation" target="_top" data-intro-screen="journey">BEGIN INITIATION</a></li>
+  <li><a href="/community" target="_top" data-intro-screen="community">COMMUNITY</a></li>
+  <li><a href="/passport" target="_top" data-intro-screen="passport">MY PASSPORT</a></li>
 </ul>
         </div>
       </div>
@@ -465,7 +465,7 @@ a:focus-visible, .panel summary:focus-visible, .panel button:focus-visible { out
       </div>
       <div class="bcol">
         <div class="dash"></div>
-        <p><a href="/#home" target="_top" data-intro-screen="home">ENTER PORTAL →</a></p>
+        <p><a href="/" target="_top" data-intro-screen="home">ENTER PORTAL →</a></p>
       </div>
     </div>
 
@@ -1608,7 +1608,8 @@ document.addEventListener("click", (event) => {
   if (!anchor || window.parent === window) return;
   const url = new URL(anchor.href, location.href);
   const screen = anchor.dataset.introScreen;
-  if (url.origin !== location.origin || url.hash !== "#" + screen ||
+  const appRoutes = { home: "/", setup: "/setup", journey: "/initiation", community: "/community", passport: "/passport" };
+  if (url.origin !== location.origin || (url.hash !== "#" + screen && url.pathname !== appRoutes[screen]) ||
       !["home", "setup", "journey", "community", "passport"].includes(screen)) return;
   try {
     if (window.parent.location.origin !== location.origin) return;

@@ -3,7 +3,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { useAccount } from "wagmi";
+import { useMutation } from "@tanstack/react-query";
+import { useAccount, useConnectionEffect } from "wagmi";
 import type { Address } from "@/lib/domain/types";
 import { shouldDiscardSession } from "@/lib/domain/walletSession";
 import { useSignOut } from "@/lib/useSession";
@@ -16,12 +17,15 @@ import { useSignOut } from "@/lib/useSession";
  * 証明しているのは「そのアドレスの持ち主であること」で、今つないでいる
  * ネットワークはその証明を無効にしない。Polygon が要る操作は `/setup` が扱う。
  */
-export function useSignOutOnAccountChange(signedInAs: Address | null): void {
+export function useSignOutOnAccountChange(signedInAs: Address | null) {
   const { address } = useAccount();
   const signOut = useSignOut();
+  const { mutate: discard, error } = useMutation({ mutationFn: signOut });
+  useConnectionEffect({ onDisconnect: discard });
 
   useEffect(() => {
     if (!shouldDiscardSession({ signedInAs, connectedAddress: address })) return;
-    void signOut();
-  }, [signedInAs, address, signOut]);
+    discard();
+  }, [signedInAs, address, discard]);
+  return { error: error ? "サインアウトの通信に失敗しました。もう一度お試しください。" : null, retry: discard };
 }

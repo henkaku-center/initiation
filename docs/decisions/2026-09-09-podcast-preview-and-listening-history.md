@@ -1,5 +1,7 @@
 # 2026-09-09 無音のPodcastプレビューとユーザー別モック履歴
 
+2026-09-12追記: 現在のFREQUENCYは[ListenBrainzの公開音楽ランキング](./2026-09-12-frequency-listenbrainz.md)、PODCASTは[通常アプリ接続の決定](./2026-09-12-portal-app-integration.md)に従う。以下は切替前の判断記録。
+
 ユーザーから、Voices / Podcastの画像をJoi Ito公式動画版のランダムな一場面へ置き換え、音声は再生せず、Frequencyにユーザーごとの最近聴いた回のモックを挿入するよう依頼された。コミュニティの発信から関心のある回を見つけ、公式番組へ進めるデモ導線として実装する。
 
 - 指定された@joiitoチャンネルの「Joi Ito's Podcast (VIDEO)」再生リストから、動画版のカタログを作り、重複しない4回を選ぶ。公式IFrame Player APIから実尺を取得し、その範囲内のランダムな20秒を無音で繰り返す。

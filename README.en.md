@@ -15,7 +15,7 @@ The project is currently at the local implementation stage of Phase 1, MVP-1. Ap
 Use the menu at the top of the screen to proceed in this order.
 
 1. **Setup** (`/setup`): Connect a wallet, sign in with SIWE, switch to Polygon, and add HENKAKU
-2. **Initiation** (`/initiation`): Answer questions and complete quests. Progress is saved
+2. **Initiation** (`/initiation`): Explore five optional questions. Save, resume and edit your answers
 3. **Check-in** (`/checkin`): Record activity once a day
 4. **Apply** (`/apply`): Apply for Allowlist addition and HENKAKU distribution
 5. **Admin** (`/admin`): Administrators review applications and update Allowlist and distribution status

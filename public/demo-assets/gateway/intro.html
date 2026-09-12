@@ -365,7 +365,7 @@ html,body { width:100%;height:100%;overflow:hidden; }
 
       <div class="upper">
         <div class="col col-a">
-          <p class="label"><a href="/#home" target="_top">HENKAKU<br />COMMUNITY</a></p>
+          <p class="label"><a href="/" target="_top">HENKAKU<br />COMMUNITY</a></p>
           <div class="dash"></div>
           <div class="headline-wrap">
             <div class="dash"></div>
@@ -387,10 +387,10 @@ html,body { width:100%;height:100%;overflow:hidden; }
             <div class="dash"></div>
             <h2>PUBLIC GATEWAY</h2>
             <ul>
-  <li><a href="/#setup" target="_top">WALLET SETUP</a></li>
-  <li><a href="/#journey" target="_top">BEGIN INITIATION</a></li>
-  <li><a href="/#community" target="_top">COMMUNITY</a></li>
-  <li><a href="/#passport" target="_top">MY PASSPORT</a></li>
+  <li><a href="/setup" target="_top">WALLET SETUP</a></li>
+  <li><a href="/initiation" target="_top">BEGIN INITIATION</a></li>
+  <li><a href="/community" target="_top">COMMUNITY</a></li>
+  <li><a href="/passport" target="_top">MY PASSPORT</a></li>
 </ul>
           </div>
         </div>
@@ -411,7 +411,7 @@ html,body { width:100%;height:100%;overflow:hidden; }
         </div>
         <div class="bcol">
           <div class="dash"></div>
-          <p><a href="/#home" target="_top">ENTER PORTAL →</a></p>
+          <p><a href="/" target="_top">ENTER PORTAL →</a></p>
         </div>
       </div>
 
@@ -1120,7 +1120,8 @@ html,body { width:100%;height:100%;overflow:hidden; }
       event.preventDefault();
       if (phase === "done" || phase === "failed") {
         const url = new URL(link.href, location.href);
-        const screen = url.hash.slice(1);
+        const routes = {"home":"/","setup":"/setup","journey":"/initiation","community":"/community","passport":"/passport"};
+        const screen = url.hash.slice(1) || Object.keys(routes).find((name) => routes[name] === url.pathname);
         if (url.origin === location.origin && ["home", "setup", "journey", "community", "passport"].includes(screen)) {
           if (window.parent === window) location.href = url.href;
           else window.parent.postMessage({ type: "henkaku:intro:navigate", screen }, location.origin);

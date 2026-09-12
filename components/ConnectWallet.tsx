@@ -3,35 +3,38 @@
 "use client";
 
 import { useAccount, useConnect, useDisconnect } from "wagmi";
-import { buttonStyles } from "@/lib/ui";
+import { shortenAddress } from "@/lib/domain/address";
 
 export function ConnectWallet() {
   const { address, isConnected } = useAccount();
-  const { connect, connectors, error } = useConnect();
+  const { connect, connectors, error, isPending } = useConnect();
   const { disconnect } = useDisconnect();
 
   if (isConnected) {
     return (
-      <div className="space-y-3">
-        <p className="break-all rounded-lg bg-surface-hover px-3 py-2 font-mono text-xs text-foreground" data-testid="address">
-          {address}
-        </p>
-        <button className={buttonStyles.quiet} type="button" onClick={() => disconnect()}>
+      <div>
+        <div className="pd-wallet-identity"><div className="pd-identicon is-connected"><span>◇</span></div><div><h2>あなたのウォレット</h2><p data-testid="address" title={address}>{address ? shortenAddress(address) : "接続を確認しています…"}</p></div><span className="pd-status-pill">● CONNECTED</span></div>
+        <div className="pd-wallet-actions"><button className="pd-text-button" type="button" onClick={() => disconnect()}>
           切断
-        </button>
+        </button></div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-3">
+    <div>
+      <div className="pd-wallet-identity"><div className="pd-identicon"><span>◇</span></div><div><h2>まだ、つながっていません</h2><p>MetaMaskなどのウォレットを使います。</p></div></div>
+      <div className="pd-wallet-actions">
       <button
-        className={buttonStyles.primary}
+        className="pd-primary"
         type="button"
-        onClick={() => connect({ connector: connectors[0] })}
+        disabled={isPending || !connectors[0]}
+        onClick={() => { if (connectors[0]) connect({ connector: connectors[0] }); }}
       >
-        ウォレットを接続
+        {isPending ? "ウォレットでの接続を待っています…" : "ウォレットを接続"}
       </button>
+      </div>
+      {!connectors[0] && <p role="status">対応ウォレットが見つかりません。MetaMaskなどのウォレットを用意してください。</p>}
       {error && (
         <p className="text-sm font-semibold text-rose-600 dark:text-rose-300" role="alert">
           接続できませんでした: {error.message}
