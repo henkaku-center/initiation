@@ -1,0 +1,58 @@
+.portal-demo { display:flex;flex-direction:column; }
+.portal-demo > main { flex:1;min-width:0; }
+.pd-reference-home { min-height:100svh; }
+.pd-reference-gateway { display:block;width:100%;height:100%;border:0;background:var(--pd-paper); }
+/* Keep the source chapters' viewport scroll canvas inside the shared shell. */
+.pd-gateway-shell { position:relative;width:100%;height:calc(100svh - 134px);min-height:480px;background:var(--pd-paper); }
+.pd-homepage-frame { opacity:1;transition:opacity .44s ease; }
+.pd-gateway-shell[data-intro="visible"] .pd-homepage-frame { opacity:0; }
+.pd-intro-overlay { position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;z-index:60;background:#f4f4f4;opacity:1;transition:opacity .44s ease; }
+.pd-intro-overlay.is-leaving { opacity:0;pointer-events:none; }
+.pd-intro-frame { display:block;width:100%;height:100%;border:0; }
+.pd-intro-access { position:absolute;z-index:2;left:clamp(18px,4vw,60px);bottom:14px;display:flex;gap:10px;align-items:center;max-width:calc(100vw - 36px); }
+.pd-intro-enter { display:flex;align-items:center;gap:22px;min-height:44px;padding:10px 14px;color:#172030;background:#f4f4f4ef;border:1px solid #bbb;font-size:12px;backdrop-filter:blur(8px); }
+.pd-intro-enter span { font-size:20px;line-height:1; }.pd-intro-enter:hover { color:#1b34f5;border-color:#1b34f5; }
+.pd-intro-enter:focus-visible { outline:3px solid #fa9c44;outline-offset:4px; }
+.pd-intro-variants { display:flex;border:1px solid #bbb;background:#f4f4f4ef;backdrop-filter:blur(8px); }
+.pd-intro-variants button { min-height:44px;padding:7px 10px;border:0;background:transparent;color:#172030;font-size:11px;white-space:nowrap;cursor:pointer; }
+.pd-intro-variants button[aria-pressed="true"] { background:#1b34f5;color:white; }
+.pd-intro-variants button:focus-visible { outline:3px solid #fa9c44;outline-offset:3px; }
+@media(prefers-reduced-motion:reduce){.pd-intro-overlay,.pd-homepage-frame{transition:none}}
+.pd-header .pd-mark { color:var(--pd-ink); }
+.pd-header { height:auto;min-height:99px;gap:24px;flex-wrap:wrap;padding-block:18px;background:var(--pd-paper); }
+.pd-header .pd-brand { min-height:44px;flex-shrink:0; }
+.pd-header nav { margin-left:auto;flex-wrap:wrap;gap:28px; }
+.pd-header nav a { display:inline-flex;min-width:44px;min-height:44px;align-items:center; }
+.pd-header .theme-toggle { margin-left:4px; }
+.pd-footer { align-items:center;background:var(--pd-paper); }
+.pd-footer > div { flex-wrap:wrap;gap:12px 25px; }
+.pd-footer button { min-height:44px; }
+@media(max-width:900px){
+  .pd-header { gap:16px; }
+  .pd-header nav { gap:16px; }
+}
+@media(max-width:720px){
+  .pd-header { display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 8px;padding:14px 5%; }
+  .pd-header .pd-brand { font-size:20px; }
+  .pd-header .theme-toggle { grid-column:2;grid-row:1;margin:0; }
+  .pd-header nav { grid-column:1 / -1;grid-row:2;width:100%;margin:0;gap:12px;justify-content:space-between;font-size:12px; }
+  .pd-header nav > a:first-child { display:inline-flex; }
+  .pd-nav-passport { padding:8px 10px;gap:8px; }
+  .pd-gateway-shell { height:calc(100svh - 205px); }
+  .pd-footer { flex-direction:column;align-items:flex-start;gap:4px; }
+  .pd-footer > div { flex-direction:column;align-items:flex-start;gap:4px; }
+}
+@media(max-width:360px){
+  .pd-header .pd-brand { font-size:18px;gap:6px; }
+  .pd-header .pd-mark { width:28px; }
+  .pd-header .theme-toggle button { padding-inline:7px; }
+}
+.pd-community-image { display:block;width:100%;height:220px;object-fit:cover;margin-top:20px; }
+.pd-passport-image { display:block;width:100%;height:100%;object-fit:cover; }
+.pd-nft-art.pd-nft-generated { background:linear-gradient(0deg,#071324c9,transparent 40%,transparent 65%,#071324b0),url('/demo-assets/passport-nft.webp') center/cover; }
+.pd-nft-generated .pd-nft-top { text-shadow:0 1px 8px #001b38; }
+.pd-nft-generated .pd-nft-symbol { display:none; }
+.pd-reward-visual.pd-generated-visual { background:#eeece5; }
+.pd-reward-card .pd-generated-visual,.pd-reward-card .pd-nft-generated { height:auto;aspect-ratio:1; }
+@media(max-width:800px) and (min-width:621px){.pd-community-image{grid-column:1;grid-row:1/4;margin:0;height:160px}}
+@media(max-width:620px){.pd-community-image{height:210px}}

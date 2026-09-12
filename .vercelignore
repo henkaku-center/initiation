@@ -1,0 +1,2 @@
+# Private local snapshots must also be excluded from CLI deployments.
+.local-archives/

@@ -1,0 +1,1270 @@
+<!doctype html>
+<!-- Liquid reference, with local replay/teardown fixes. See CREDITS.md. -->
+<html lang="ja"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow"/><title>HENKAKU Intro</title>
+<style>
+  :root {
+    --liquid-bg: #f4f4f4;
+    --liquid-ink: #0a0a0a;
+    --liquid-blue: #1b34f5;
+    --liquid-rule: #bcbcbc;
+    --font-sans: "Helvetica Neue", Helvetica, Arial, "Hiragino Kaku Gothic ProN",
+      "Yu Gothic", "Noto Sans JP", sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    background: var(--liquid-bg);
+    color: var(--liquid-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- hero shell = the DecryptReveal host ---------- */
+  .hero {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    max-height: 100svh;
+    background: var(--liquid-bg);
+    overflow: hidden;
+    touch-action: none;
+  }
+
+  .hero > canvas.source { display: none; }
+  /* While the canvas draws the UI, the DOM is hidden AND inert, so nothing
+     invisible can be clicked by accident. */
+  .hero.captured .content {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.14s linear;
+  }
+  .hero.playing { cursor: pointer; }
+  .hero > canvas.output {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .hero > canvas.bubble-source { display: none; }
+  .hero > canvas.bubble-output {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 4;
+  }
+
+  /* ---------- layout ----------
+     Built on CSS Grid overlap (two items sharing one cell) rather than
+     absolute positioning: Safari misplaces positioned elements inside
+     <foreignObject>, which is how the snapshot fallback rasterises. */
+  .content {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    padding: 3.9% 4.1%;
+  }
+
+  .upper {
+    display: grid;
+    grid-template-columns: 30.3% 8.9% 38% 22.8%;
+    border-bottom: 1px solid var(--liquid-rule);
+    z-index: 2;
+  }
+
+  .col { display: flex; flex-direction: column; min-width: 0; }
+  .col-a { border-right: 1px solid var(--liquid-rule); padding-right: 3%; }
+  .col-b { border-right: 1px solid var(--liquid-rule); }
+
+  .label {
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 0.78vw, 15px);
+    letter-spacing: 0.2em;
+    line-height: 1.85;
+    margin: 0;
+  }
+
+  .dash { width: 1.1em; height: 2px; background: var(--liquid-blue); }
+  .label + .dash { margin-top: clamp(8px, 1.1vw, 20px); }
+
+  .plus {
+    font-family: var(--font-mono);
+    font-size: clamp(13px, 1.15vw, 22px);
+    line-height: 1;
+    color: var(--liquid-blue);
+  }
+
+  /* left column ---------------------------------------------------- */
+  .headline-wrap { margin-top: 19%; }
+  .headline {
+    font-size: clamp(19px, 2.78vw, 54px);
+    font-weight: 800;
+    letter-spacing: -0.015em;
+    line-height: 1.09;
+    margin: clamp(10px, 1.5vw, 26px) 0 0;
+  }
+
+  /* centre graphic --------------------------------------------------- */
+  .arrow {
+    grid-column: 3;
+    grid-row: 1;
+    display: flex;
+    align-items: center;
+    z-index: 1;
+  }
+  .arrow svg { width: 88%; height: auto; display: block; }
+
+  .wordmark {
+    grid-column: 3;
+    grid-row: 1;
+    z-index: 3;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-right: 13%;
+    margin-top: -2%;
+  }
+  .wordmark span {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    font-size: clamp(64px, 12vw, 232px);
+    font-weight: 800;
+    letter-spacing: -0.055em;
+    line-height: 0.8;
+    white-space: nowrap; /* vertical text wraps into a 2nd column otherwise */
+    color: var(--liquid-blue);
+  }
+
+  /* right column ----------------------------------------------------- */
+  .col-d { align-items: flex-start; }
+  .gateway {
+    margin-top: auto;
+    width: 100%;
+    border-top: 1px solid var(--liquid-rule);
+    border-left: 1px solid var(--liquid-rule);
+    padding: clamp(10px, 1.6vw, 30px) 0 0 clamp(12px, 2vw, 36px);
+    display: flex;
+    flex-direction: column;
+  }
+  .gateway h2 {
+    font-size: clamp(12px, 1.16vw, 23px);
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    margin: clamp(8px, 1.2vw, 22px) 0 clamp(10px, 1.5vw, 26px);
+  }
+  .gateway ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 0.78vw, 15px);
+    letter-spacing: 0.14em;
+    line-height: 2.15;
+  }
+
+  /* bottom strip ----------------------------------------------------- */
+  .bottom {
+    display: grid;
+    grid-template-columns: 19.9% 43% 17.6% 19.5%;
+    padding-top: clamp(12px, 1.8vw, 32px);
+    z-index: 1;
+  }
+  .bcol { display: flex; flex-direction: column; min-width: 0; }
+  .bcol:nth-child(1), .bcol:nth-child(3) { border-right: 1px solid var(--liquid-rule); }
+  .bcol:nth-child(2), .bcol:nth-child(4) { padding-left: 4%; }
+  .bcol p {
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 0.78vw, 15px);
+    letter-spacing: 0.14em;
+    line-height: 1.75;
+    margin: clamp(10px, 1.5vw, 26px) 0 0;
+  }
+  .bcol .dash { margin-bottom: 0; }
+
+  /* ---------- mobile ---------- */
+  @media (max-width: 820px) {
+    .hero { aspect-ratio: auto; min-height: 100svh; max-height: none; }
+    .content { grid-template-rows: 1fr auto; padding: 28px 20px; }
+    .upper { grid-template-columns: 1fr; }
+    .col-a { border-right: 0; padding-right: 0; padding-bottom: 24px; }
+    .col-b { display: none; }
+    .arrow, .wordmark { grid-column: 1; grid-row: auto; }
+    .arrow { justify-content: center; padding: 18px 0; }
+    .arrow svg { width: 46%; }
+    .wordmark {
+      padding-right: 0;
+      margin-top: -14%;
+      margin-bottom: 6%;
+      justify-content: center;
+    }
+    .wordmark span {
+      writing-mode: horizontal-tb;
+      font-size: 15vw;
+      letter-spacing: -0.03em;
+    }
+    .headline-wrap { margin-top: 26px; }
+    .headline { font-size: 30px; }
+    .gateway { margin-top: 24px; border-left: 0; padding-left: 0; }
+    .gateway ul { line-height: 1.95; }
+    .bottom { grid-template-columns: 1fr 1fr; gap: 20px 0; }
+    .bcol:nth-child(1), .bcol:nth-child(3) { border-right: 0; }
+    .bcol:nth-child(2), .bcol:nth-child(4) { padding-left: 0; }
+    .label, .gateway ul, .bcol p { font-size: 11px; }
+  }
+
+  /* ---------- demo chrome (not part of the hero) ---------- */
+  .notice {
+    padding: 14px 4.1%;
+    background: #e8f0fe;
+    border-bottom: 1px solid #b9cdf3;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  .notice.warn { background: #fff5d6; border-bottom-color: #e8d79a; }
+  .notice code { font-family: var(--font-mono); background: #00000010; padding: 1px 5px; border-radius: 4px; }
+  .notice[hidden] { display: none; }
+
+  .hint { padding: 14px 4.1%; color: #6b7078; font-size: 13px; margin: 0; }
+  .credit-line { padding-top: 0; font-size: 11px; }
+  .credit-line a { color: inherit; }
+
+  .panelbox {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    width: 250px;
+    max-height: 76svh;
+    overflow: auto;
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(8px);
+    border: 1px solid #dcdee2;
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 12px;
+    box-shadow: 0 16px 40px -22px rgba(0, 0, 0, 0.5);
+    z-index: 10;
+  }
+  .panelbox h2 { font-size: 12px; margin: 0; display: flex; justify-content: space-between; align-items: center; }
+  .panelbox button.toggle { border: 0; background: none; cursor: pointer; font-size: 14px; padding: 0 2px; }
+  .panelbox .rows { margin-top: 10px; display: grid; gap: 8px; }
+  .panelbox[data-open="false"] .rows { display: none; }
+
+  /* Collapsed: a blue tab, because everything inside it is live and worth a tap. */
+  .panelbox[data-open="false"] {
+    background: var(--liquid-blue);
+    border-color: var(--liquid-blue);
+    color: #fff;
+    cursor: pointer;
+  }
+  .panelbox[data-open="false"] button.toggle { color: #fff; }
+  .panelbox[data-open="false"] .cue { display: block; }
+  .panelbox .cue {
+    display: none;
+    margin: 3px 0 0;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    opacity: 0.92;
+  }
+
+  .row { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; align-items: center; }
+  .row label { color: #43474e; }
+  .row output { font-family: var(--font-mono); color: #14161a; }
+  .row input[type="range"] { grid-column: 1 / -1; width: 100%; }
+  .row input[type="color"] { width: 44px; height: 22px; padding: 0; border: 1px solid #ccc; border-radius: 4px; background: none; }
+</style><style>/* Local shell: the reference artwork is now a viewport-sized intro. */
+html,body { width:100%;height:100%;overflow:hidden; }
+.hero { height:100dvh;min-height:0;max-height:none;aspect-ratio:auto;touch-action:none; }
+.content { height:100%;grid-template-rows:minmax(0,1fr) auto;padding:clamp(20px,3.5vw,45px) 4.1% 88px; }
+.upper,.wordmark,.arrow { min-height:0; }
+.arrow { height:100%;overflow:hidden; }
+.wordmark { overflow:hidden; }
+.arrow { color:#333; }
+.arrow svg { max-height:100%;max-width:88%;width:auto; }
+.hero > canvas.output { transition:none; }
+.label a,.gateway a,.bcol a { color:inherit;text-decoration:none; }
+.gateway { display:grid;grid-template-rows:auto auto;row-gap:18px;flex:none; }
+.gateway h2 { margin:0;line-height:1.3; }
+.gateway ul { display:grid;gap:0; }
+.gateway li { min-width:0; }
+.gateway a { display:flex;align-items:center;min-height:44px;line-height:1.5;overflow-wrap:anywhere; }
+.gateway a:hover,.gateway a:focus-visible,.bcol a:hover { color:#1b34f5;text-decoration:underline;text-underline-offset:4px; }
+.bcol a { display:inline-flex;align-items:center;min-height:44px; }
+.notice,.hint { display:none; }
+.notice.warn { display:block;position:fixed;left:4%;right:4%;bottom:112px;padding:10px 14px;font-size:12px;z-index:15; }
+.panelbox { z-index:20; }
+.intro-credit { font-size:10px;line-height:1.7;padding-top:12px; }
+.intro-credit a { color:#4e5668; }
+@media(max-width:820px) {
+  .hero { height:100dvh;min-height:0; }
+  .content { padding:22px 18px 76px; }
+  .upper { grid-template-columns:minmax(0,1fr) minmax(0,.85fr);grid-template-rows:auto minmax(0,1fr);gap:0 16px; }
+  .col-a { grid-column:1/-1;grid-row:1;padding:0 0 14px;border:0; }
+  .col-b { display:none; }
+  .headline-wrap { margin-top:13px; }
+  .headline { font-size:clamp(18px,3svh,26px);margin-top:8px; }
+  .col-a>.label { font-size:10px; }
+  .label+.dash { margin-top:8px; }
+  .arrow,.wordmark { grid-column:1;grid-row:2;padding:0;margin:0;min-height:0; }
+  .arrow { overflow:hidden; }.arrow svg { width:88%; }
+  .wordmark { justify-content:center;align-items:flex-start; }
+  .wordmark span { writing-mode:vertical-rl;white-space:nowrap;font-size:clamp(38px,12vw,64px); }
+  .col-d { grid-column:2;grid-row:2;min-height:0; }
+  .col-d>.label,.col-d>.dash { display:none; }
+  .gateway { margin-top:0;padding-top:8px; }
+  .gateway h2 { font-size:11px;margin:0; }
+  .gateway ul { font-size:9px;line-height:1.8;letter-spacing:.09em; }
+  .bottom { grid-template-columns:1fr 1fr;gap:8px 15px;padding-top:10px; }
+  .bcol p { font-size:8px;line-height:1.6;margin-top:5px; }
+  .bcol .plus { font-size:10px; }.bcol .dash { height:1px; }
+  .panelbox { top:12px;right:12px;bottom:auto;width:min(230px,calc(100vw - 24px));max-height:calc(100dvh - 90px); }
+  .panelbox[data-open="false"] { width:150px;padding:9px 11px; }
+  .panelbox h2 { font-size:10px; }.panelbox .cue { font-size:9px; }
+}
+@media(max-height:550px) and (min-width:821px) {
+  .content { padding-top:16px;padding-bottom:92px; }
+  .headline-wrap { margin-top:12%; }.headline { font-size:19px; }
+  .label,.gateway ul,.bcol p { font-size:8px;line-height:1.5; }
+  .gateway h2 { margin:0;font-size:12px; }.gateway { padding-top:8px;row-gap:12px; }
+  .bcol p { margin-top:5px; }.bottom { padding-top:10px; }
+}
+@media(max-height:600px) and (max-width:820px) {
+  .content { padding:16px 18px 70px; }
+  .upper { grid-template-columns:minmax(0,1fr) minmax(0,.7fr) minmax(0,1fr);grid-template-rows:1fr;gap:18px; }
+  .col-a { grid-column:1;grid-row:1;padding:0; }
+  .headline { font-size:clamp(14px,2.8vw,21px); }.headline-wrap { margin-top:12px; }
+  .arrow,.wordmark { grid-column:2;grid-row:1; }
+  .wordmark { margin-bottom:0; }.wordmark span { font-size:40px; }
+  .col-d { grid-column:3;grid-row:1;justify-content:flex-end; }
+  .gateway { row-gap:10px; }.gateway a { min-height:36px; }
+  .bottom { display:none; }.panelbox[data-open="false"] { width:135px; }
+}
+@media(max-height:600px) and (min-width:821px) {
+  .content { padding:16px 4.1% 76px; }
+  .bottom { display:none; }
+  .gateway { row-gap:10px; }
+  .gateway a { min-height:36px; }
+  .col-d>.label,.col-d>.dash { visibility:hidden; }
+  .panelbox { top:12px;right:12px;bottom:auto;max-height:calc(100dvh - 82px); }
+}
+</style></head><body>
+<div class="notice" id="notice" hidden></div>
+
+<!-- DecryptReveal host -->
+<div class="hero" id="reveal">
+  <!-- HTML-in-canvas source. Content lives here when the API is available. -->
+  <canvas class="source" id="src" layoutsubtree="true">
+    <div class="content" id="content">
+
+      <div class="upper">
+        <div class="col col-a">
+          <p class="label"><a href="/#home" target="_top">HENKAKU<br />COMMUNITY</a></p>
+          <div class="dash"></div>
+          <div class="headline-wrap">
+            <div class="dash"></div>
+            <h1 class="headline" id="gateway-title">A LIVING<br />INFRASTRUCTURE<br />FOR COLLECTIVE<br />TRANSFORMATION</h1>
+          </div>
+        </div>
+
+        <div class="col col-b"></div>
+
+        <div class="arrow">
+          <svg viewBox="0 0 48 60" aria-hidden="true"><path d="M0 0 L48 37 L19 37 L0 60 Z" fill="currentColor" /></svg>
+        </div>
+        <div class="wordmark"><span>HENKAKU</span></div>
+
+        <div class="col col-d">
+          <p class="label">JOIN THE<br />HENKAKU NETWORK</p>
+          <div class="dash"></div>
+          <div class="gateway">
+            <div class="dash"></div>
+            <h2>PUBLIC GATEWAY</h2>
+            <ul>
+  <li><a href="/#setup" target="_top">WALLET SETUP</a></li>
+  <li><a href="/#journey" target="_top">BEGIN INITIATION</a></li>
+  <li><a href="/#community" target="_top">COMMUNITY</a></li>
+  <li><a href="/#passport" target="_top">MY PASSPORT</a></li>
+</ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="bottom">
+        <div class="bcol">
+          <span class="plus">+</span>
+          <p>QUESTS<br />ANSWERS<br />PROGRESS</p>
+        </div>
+        <div class="bcol">
+          <span class="plus">+</span>
+          <p>ALLOWLIST<br />TOKEN DISTRIBUTION</p>
+        </div>
+        <div class="bcol">
+          <span class="plus">+</span>
+          <p>CHECK-IN<br />ACTIVITY</p>
+        </div>
+        <div class="bcol">
+          <div class="dash"></div>
+          <p><a href="/#home" target="_top">ENTER PORTAL →</a></p>
+        </div>
+      </div>
+
+    </div>
+  </canvas>
+
+  <canvas class="output" id="out" aria-hidden="true"></canvas>
+  <canvas class="bubble-source" id="bubble-src" aria-hidden="true"></canvas>
+  <canvas class="bubble-output" id="bubble" aria-hidden="true"></canvas>
+</div>
+
+<p class="hint">八の字に解読が進みます。画面をタップ / クリックすると一気に全体が解読されます。</p>
+<p class="hint credit-line">出典・参考：<a href="https://github.com/DavidHDev/canvas-ui" target="_blank" rel="noopener noreferrer">DavidHDev / canvas-ui</a> — Copyright (c) 2026 David Haz, MIT + Commons Clause License Condition v1.0 (<a href="LICENSE-canvas-ui.txt" target="_blank" rel="noopener noreferrer">full text</a>)</p>
+
+<div class="panelbox" id="controls" data-open="false">
+  <h2>Decrypt Reveal <button class="toggle" id="toggle" type="button" aria-label="toggle">+</button></h2>
+  <p class="cue">クリックして動きを調整</p>
+  <div class="rows" id="rows"></div>
+</div>
+
+
+<script type="module">
+
+  import { createDecryptReveal } from "./decrypt-reveal.js";
+  import { createBubble } from "./bubble.js";
+
+  const card = document.getElementById("reveal");
+  const source = document.getElementById("src");
+  const content = document.getElementById("content");
+  const output = document.getElementById("out");
+  const bubble = document.getElementById("bubble");
+  const bubbleSource = document.getElementById("bubble-src");
+  const notice = document.getElementById("notice");
+  const rows = document.getElementById("rows");
+  // The roll depends on how frames are composited, so pin the snapshot path.
+  const supported = false;
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (supported) {
+    // Content stays inside the canvas; the canvas covers the card.
+    source.style.cssText = "position:absolute;inset:0;width:100%;height:100%;";
+  } else {
+    // Fallback: pull the content out of the canvas so it renders normally.
+    card.insertBefore(content, output);
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Rolling snapshot: two plates instead of one.
+   *
+   * The wordmark has to roll through the page while it stays encrypted,
+   * but re-serialising the DOM every frame costs 50-150ms. So the page is
+   * rasterised once into two layers:
+   *
+   *   plate A  the hero with the wordmark hidden
+   *   plate B  the wordmark alone, transparent everywhere else
+   *
+   * Compositing B over A at an offset moves only the wordmark.
+   * ------------------------------------------------------------------ */
+
+  const roll = { y: 0 };
+  let plateBase = null;
+  let plateMark = null;
+  let plateSize = { w: 0, h: 0 };
+  let markPeriod = 0;
+  let domPeriod = 0; // the type's own advance, a floor for the period
+  let rollable = false;
+
+  const WORDMARK_FILL = 0.88;
+
+  function fitWordmark() {
+    const span = content.querySelector(".wordmark span");
+    if (!span) return;
+    span.style.fontSize = "";
+    const vertical = getComputedStyle(span).writingMode.startsWith("vertical");
+    rollable = vertical;
+
+    const hero = card.getBoundingClientRect();
+    const rect = span.getBoundingClientRect();
+    const extent = vertical ? rect.height : rect.width;
+    if (!extent || !hero.height) return;
+
+    const offset = vertical ? rect.top - hero.top : rect.left - hero.left;
+    const span_of = vertical ? hero.height : hero.width;
+    const hostSize = vertical ? span.parentElement.clientHeight : span.parentElement.clientWidth;
+    const room = Math.max(24, Math.min(span_of * WORDMARK_FILL - offset, hostSize * 0.95));
+
+    const base = parseFloat(getComputedStyle(span).fontSize) || 16;
+    span.style.fontSize = `${base * (room / extent)}px`;
+    const fitted = span.getBoundingClientRect();
+    domPeriod = vertical ? fitted.height : fitted.width;
+    if (!markPeriod) markPeriod = domPeriod;
+  }
+
+  function rasterise(w, h, mutate) {
+    const css = Array.from(document.querySelectorAll("style"))
+      .map((node) => node.textContent)
+      .join("\n");
+
+    const clone = content.cloneNode(true);
+    mutate(clone);
+
+    const wrapper = document.createElement("div");
+    wrapper.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
+    wrapper.setAttribute("style", `width:${w}px;height:${h}px;`);
+    const styleNode = document.createElement("style");
+    styleNode.textContent = css;
+    wrapper.appendChild(styleNode);
+    wrapper.appendChild(clone);
+
+    const xml = new XMLSerializer().serializeToString(wrapper);
+    // Safari refuses to render a foreignObject without explicit width/height.
+    const svg =
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">` +
+      `<foreignObject x="0" y="0" width="${w}" height="${h}">${xml}</foreignObject></svg>`;
+
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error("plate failed to rasterise"));
+      img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+    });
+  }
+
+  /** Cheap "did anything actually render?" probe, downscaled to 32x32. */
+  const probe = document.createElement("canvas");
+  probe.width = probe.height = 32;
+  function looksPainted(bitmap) {
+    try {
+      const ctx = probe.getContext("2d", { willReadFrequently: true });
+      ctx.clearRect(0, 0, 32, 32);
+      ctx.drawImage(bitmap, 0, 0, 32, 32);
+      const data = ctx.getImageData(0, 0, 32, 32).data;
+      let ink = 0;
+      for (let i = 3; i < data.length; i += 4) if (data[i] > 8) ink++;
+      return ink > 32; // at least ~3% of the card carries content
+    } catch {
+      return false;
+    }
+  }
+
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  /**
+   * Vertical extent of the ink on a plate, in CSS pixels, read straight from
+   * the rasterised bitmap. Measuring the DOM box instead lets a mismatch
+   * creep in, and a period even slightly short makes the stamped copies of
+   * the wordmark sit on top of each other.
+   */
+  function inkExtent(plate, w, h) {
+    const scale = 0.25;
+    const cw = Math.max(1, Math.round(w * scale));
+    const ch = Math.max(1, Math.round(h * scale));
+    const sheet = document.createElement("canvas");
+    sheet.width = cw;
+    sheet.height = ch;
+    const ctx = sheet.getContext("2d", { willReadFrequently: true });
+    ctx.clearRect(0, 0, cw, ch);
+    ctx.drawImage(plate, 0, 0, cw, ch);
+    let data;
+    try {
+      data = ctx.getImageData(0, 0, cw, ch).data;
+    } catch {
+      return 0;
+    }
+    let top = -1;
+    let bottom = -1;
+    for (let y = 0; y < ch; y++) {
+      for (let x = 0; x < cw; x++) {
+        if (data[(y * cw + x) * 4 + 3] > 12) {
+          if (top < 0) top = y;
+          bottom = y;
+          break;
+        }
+      }
+    }
+    if (top < 0) return 0;
+    return (bottom - top + 1) / scale;
+  }
+
+
+  async function buildPlates(w, h, epoch) {
+    if (!ownsPaint(epoch)) return false;
+    fitWordmark();
+    const base = await rasterise(w, h, (clone) => {
+      const mark = clone.querySelector(".wordmark");
+      if (mark) mark.style.visibility = "hidden";
+    });
+    if (!ownsPaint(epoch)) return false;
+    const mark = await rasterise(w, h, (clone) => {
+      clone.style.visibility = "hidden";
+      const node = clone.querySelector(".wordmark");
+      if (node) node.style.visibility = "visible";
+    });
+    if (!ownsPaint(epoch)) return false;
+    if (!looksPainted(base)) throw new Error("base plate came back blank");
+    plateBase = base;
+    plateMark = mark;
+    plateSize = { w, h };
+
+    // A touch of air between repeats, so the loop reads as a word
+    // rolling past rather than one continuous ribbon of letters.
+    // The period can never be shorter than the type's own advance: that
+    // is exactly what makes consecutive stamps sit on top of each other.
+    // If the plate clipped the ink, the DOM figure carries the day.
+    const measured = inkExtent(mark, w, h);
+    markPeriod = Math.max(measured * 1.06, domPeriod) || markPeriod;
+    return true;
+  }
+
+  /**
+   * iOS Safari is documented to fail the first foreignObject rasterisation
+   * and succeed on a later attempt, so retry before giving up.
+   */
+  async function paintPlates(canvas, dpr, epoch = renderEpoch) {
+    if (!ownsPaint(epoch)) return;
+    const w = Math.max(1, content.clientWidth);
+    const h = Math.max(1, content.clientHeight);
+
+    if (!plateBase || plateSize.w !== w || plateSize.h !== h) {
+      let lastError = null;
+      let ok = false;
+      for (let attempt = 0; attempt < 3 && !ok; attempt++) {
+        try {
+          if (!(await buildPlates(w, h, epoch))) return;
+          ok = true;
+        } catch (err) {
+          if (!ownsPaint(epoch)) return;
+          lastError = err;
+          await sleep(80 * (attempt + 1));
+        }
+      }
+      if (!ownsPaint(epoch)) return;
+      if (!ok) {
+        degrade("スナップショットに失敗しました（このブラウザでは非対応の可能性）");
+        throw lastError ?? new Error("plates failed");
+      }
+    }
+
+    if (!ownsPaint(epoch)) return;
+    compositePlates(canvas, dpr);
+    if (!handedBack) card.classList.add("captured");
+  }
+
+  /**
+   * The page as it currently stands: base plate plus the rolling wordmark.
+   * The decrypt shader turns this into cipher; the bubble refracts the very
+   * same frame untouched, so the lens shows the real page through it.
+   */
+  function compositePlates(canvas, dpr) {
+    if (!plateBase || !plateMark) return;
+    const w = Math.max(1, content.clientWidth);
+    const h = Math.max(1, content.clientHeight);
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = getComputedStyle(card).backgroundColor || "#f4f4f4";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(plateBase, 0, 0, w * dpr, h * dpr);
+
+    const period = markPeriod || h;
+    const shift = ((roll.y % period) + period) % period;
+    // Keep the rolling letters inside their own grid cell on every viewport.
+    const cell = content.querySelector(".wordmark").getBoundingClientRect();
+    const bounds = content.getBoundingClientRect();
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect((cell.left - bounds.left) * dpr, (cell.top - bounds.top) * dpr, cell.width * dpr, cell.height * dpr);
+    ctx.clip();
+    for (let k = -1; k <= 1; k++) {
+      ctx.drawImage(plateMark, 0, (shift + k * period) * dpr, w * dpr, h * dpr);
+    }
+    ctx.restore();
+  }
+
+  /** The bubble refracts the untouched page, not the cipher drawn over it. */
+  function paintBubble(canvas, dpr) {
+    compositePlates(canvas, dpr);
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Hero choreography.
+   *
+   *   Touch (coarse pointer)  figure-eight intro -> tap expands -> plain DOM.
+   *                           Always ends, so the GPU work is bounded.
+   *
+   *   Desktop (fine pointer)  figure-eight intro -> settles, still encrypted.
+   *                           Moving the cursor takes the circle over.
+   *                           Clicking toggles the encryption off / on.
+   *
+   * Every state eventually parks with the render loop stopped, so an idle
+   * hero costs nothing. That is what keeps a long-lived hero battery-safe.
+   * ------------------------------------------------------------------ */
+
+  const desktop = matchMedia("(hover: hover) and (pointer: fine)").matches;
+
+  const TOUR_LAPS = 2;
+  const LAP_MS = 4200;
+  const ROLL_MS = 5200;
+  const ROLL_FPS = 20; // one cell pass per captured frame, so cap the rate
+  const EXPAND_MS = 850;
+  const IDLE_MS = 2600; // cursor held still -> freeze the cipher
+  const REARM_MS = 1400; // cursor left -> replay the attract loop
+
+  const options = {
+    paint: paintPlates,
+    forceSnapshot: true,
+    onContextLost: () => degrade("GPU コンテキストが失われたため、通常表示に戻しました"),
+    interactive: false, // the intro drives the circle until the user does
+    radius: 400,
+    softness: 0.5,
+    cell: 10,
+    aspect: 0.75,
+    colored: 1,
+    color: "#1b34f5",
+    brightness: 1,
+    legibility: 1,
+    contrast: 1,
+    exposure: 1,
+    scramble: 0.12,
+    scrambleSpeed: 6,
+    edgeWidth: 0.2,
+    edgeFlicker: 1,
+    edgeGlow: 1.2,
+    edgeTint: 0.75,
+    aberration: 8,
+    passthrough: 0.1,
+    threshold: 0.025,
+    background: "#f4f4f4",
+    smoothing: 0.12,
+  };
+
+
+  /* Official Bubble defaults, matching canvasui.dev/docs/components/bubble.
+     The vanilla API takes colours as 0-1 triples rather than hex. */
+  const BUBBLE = {
+    forceSnapshot: true,
+    paint: paintBubble,
+    listenTarget: card, // the captured DOM is inert while the canvas draws
+    size: 30,
+    trail: 24,
+    follow: 0.5,
+    blend: 14,
+    speed: 2,
+    refraction: 80,
+    dispersion: 1,
+    frost: 0,
+    shine: 0.25,
+    rim: 0.5,
+    iridescence: 1,
+    intensity: 0.9,
+    tint: [1, 1, 1],
+    tintStrength: 0,
+    colorA: [0.2902, 0.4549, 0.7216],
+    colorB: [0.4118, 0.4118, 0.4157],
+  };
+
+  let bubbleInstance = null;
+
+  function startBubble() {
+    if (bubbleInstance || reducedMotion || handedBack) return;
+    const epoch = renderEpoch;
+    bubbleInstance = createBubble(
+      { source: bubbleSource, content, output: bubble },
+      { ...BUBBLE, paint: (canvas, dpr) => { if (ownsPaint(epoch)) paintBubble(canvas, dpr); } },
+    );
+    bubble.style.opacity = bubbleInstance ? "1" : "0";
+  }
+
+  function stopBubble() {
+    bubbleInstance?.destroy();
+    bubbleInstance = null;
+    bubble.style.opacity = "0";
+  }
+
+  let instance = null;
+  let phase = "init"; // init | tour | hold | follow | expand | done | failed
+  let raf = 0;
+  let rollRaf = 0;
+  let idleTimer = 0;
+  let rearmTimer = 0;
+  let frozen = false;
+  // True once the DOM owns the pixels again. Guards against a capture
+  // that was already in flight re-hiding the page after the hand-back.
+  let handedBack = false;
+  // Local lifecycle fix: every paint/RAF belongs to exactly one replay session.
+  let renderEpoch = 0;
+  let readyRaf = 0;
+  function ownsPaint(epoch) { return epoch === renderEpoch && !handedBack; }
+  function setPhase(value) { phase = value; card.dataset.phase = value; }
+  function resetSession() {
+    renderEpoch++;
+    handedBack = true;
+    stopMotion();
+    stopRoll();
+    const oldInstance = instance;
+    instance = null;
+    oldInstance?.destroy();
+    stopBubble();
+    card.classList.remove("captured", "playing");
+    output.style.opacity = "0";
+  }
+
+  function setRoll(y) {
+    if (handedBack || roll.y === y) return;
+    roll.y = y;
+    instance?.invalidate();
+    bubbleInstance?.invalidate(); // the lens must refract the same frame
+  }
+
+  function box() {
+    return { w: Math.max(card.clientWidth, 1), h: Math.max(card.clientHeight, 1) };
+  }
+
+  function setNotice(html, warn) {
+    notice.hidden = false;
+    notice.className = warn ? "notice warn" : "notice";
+    notice.innerHTML = html;
+  }
+
+  function stopMotion() {
+    cancelAnimationFrame(raf);
+    raf = 0;
+    cancelAnimationFrame(readyRaf);
+    readyRaf = 0;
+    clearTimeout(idleTimer);
+    clearTimeout(rearmTimer);
+  }
+
+  /** Freezing the glyph churn lets the render loop settle and stop entirely. */
+  function freeze() {
+    if (frozen || !instance) return;
+    frozen = true;
+    instance.setOptions({ scramble: 0, edgeFlicker: 0 });
+  }
+
+  function thaw() {
+    if (!frozen || !instance) return;
+    frozen = false;
+    instance.setOptions({ scramble: options.scramble, edgeFlicker: options.edgeFlicker });
+  }
+
+  /** Any failure path ends the same way: the real, readable UI. */
+  function degrade(reason) {
+    if (phase === "failed") return;
+    resetSession();
+    setPhase("failed");
+    setNotice(`<b>通常表示で続けられます。</b> ${reason}`, true);
+  }
+
+  /** Success path: hand the pixels back to the DOM and free the GPU. */
+  function finish() {
+    if (phase === "done") return;
+    // Synchronous, owned teardown: an old timeout must never destroy a new replay.
+    resetSession();
+    setPhase("done");
+  }
+
+  /** Grow the reveal circle until it covers the hero, then drop to plain DOM. */
+  function decryptAll(px, py) {
+    if (phase === "expand" || phase === "done" || phase === "failed") return;
+    if (!instance) return;
+    setPhase("expand");
+    const epoch = renderEpoch;
+    const renderer = instance;
+    stopMotion();
+    thaw();
+    instance.setOptions({ interactive: false });
+    card.classList.remove("playing");
+
+    const { w, h } = box();
+    const x = px ?? w / 2;
+    const y = py ?? h / 2;
+    instance.setPointer(x, y, 1);
+
+    // Full reveal only happens inside radius * (1 - softness), so overshoot
+    // far enough that the furthest corner lands inside that inner disc.
+    const far = Math.max(
+      Math.hypot(x, y),
+      Math.hypot(w - x, y),
+      Math.hypot(x, h - y),
+      Math.hypot(w - x, h - y),
+    );
+    const from = options.radius;
+    const to = (far / Math.max(1 - options.softness, 0.05)) * 1.06;
+
+    // Ease the type back to its home position over the same beat, so it
+    // comes to rest exactly where the static design puts it rather than
+    // snapping there the moment the DOM takes over again.
+    stopRoll();
+    const rollFrom = roll.y;
+    const rollTo = markPeriod
+      ? Math.ceil(roll.y / markPeriod) * markPeriod
+      : roll.y;
+    const t0 = performance.now();
+
+    const step = (now) => {
+      if (phase !== "expand" || epoch !== renderEpoch || renderer !== instance) return;
+      const k = Math.min((now - t0) / EXPAND_MS, 1);
+      const eased = 1 - Math.pow(1 - k, 3);
+      instance.setOptions({ radius: from + (to - from) * eased });
+      setRoll(rollFrom + (rollTo - rollFrom) * eased);
+      if (k < 1) {
+        raf = requestAnimationFrame(step);
+        return;
+      }
+      setRoll(0);
+      finish();
+    };
+    raf = requestAnimationFrame(step);
+  }
+
+  /** Desktop resting state: fully encrypted, circle closed, loop stopped. */
+  function hold() {
+    if (phase === "failed" || phase === "done" || !instance) return;
+    setPhase("hold");
+    stopMotion();
+    card.classList.add("playing");
+    instance.setPointer(box().w / 2, box().h / 2, 0); // fade the circle away
+    idleTimer = setTimeout(freeze, 900); // then let the loop settle
+  }
+
+  /** The cursor takes the circle over from the scripted intro. */
+  function takeOver(x, y) {
+    if (!instance || (phase !== "tour" && phase !== "hold")) return;
+    setPhase("follow");
+    stopMotion();
+    thaw();
+    card.classList.add("playing");
+    instance.snapPointer(x, y); // start under the cursor, not mid-flight
+    instance.setPointer(x, y, 1);
+    instance.setOptions({ interactive: true });
+    armIdle();
+  }
+
+  function armIdle() {
+    clearTimeout(idleTimer);
+    const epoch = renderEpoch;
+    idleTimer = setTimeout(() => {
+      if (epoch === renderEpoch && phase === "follow") freeze();
+    }, IDLE_MS);
+  }
+
+  /**
+   * The roll runs on its own clock, deliberately separate from the reveal
+   * circle: the cursor drives one and must never interrupt the other. It
+   * keeps looping for as long as the page is still encrypted.
+   */
+  function startRoll() {
+    if (!rollable || !markPeriod || rollRaf) return;
+    const epoch = renderEpoch;
+    const frameGap = 1000 / ROLL_FPS;
+    let last = 0;
+    const step = (now) => {
+      if (!ownsPaint(epoch)) return;
+      rollRaf = requestAnimationFrame(step);
+      if (document.hidden) return; // a backgrounded tab rolls nothing
+      if (last && now - last < frameGap) return;
+      const delta = last ? Math.min(now - last, 200) : frameGap;
+      last = now;
+      setRoll((roll.y + (markPeriod * delta) / ROLL_MS) % markPeriod);
+    };
+    rollRaf = requestAnimationFrame(step);
+  }
+
+  function stopRoll() {
+    cancelAnimationFrame(rollRaf);
+    rollRaf = 0;
+  }
+
+  function beginTour() {
+    if (["failed", "done", "expand"].includes(phase) || !instance) return;
+    const epoch = renderEpoch;
+    setPhase("tour");
+    stopMotion();
+    thaw();
+    card.classList.add("playing");
+    instance.setOptions({ interactive: false });
+
+    const start = box();
+    const x0 = start.w * 0.5 + start.w * 0.3;
+    const y0 = start.h * 0.5;
+    instance.snapPointer(x0, y0); // avoid flying in from off-screen
+    instance.setPointer(x0, y0, 1);
+
+    const t0 = performance.now();
+    const step = (now) => {
+      if (phase !== "tour" || !ownsPaint(epoch) || !instance) return;
+      const elapsed = now - t0;
+      const t = (elapsed / LAP_MS) * Math.PI * 2;
+      const { w, h } = box();
+      // Gerono lemniscate — a clean horizontal figure eight.
+      const x = w * 0.5 + Math.cos(t) * w * 0.3;
+      const y = h * 0.5 + (Math.sin(t * 2) / 2) * h * 0.32;
+      instance.setPointer(x, y, 1);
+      if (desktop && elapsed >= LAP_MS * TOUR_LAPS) {
+        // Desktop keeps the door shut and waits; touch has no cursor to wait
+        // for, so it opens by itself.
+        hold();
+        return;
+      }
+      raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+  }
+
+  /** Re-lock the hero after it was decrypted. */
+  function reEncrypt() { boot(); }
+
+  /** In snapshot mode the tour must wait for the first capture. */
+  function whenReady(callback, epoch) {
+    if (supported) { if (ownsPaint(epoch)) callback(); return; }
+    const deadline = performance.now() + 5000;
+    const poll = () => {
+      readyRaf = 0;
+      if (!ownsPaint(epoch) || phase !== "init") return;
+      if (card.classList.contains("captured")) { callback(); return; }
+      if (performance.now() > deadline) { degrade("スナップショットがタイムアウトしました。"); return; }
+      readyRaf = requestAnimationFrame(poll);
+    };
+    poll();
+  }
+
+  function boot() {
+    resetSession();
+    const epoch = renderEpoch;
+    card.dataset.renderSession = String(epoch);
+    setPhase("init");
+    plateBase = null;
+    plateMark = null;
+    plateSize = { w: 0, h: 0 };
+    roll.y = 0;
+    frozen = false;
+    handedBack = false;
+    output.style.opacity = "1";
+
+    if (reducedMotion) {
+      finish();
+      setNotice(
+        "<b>「視差効果を減らす」設定が有効なため、エフェクトは再生しません。</b> " +
+          "通常の UI を表示しています（アクセシビリティ対応）。",
+      );
+      return;
+    }
+
+    instance = createDecryptReveal({ source, content, output }, {
+      ...options,
+      paint: (canvas, dpr) => paintPlates(canvas, dpr, epoch),
+      onContextLost: () => { if (epoch === renderEpoch) degrade("GPU コンテキストが失われました。"); },
+    });
+    if (!instance) {
+      degrade("この環境では WebGL2 が利用できません。");
+      return;
+    }
+
+    setNotice("空白をクリックして暗号化／復号。復号後にリンクを選ぶと、そのページへ進みます。");
+
+    whenReady(() => {
+      startRoll();
+      startBubble(); // needs the plates, so only once they exist
+      beginTour();
+    }, epoch);
+  }
+
+  // --- input ------------------------------------------------------------
+
+  // Touching the artwork moves the lens; it never destroys/recreates renderers.
+  card.addEventListener("pointerdown", (event) => {
+    if (desktop || !instance || ["init", "done", "failed"].includes(phase)) return;
+    const rect = output.getBoundingClientRect();
+    takeOver(event.clientX - rect.left, event.clientY - rect.top);
+    instance?.setPointer(event.clientX - rect.left, event.clientY - rect.top, 1);
+    thaw();
+  });
+
+  // Desktop: the cursor takes over the reveal circle.
+  card.addEventListener(
+    "pointermove",
+    (event) => {
+      if (!desktop) return;
+      const rect = output.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      if (phase === "tour" || phase === "hold") {
+        takeOver(x, y);
+        return;
+      }
+      if (phase === "follow") {
+        thaw();
+        armIdle();
+      }
+    },
+    { passive: true },
+  );
+
+  // Desktop: leaving the hero replays the attract loop.
+  card.addEventListener("pointerleave", () => {
+    if (!desktop || phase !== "follow") return;
+    stopMotion();
+    rearmTimer = setTimeout(() => {
+      if (phase === "follow") beginTour();
+    }, REARM_MS);
+  });
+
+  // A plain-space click toggles the artwork; a revealed link exits the intro.
+  card.addEventListener("click", (event) => {
+    const link = event.target.closest?.("a[href]");
+    if (link) {
+      event.preventDefault();
+      if (phase === "done" || phase === "failed") {
+        const url = new URL(link.href, location.href);
+        const screen = url.hash.slice(1);
+        if (url.origin === location.origin && ["home", "setup", "journey", "community", "passport"].includes(screen)) {
+          if (window.parent === window) location.href = url.href;
+          else window.parent.postMessage({ type: "henkaku:intro:navigate", screen }, location.origin);
+        }
+      } else decryptAll();
+      return;
+    }
+    if (event.target.closest?.("button,input") || reducedMotion) return;
+    if (phase === "done") { reEncrypt(); return; }
+    if (!instance || ["init", "failed", "expand"].includes(phase)) return;
+    const rect = output.getBoundingClientRect();
+    decryptAll(event.clientX - rect.left, event.clientY - rect.top);
+  });
+
+  // Keyboard users tabbing into the (currently invisible) UI get it revealed.
+  content.addEventListener("focusin", () => {
+    if (phase === "tour" || phase === "hold" || phase === "follow") decryptAll();
+  });
+
+  boot();
+
+  /* ------------------------------------------------------------------ *
+   * Tuning panel — evaluation aid, not part of the hero itself.
+   * ------------------------------------------------------------------ */
+
+  const SLIDERS = [
+    ["radius", "Radius", 60, 700, 10],
+    ["softness", "Softness", 0.05, 1, 0.05],
+    ["cell", "Cell size", 6, 32, 1],
+    ["aspect", "Cell aspect", 0.35, 1.25, 0.05],
+    ["colored", "Colored", 0, 1, 0.05],
+    ["brightness", "Brightness", 0.2, 3, 0.05],
+    ["legibility", "Legibility", 0, 1, 0.05],
+    ["contrast", "Contrast", 0.3, 3, 0.05],
+    ["exposure", "Exposure", 0.2, 3, 0.05],
+    ["scramble", "Scramble", 0, 1, 0.02],
+    ["scrambleSpeed", "Scramble speed", 0, 30, 0.5],
+    ["edgeWidth", "Edge width", 0, 1, 0.02],
+    ["edgeFlicker", "Edge flicker", 0, 1, 0.02],
+    ["edgeGlow", "Edge glow", 0, 3, 0.05],
+    ["edgeTint", "Edge tint", 0, 1, 0.02],
+    ["aberration", "Aberration", 0, 24, 0.5],
+    ["passthrough", "Passthrough", 0, 1, 0.02],
+    ["threshold", "Threshold", 0.005, 0.3, 0.005],
+    ["smoothing", "Smoothing", 0, 1, 0.05],
+  ];
+
+  const replayRow = document.createElement("div");
+  replayRow.className = "row";
+  replayRow.innerHTML =
+    `<button type="button" style="grid-column:1/-1;padding:7px;cursor:pointer;font-weight:700">▶ イントロをもう一度再生</button>`;
+  rows.appendChild(replayRow);
+  replayRow.querySelector("button").addEventListener("click", () => { boot(); });
+
+  for (const [key, label, min, max, step] of SLIDERS) {
+    const row = document.createElement("div");
+    row.className = "row";
+    row.innerHTML =
+      `<label for="c-${key}">${label}</label><output id="o-${key}">${options[key]}</output>` +
+      `<input id="c-${key}" type="range" min="${min}" max="${max}" step="${step}" value="${options[key]}">`;
+    rows.appendChild(row);
+    const out = row.querySelector("output");
+    row.querySelector("input").addEventListener("input", (event) => {
+      const value = Number(event.target.value);
+      options[key] = value;
+      out.textContent = value;
+      instance?.setOptions({ [key]: value });
+    });
+  }
+
+  const colorRow = document.createElement("div");
+  colorRow.className = "row";
+  colorRow.innerHTML =
+    `<label for="c-color">Cipher color</label><input id="c-color" type="color" value="${options.color}">`;
+  rows.appendChild(colorRow);
+  colorRow.querySelector("input").addEventListener("input", (event) => {
+    options.color = event.target.value;
+    instance?.setOptions({ color: event.target.value });
+  });
+
+  // --- bubble controls, so the lens can be dialled in by eye -------------
+  const BUBBLE_SLIDERS = [
+    ["size", "Size", 12, 140, 2],
+    ["trail", "Trail", 1, 24, 1],
+    ["follow", "Follow", 0.02, 1, 0.02],
+    ["blend", "Blend", 1, 24, 0.5],
+    ["speed", "Speed", 0, 6, 0.1],
+    ["refraction", "Refraction", -200, 200, 5],
+    ["dispersion", "Dispersion", 0, 3, 0.05],
+    ["frost", "Frost", 0, 1, 0.02],
+    ["shine", "Shine", 0, 2, 0.05],
+    ["rim", "Rim", 0, 2, 0.05],
+    ["iridescence", "Iridescence", 0, 2, 0.05],
+    ["intensity", "Intensity", 0, 2, 0.05],
+  ];
+
+  const bubbleHead = document.createElement("div");
+  bubbleHead.className = "row";
+  bubbleHead.innerHTML =
+    `<label style="grid-column:1/-1;font-weight:700;margin-top:6px">Bubble</label>`;
+  rows.appendChild(bubbleHead);
+
+  for (const [key, label, min, max, step] of BUBBLE_SLIDERS) {
+    const row = document.createElement("div");
+    row.className = "row";
+    row.innerHTML =
+      `<label for="b-${key}">${label}</label><output id="bo-${key}">${BUBBLE[key]}</output>` +
+      `<input id="b-${key}" type="range" min="${min}" max="${max}" step="${step}" value="${BUBBLE[key]}">`;
+    rows.appendChild(row);
+    const out = row.querySelector("output");
+    row.querySelector("input").addEventListener("input", (event) => {
+      const value = Number(event.target.value);
+      BUBBLE[key] = value;
+      out.textContent = value;
+      bubbleInstance?.setOptions({ [key]: value });
+    });
+  }
+
+  const credit = document.createElement("p");
+  credit.className = "intro-credit";
+  credit.innerHTML = 'Bubble / DecryptReveal: © 2026 David Haz · <a href="LICENSE-canvas-ui.txt" target="_blank" rel="noopener noreferrer">MIT + Commons Clause</a>';
+  rows.appendChild(credit);
+  const panelBox = document.getElementById("controls");
+  const toggle = document.getElementById("toggle");
+
+  function setPanelOpen(open) {
+    panelBox.dataset.open = String(open);
+    toggle.textContent = open ? "−" : "+";
+  }
+
+  toggle.addEventListener("click", (event) => {
+    event.stopPropagation();
+    setPanelOpen(panelBox.dataset.open === "false");
+  });
+
+  // While collapsed the whole tab is the button: a 250px target, not a 14px one.
+  panelBox.addEventListener("click", () => {
+    if (panelBox.dataset.open === "false") setPanelOpen(true);
+  });
+  window.addEventListener("message", (event) => {
+    if (event.source !== window.parent || event.origin !== location.origin) return;
+    if (event.data?.type === "henkaku:intro:stop") finish();
+  });
+  window.addEventListener("pagehide", finish);
+
+</script>
+</body></html>

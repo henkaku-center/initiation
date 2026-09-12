@@ -1,6 +1,7 @@
 // ABOUTME: Initiation画面。ステップ一覧・進捗・回答フォームを表示する。
 // ABOUTME: 未認証者にはウォレットセットアップへの導線を出し、完走者には申請へ案内する。
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { requireMember, UnauthenticatedError } from "@/lib/auth/guards";
 import { getRepositories } from "@/lib/repositories";
 import { initiationSteps } from "@/lib/initiation/content";
@@ -10,6 +11,7 @@ import { InitiationSteps } from "@/components/InitiationSteps";
 import { buttonStyles } from "@/lib/ui";
 
 export default async function InitiationPage() {
+  if (process.env.HENKAKU_DEMO_ONLY === "1") redirect("/");
   let entries: ProgressEntry[];
   try {
     const member = await requireMember();

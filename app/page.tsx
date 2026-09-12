@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { buttonStyles, cardStyles } from "@/lib/ui";
+import { PortalDemo } from "@/components/demo/PortalDemo";
 
 export default function Home() {
+  if (process.env.HENKAKU_DEMO_ONLY === "1") return <PortalDemo />;
   return (
     <main className="space-y-8">
       <section className="overflow-hidden rounded-3xl border border-border bg-card px-6 py-12 shadow-sm sm:px-10 sm:py-16">

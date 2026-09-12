@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 :root {
+  color-scheme: light;
   --background: #f8fafc;
   --foreground: #0f172a;
   --card: #ffffff;
@@ -23,22 +24,54 @@
   --font-sans: Arial, Helvetica, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0f172a;
-    --foreground: #e2e8f0;
-    --card: #111827;
-    --header-border: #334155;
-    --muted-foreground: #94a3b8;
-    --surface-hover: #1e293b;
-    --brand: #818cf8;
-    --brand-strong: #a5b4fc;
-  }
-
-  html {
-    color-scheme: dark;
-  }
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #0f172a;
+  --foreground: #e2e8f0;
+  --card: #111827;
+  --header-border: #334155;
+  --muted-foreground: #94a3b8;
+  --surface-hover: #1e293b;
+  --brand: #818cf8;
+  --brand-strong: #a5b4fc;
 }
+
+.theme-toggle {
+  display: inline-flex;
+  flex: 0 0 auto;
+  border: 1px solid var(--pd-line, var(--header-border));
+  border-radius: 999px;
+  padding: 3px;
+  gap: 2px;
+  color: var(--pd-muted, var(--muted-foreground));
+  background: var(--pd-surface, var(--card));
+}
+.theme-toggle button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.theme-toggle button[aria-pressed="true"] {
+  background: var(--pd-ink, var(--foreground));
+  color: var(--pd-paper, var(--background));
+}
+.theme-toggle button:focus-visible {
+  outline: 3px solid #f58442;
+  outline-offset: 3px;
+}
+.theme-toggle svg { width: 16px; height: 16px; flex: 0 0 auto; }
 
 @layer base {
   html {

@@ -1,0 +1,283 @@
+.pd-game.pd-game-journey {
+  min-height: calc(100svh - 110px);
+}
+
+.pd-game-journey .pd-journey-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 440px);
+  align-items: start;
+  gap: clamp(20px, 2.4vw, 36px);
+  margin-top: 22px;
+}
+
+.pd-game-journey .pd-journey-scene {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #8194a738;
+  background: #07121d;
+  color: #fff;
+}
+
+.pd-game-journey .pd-journey-viewport {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  height: clamp(380px, 56svh, 600px);
+  container-type: size;
+}
+
+/* Keep both assets in the original background's 1672 × 941 coordinate space.
+   Bottom alignment preserves the foreground ground even on wide screens. */
+.pd-game-journey .pd-scene-plane {
+  position: absolute;
+  z-index: 0;
+  left: 50%;
+  bottom: 0;
+  width: max(108cqw, calc(108cqh * 1672 / 941));
+  aspect-ratio: 1672 / 941;
+  translate: -50% 0;
+  transition: transform 0.8s ease;
+  --explorer-ground-x: 54%;
+  --explorer-ground-bottom: 9%;
+}
+
+.pd-game-journey .pd-scene-plane-dusk {
+  --explorer-ground-x: 50%;
+  --explorer-ground-bottom: 10%;
+}
+
+.pd-game-journey .pd-scene-plane > .pd-game-world {
+  inset: 0;
+  z-index: 0;
+  background-size: 100% 100%;
+  background-position: center;
+  transition: none;
+}
+
+.pd-game-journey .pd-explorer-scene {
+  position: absolute;
+  z-index: 1;
+  left: var(--explorer-ground-x);
+  bottom: var(--explorer-ground-bottom);
+  height: min(38%, 240px);
+  aspect-ratio: 265 / 720;
+  translate: -50% 0;
+  pointer-events: none;
+}
+
+.pd-game-journey .pd-explorer-image {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: contain;
+  object-position: center bottom;
+  image-rendering: pixelated;
+  transform-origin: bottom center;
+  animation: pd-explorer-idle 6.4s ease-in-out infinite;
+}
+
+.pd-game-journey .pd-explorer-ground {
+  position: absolute;
+  z-index: 0;
+  left: 50%;
+  bottom: -2.5%;
+  width: 112%;
+  height: 5%;
+  translate: -50% 0;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, #020810c9 10%, #02081070 48%, transparent 73%);
+  filter: blur(1px);
+  transform-origin: center;
+  animation: pd-explorer-shadow 6.4s ease-in-out infinite;
+}
+
+.pd-game-journey .pd-journey-viewport > .pd-game-shade {
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(180deg, #030f1d91 0%, #030f1d17 39%, transparent 66%, #030b162b 100%);
+}
+
+.pd-game-journey .pd-scene-heading {
+  position: relative;
+  z-index: 2;
+  padding: clamp(20px, 2.4vw, 32px);
+  text-shadow: 0 2px 15px #030b16a8;
+}
+
+.pd-game-journey .pd-scene-heading .pd-mono {
+  margin: 0;
+}
+
+.pd-game-journey .pd-scene-heading h1 {
+  font-size: clamp(36px, 4.6vw, 66px);
+  margin: 8px 0 12px;
+}
+
+.pd-game-journey .pd-scene-heading > p:last-child {
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.pd-game-journey .pd-look-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 5px 12px;
+  max-width: none;
+  padding: 16px 20px;
+  border-top: 1px solid #8194a730;
+}
+
+.pd-game-journey .pd-look-controls > .pd-mono {
+  grid-column: 1;
+}
+
+.pd-game-journey .pd-look-controls > div {
+  grid-column: 2;
+  grid-row: 1 / 4;
+  gap: 6px;
+  margin: 0;
+}
+
+.pd-game-journey .pd-look-controls button {
+  width: 40px;
+  height: 44px;
+  font-size: 17px;
+}
+
+.pd-game-journey .pd-look-controls > .pd-look-bearing {
+  color: #d1e5ed;
+  font-size: 8px;
+  letter-spacing: 0.06em;
+}
+
+.pd-game-journey .pd-look-controls > p {
+  grid-column: 1;
+  display: block;
+  margin: 2px 0 0;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.pd-game-journey .pd-game-bottom {
+  display: block;
+  align-self: center;
+  min-width: 0;
+  margin: 0;
+}
+
+.pd-game-journey .pd-game-card {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Scale and shear around the soles: breathing and shifting weight never
+   translate the feet vertically away from their contact point. */
+@keyframes pd-explorer-idle {
+  0%, 100% { transform: skewX(-0.35deg) scaleY(0.998); }
+  45% { transform: skewX(0.4deg) scaleY(1.005); }
+  75% { transform: skewX(0.05deg) scaleY(1.001); }
+}
+
+@keyframes pd-explorer-shadow {
+  0%, 100% { transform: scaleX(1); opacity: 0.85; }
+  45% { transform: scaleX(1.035); opacity: 0.93; }
+  75% { transform: scaleX(1.01); opacity: 0.88; }
+}
+
+@media (max-width: 1023px) {
+  .pd-game-journey .pd-journey-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+
+  .pd-game-journey .pd-journey-viewport {
+    height: clamp(360px, 50svh, 470px);
+  }
+}
+
+@media (max-width: 620px) {
+  .pd-game-journey .pd-journey-layout {
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .pd-game-journey .pd-journey-viewport {
+    height: 360px;
+  }
+
+  .pd-game-journey .pd-scene-heading {
+    padding: 18px;
+  }
+
+  .pd-game-journey .pd-scene-heading h1 {
+    font-size: 34px;
+  }
+
+  .pd-game-journey .pd-scene-heading > p:last-child {
+    font-size: 13px;
+  }
+
+  .pd-game-journey .pd-look-controls {
+    padding: 13px 14px;
+    gap: 4px 8px;
+  }
+
+  .pd-game-journey .pd-look-controls > p {
+    display: none;
+  }
+
+  .pd-game-journey .pd-look-controls button {
+    width: 36px;
+  }
+}
+
+@media (min-width: 700px) and (max-height: 600px) and (orientation: landscape) {
+  .pd-game-journey .pd-journey-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(310px, 0.9fr);
+    gap: 16px;
+  }
+
+  .pd-game-journey .pd-journey-viewport {
+    height: 330px;
+  }
+
+  .pd-game-journey .pd-scene-heading {
+    padding: 18px;
+  }
+
+  .pd-game-journey .pd-scene-heading h1 {
+    font-size: 34px;
+  }
+
+  .pd-game-journey .pd-look-controls {
+    padding: 12px;
+  }
+
+  .pd-game-journey .pd-look-controls > p {
+    display: none;
+  }
+}
+
+.pd-still .pd-game-journey .pd-explorer-image,
+.pd-still .pd-game-journey .pd-explorer-ground {
+  animation: none;
+}
+
+.pd-still .pd-game-journey .pd-scene-plane {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pd-game-journey .pd-explorer-image,
+  .pd-game-journey .pd-explorer-ground {
+    animation: none;
+  }
+
+  .pd-game-journey .pd-scene-plane {
+    transition: none;
+  }
+}

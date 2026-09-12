@@ -1,0 +1,1444 @@
+<!doctype html>
+<!-- The four source chapters form the homepage; the multiple-bubble intro lives in bubble-multi.html. -->
+<html lang="ja" data-theme="light"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow"/><title>HENKAKU Community</title>
+<script>// The portal owns theme selection; apply its choice before the iframe paints.
+(() => {
+  const applyTheme = (theme) => {
+    if (theme !== "light" && theme !== "dark") return;
+    document.documentElement.dataset.theme = theme;
+  };
+
+  try {
+    applyTheme(window.parent.document.documentElement.dataset.theme);
+  } catch {
+    // Standalone or cross-origin embeds keep the document's light default.
+  }
+
+  window.addEventListener("message", (event) => {
+    if (event.origin !== location.origin || event.source !== window.parent) return;
+    if (event.data?.type === "henkaku:theme") applyTheme(event.data.theme);
+  });
+})();
+</script>
+<style>
+  :root {
+    --paper: #f4f4f0;
+    --paper-warm: #f7f2e8;
+    --ink: #080808;
+    --muted: #5d625f;
+    --blue: #1737ff;
+    --line: rgba(8, 8, 8, 0.22);
+    --dark: #07090f;
+    --quiet: #f9f7f0;
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --threshold-progress: 0;
+    --font-sans: "Helvetica Neue", Helvetica, Arial, "Hiragino Kaku Gothic ProN",
+      "Yu Gothic", "Noto Sans JP", sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  html {
+    min-height: 100%;
+    scroll-behavior: auto;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    overflow-x: hidden;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  a { color: inherit; }
+
+  .prototype-label {
+    position: fixed;
+    z-index: 20;
+    top: 14px;
+    left: 14px;
+    border: 1px solid currentColor;
+    background: rgba(244, 244, 240, 0.86);
+    color: var(--blue);
+    padding: 7px 9px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.13em;
+    line-height: 1;
+    text-transform: uppercase;
+    backdrop-filter: blur(10px);
+  }
+
+  main { position: relative; }
+
+  /* The bubble is chapter 00's and nobody else's. It needs the hero redrawn as
+     pixels to bend the type through, that copy only exists for chapter 00, and
+     a plain circle trailing the cursor through the rest of the page turned out
+     to be a different, lesser thing pretending to be the same one. So past the
+     hero the cursor is just a cursor. */
+
+  .gateway-section {
+    position: relative;
+    min-height: 100svh;
+    isolation: isolate;
+    --section-progress: 0;
+  }
+
+  .gateway-panel {
+    position: sticky;
+    top: 0;
+    min-height: 100svh;
+    overflow: hidden;
+  }
+
+  .chapter {
+    display: grid;
+    grid-template-columns: minmax(70px, 0.25fr) minmax(0, 1fr);
+    gap: clamp(16px, 4vw, 64px);
+    width: min(1520px, 100%);
+    margin: 0 auto;
+    padding: clamp(54px, 7vw, 92px) clamp(18px, 5vw, 72px);
+  }
+
+  .chapter-number {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: currentColor;
+  }
+
+  .chapter-body {
+    min-width: 0;
+    border-top: 1px solid currentColor;
+    padding-top: clamp(18px, 2.4vw, 34px);
+  }
+
+  .kicker {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .section-title {
+    margin: clamp(12px, 2vw, 22px) 0 0;
+    font-size: clamp(38px, calc(7vw + var(--section-progress) * 2.6vw), 148px);
+    line-height: 0.95;
+    font-weight: 800;
+    letter-spacing: 0;
+    text-transform: uppercase;
+    transform:
+      translateY(calc((1 - var(--section-progress)) * 28px))
+      scale(calc(0.965 + var(--section-progress) * 0.035));
+    transform-origin: left top;
+  }
+
+  .microcopy {
+    max-width: 52ch;
+    margin: clamp(16px, 2.4vw, 28px) 0 0;
+    color: var(--muted);
+    font-size: clamp(14px, 1.3vw, 17px);
+    line-height: 1.75;
+  }
+
+  /* ---------- 02 VOICES: vertical scroll turned sideways ----------
+     Ported from gateway-codex3.html. The chapter is a tall track holding one
+     pinned panel; inside it a full-bleed window clips a row four scenes wide,
+     and the row is moved left in step with how far the track has been scrolled.
+
+     Nothing is hijacked to do this: no wheel or touchmove handler, no
+     preventDefault, no snap. The page scrolls the way the browser scrolls it,
+     and the only thing listening is a passive scroll listener that writes one
+     length, --voices-shift, which CSS spends on a transform. */
+
+  .voices-sticky-wrap {
+    position: relative;
+    min-height: 258svh;
+  }
+
+  .voices-sticky-panel {
+    z-index: 1;
+    overflow: hidden;
+  }
+
+  .voices-sticky-panel::before {
+    z-index: 0;
+    right: auto;
+    left: clamp(18px, 5vw, 72px);
+    bottom: clamp(22px, 4vw, 52px);
+    color: #f7f2e8;
+    font-size: clamp(110px, 26vw, 430px);
+    opacity: calc(0.08 + var(--section-progress) * 0.08);
+    transform: translateX(calc((1 - var(--section-progress)) * 8vw));
+  }
+
+  .voices-sticky-panel .chapter {
+    position: relative;
+    z-index: 1;
+    padding-top: clamp(24px, 3.2vw, 44px);
+    padding-bottom: 0;
+  }
+
+  .voices-sticky-panel .section-title {
+    margin-top: clamp(6px, 0.8vw, 10px);
+    font-size: clamp(34px, calc(5vw + var(--section-progress) * 0.9vw), 96px);
+  }
+
+  .voices-sticky-panel .microcopy {
+    margin-top: clamp(8px, 1vw, 12px);
+    max-width: 42ch;
+    line-height: 1.55;
+  }
+
+  .voices-photo-stage {
+    position: relative;
+    left: 50%;
+    z-index: 2;
+    width: 100vw;
+    min-height: clamp(300px, 39vw, 480px);
+    margin-top: clamp(0px, 0.8vw, 10px);
+    margin-left: -50vw;
+    overflow: hidden;
+    background: transparent;
+  }
+
+  .voices-photo-track {
+    display: flex;
+    align-items: center;
+    gap: clamp(12vw, 14vw, 18vw);
+    min-width: 320vw;
+    height: 100%;
+    padding: 0 16vw 0 12vw;
+    transform: translateX(calc(var(--voices-shift) * -1));
+    will-change: transform;
+  }
+
+  .voices-scene {
+    position: relative;
+    flex: 0 0 clamp(65vw, 72vw, 80vw);
+    min-height: clamp(260px, 34vw, 430px);
+    transform: scale(calc(0.985 + var(--section-progress) * 0.015));
+  }
+
+  .voices-scene::before,
+  .voices-scene::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .voices-scene::before {
+    background:
+      linear-gradient(90deg, rgba(247, 242, 232, 0.34) 1px, transparent 1px) 0 0 / 11vw 100%,
+      linear-gradient(rgba(247, 242, 232, 0.22) 1px, transparent 1px) 0 0 / 100% 18%;
+    opacity: 0.38;
+  }
+
+  .voices-ascii {
+    margin: 0;
+    color: #f7f2e8;
+    font-family: var(--font-mono);
+    font-size: clamp(12px, 1.28vw, 22px);
+    line-height: 1.05;
+    white-space: pre;
+  }
+
+  .voices-scene-title {
+    position: absolute;
+    left: 0;
+    bottom: clamp(24px, 3.4vw, 48px);
+    margin: 0;
+    color: #f7f2e8;
+    font-size: clamp(38px, 6.5vw, 108px);
+    line-height: 0.9;
+    font-weight: 900;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  .voices-fragments {
+    display: grid;
+    grid-template-columns: 1.1fr 0.72fr 0.9fr;
+    gap: clamp(12px, 2.8vw, 42px);
+    align-items: center;
+    min-height: inherit;
+  }
+
+  .voices-fragment {
+    position: relative;
+    overflow: hidden;
+    min-height: clamp(180px, 31vw, 420px);
+    mix-blend-mode: multiply;
+  }
+
+  .voices-fragment:nth-child(2) {
+    min-height: clamp(150px, 24vw, 330px);
+    margin-top: clamp(80px, 10vw, 150px);
+  }
+
+  .voices-fragment img,
+  .voices-observed img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(1) contrast(1.45) brightness(1.08) sepia(1) saturate(3.4) hue-rotate(185deg);
+    opacity: 0.72;
+  }
+
+  .voices-observed {
+    position: absolute;
+    inset: 6% 8% 14% 10%;
+    overflow: hidden;
+    mix-blend-mode: multiply;
+  }
+
+  .voices-observed-lines {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(90deg, transparent 0 18%, rgba(247, 242, 232, 0.82) 18% 18.35%, transparent 18.35% 58%, rgba(247, 242, 232, 0.72) 58% 58.2%, transparent 58.2%),
+      linear-gradient(0deg, transparent 0 36%, rgba(247, 242, 232, 0.72) 36% 36.25%, transparent 36.25% 72%, rgba(247, 242, 232, 0.58) 72% 72.18%, transparent 72.18%);
+  }
+
+  .voices-gate {
+    display: grid;
+    place-items: center;
+    min-height: inherit;
+  }
+
+  .voices-gate-mark {
+    position: relative;
+    width: min(56vw, 760px);
+    aspect-ratio: 1.8;
+    border-top: 1px solid currentColor;
+    border-bottom: 1px solid currentColor;
+  }
+
+  .voices-gate-mark::before,
+  .voices-gate-mark::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 44%;
+    height: 1px;
+    background: currentColor;
+  }
+
+  .voices-gate-mark::before { left: 0; }
+  .voices-gate-mark::after { right: 0; }
+
+  .voices-gate-mark span {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    color: #f7f2e8;
+    font-family: var(--font-mono);
+    font-size: clamp(10px, 1vw, 14px);
+    letter-spacing: 0.16em;
+    line-height: 1.6;
+    text-align: center;
+    text-transform: uppercase;
+    transform: translate(-50%, -50%);
+  }
+
+  .voices-flow-copy {
+    position: relative;
+    z-index: 2;
+    width: min(920px, 100%);
+    margin: 0 auto;
+    padding: clamp(32px, 5vw, 64px) clamp(18px, 5vw, 72px) clamp(82px, 12vw, 150px);
+  }
+
+  .voices-flow-copy .placeholder-list {
+    max-width: 460px;
+    margin-left: auto;
+  }
+
+
+  .placeholder-section {
+    min-height: 168svh;
+    margin-top: -18svh;
+    color: #f9f9f2;
+  }
+
+  /* The one chapter that does not slide over the one before it. Everywhere
+     else an incoming panel cutting across the outgoing one is the whole point,
+     but the hero is a fixed composition held still by its pinning, so that edge
+     travelled up through the wordmark and sliced the triangle in half. Flush
+     with the hero instead: the two move together and nothing gets cut.
+
+     02 and 03 keep the shared overlap — chapters that are already moving can
+     take an edge crossing them. */
+  .placeholder-section[data-gateway-section="01-community-pulse"] {
+    --accent: #9ef0c8;
+    background: #141414;
+    margin-top: 0;
+  }
+
+  /* The other half of the wordmark's thread. Same x as .wordmark::after, so
+     the blue line appears to carry through the seam and end on the chapter
+     number, which is what it was pointing at all along. */
+  .placeholder-section[data-gateway-section="01-community-pulse"] .placeholder-panel::after {
+    content: "";
+    position: absolute;
+    z-index: 2;
+    left: 55.3%;
+    top: 0;
+    width: 2px;
+    height: clamp(90px, 16svh, 190px);
+    /* Lifted off the token: #1737ff on #141414 is all but invisible. */
+    background: #5f74ff;
+    transform: scaleY(clamp(0, calc(var(--section-progress, 0) * 3.2), 1));
+    transform-origin: top;
+  }
+
+  .placeholder-section[data-gateway-section="02-voices-podcast"] {
+    --accent: #f7f2e8;
+    background: #1737ff;
+    /* The chapter is now sized by the horizontal track inside it, not by the
+       shared placeholder height. */
+    min-height: auto;
+    --voices-shift: 0px;
+  }
+
+  .placeholder-section[data-gateway-section="03-frequency"] {
+    --accent: #1737ff;
+    background: var(--paper-warm);
+    color: var(--ink);
+  }
+
+  .placeholder-panel {
+    position: sticky;
+    min-height: 100svh;
+    background: inherit;
+    color: inherit;
+    transform: translateY(24px);
+    opacity: 0;
+    transition:
+      opacity 0.7s var(--ease-out),
+      transform 0.7s var(--ease-out);
+  }
+
+  .placeholder-panel::before {
+    content: attr(data-panel-label);
+    position: absolute;
+    right: clamp(18px, 5vw, 72px);
+    bottom: clamp(22px, 5vw, 76px);
+    z-index: -1;
+    color: var(--accent, currentColor);
+    font-size: clamp(92px, 20vw, 360px);
+    font-weight: 900;
+    line-height: 0.75;
+    letter-spacing: 0;
+    opacity: calc(0.06 + var(--section-progress) * 0.11);
+    transform:
+      translateX(calc((1 - var(--section-progress)) * 16vw))
+      translateY(calc(var(--section-progress) * -5vh));
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  .placeholder-panel.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .placeholder-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(220px, 0.85fr);
+    gap: clamp(18px, 4vw, 56px);
+    margin-top: clamp(28px, 6vw, 72px);
+    transform: translateY(calc((1 - var(--section-progress)) * 24px));
+  }
+
+  .media-block {
+    position: relative;
+    min-height: clamp(260px, 45vw, 560px);
+    border: 1px solid currentColor;
+    overflow: hidden;
+    background:
+      linear-gradient(135deg, currentColor 0 1px, transparent 1px) 0 0 / 34px 34px,
+      rgba(255, 255, 255, 0.08);
+    opacity: 0.46;
+    transform:
+      translateX(calc((0.5 - var(--section-progress)) * -10vw))
+      scale(calc(0.96 + var(--section-progress) * 0.055));
+    transform-origin: center;
+  }
+
+  .media-block::before,
+  .media-block::after {
+    content: "";
+    position: absolute;
+    inset: 10%;
+    border: 1px solid currentColor;
+    opacity: 0.38;
+    transform:
+      translateX(calc((var(--section-progress) - 0.5) * 12vw))
+      rotate(calc((var(--section-progress) - 0.5) * 6deg));
+  }
+
+  .media-block::after {
+    inset: 24% 18%;
+    background: var(--accent, currentColor);
+    opacity: 0.18;
+    transform:
+      translateY(calc((0.5 - var(--section-progress)) * 12vh))
+      scale(calc(0.88 + var(--section-progress) * 0.2));
+  }
+
+  .placeholder-list {
+    display: grid;
+    gap: 10px;
+    align-content: start;
+  }
+
+  .placeholder-card {
+    border-top: 1px solid currentColor;
+    padding: 16px 0 18px;
+    opacity: calc(0.45 + var(--section-progress) * 0.55);
+    transform: translateX(calc((1 - var(--section-progress)) * 42px));
+  }
+
+  .placeholder-card:nth-child(2) {
+    transform: translateX(calc((1 - var(--section-progress)) * 70px));
+  }
+
+  .placeholder-card:nth-child(3) {
+    transform: translateX(calc((1 - var(--section-progress)) * 98px));
+  }
+
+  .placeholder-card strong {
+    display: block;
+    font-size: clamp(18px, 2.2vw, 32px);
+    line-height: 1.1;
+  }
+
+  .placeholder-card span {
+    display: block;
+    margin-top: 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.72;
+  }
+
+  /* ---------- 03 into 04: the light going out ----------
+     The darkening belongs to 04, because 04 is what rises over 03. Its section
+     opens at exactly the warm paper 03 ends on and reaches black well before
+     the pinned panel centres its text, so the words are never light-on-light.
+     The panel itself is transparent: the gradient behind it belongs to the
+     section, which keeps scrolling, so the picture darkens while the text holds
+     still.
+
+     Black by a fifth of the chapter, not a third. The stops kept their spacing
+     and the fade its shape; it simply finishes sooner. That is not a colour
+     decision but a timing one: the threshold card decrypts as it climbs into
+     the panel, well before the panel pins, and it can only do that if there is
+     already dark behind it when it starts. The old third put black under the
+     card at the point it settled, which was the right answer for a card that
+     broke at the foot of the page. See gateway-v1-claude-decrypt.js. */
+  .threshold-section {
+    --paper-out: #f7f2e8;
+    --black-out: #05060a;
+    min-height: 165svh;
+    margin-top: -10svh;
+    background: linear-gradient(
+      180deg,
+      var(--paper-out) 0,
+      #6b6a63 7.8%,
+      #16181e 14.4%,
+      var(--black-out) 20%,
+      var(--black-out) 100%
+    );
+    color: #f4f2ec;
+  }
+
+  .threshold-panel {
+    display: grid;
+    place-items: center;
+    min-height: 100svh;
+    padding: clamp(28px, 6vw, 88px);
+    background: transparent;
+    transform: translateY(calc((1 - var(--threshold-progress)) * 18px));
+  }
+
+  /* 04 is the quietest thing on the page: one block, dead centre, nothing else.
+     No sentence, no chapter mark above it. By here the page has said what it
+     has to say and all that is left is the way through.
+
+     Built from the parts the rest of the page is already made of — a hairline
+     rule, mono micro-labels tracked wide, one blue dash, the hero's triangle,
+     and the faint grid the hero lays under itself. The terminal window this
+     replaces borrowed its look from an operating system rather than from
+     HENKAKU, which is why it sat on the page like a sticker. */
+  .threshold-inner {
+    width: min(680px, 100%);
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .gate {
+    --gate-line: rgba(244, 242, 236, 0.26);
+    --gate-blue: #4d63ff;
+    position: relative;
+    border: 1px solid var(--gate-line);
+    text-align: left;
+    background:
+      linear-gradient(90deg, rgba(244, 242, 236, 0.045) 1px, transparent 1px) 0 0 / 25% 100%,
+      linear-gradient(rgba(244, 242, 236, 0.03) 1px, transparent 1px) 0 0 / 100% 33.33%;
+    transition:
+      border-color 0.7s var(--ease-out),
+      background-color 0.7s var(--ease-out);
+  }
+
+  /* The block lights up as a whole, because the link inside covers most of it
+     and a border that stayed dead while the line woke up would read as two
+     separate things. */
+  .gate:hover {
+    border-color: rgba(244, 242, 236, 0.62);
+    background-color: rgba(77, 99, 255, 0.07);
+  }
+
+  /* The border, drawn as box-drawing characters instead of as CSS lines, so
+     that the frame can be enciphered along with the words it surrounds. It is
+     built from measurements by gateway-v1-claude-decrypt.js; until that has
+     succeeded the class below is absent and the CSS border above stands in, so
+     a card whose frame could not be measured still has one. */
+  .gate-frame {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    margin: 0;
+    overflow: hidden;
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 0.85vw, 12px);
+    line-height: 1;
+    letter-spacing: 0;
+    white-space: pre;
+    color: var(--gate-line);
+    pointer-events: none;
+    user-select: none;
+    transition: color 0.7s var(--ease-out);
+  }
+
+  .gate.has-frame {
+    border-color: transparent;
+  }
+
+  .gate.has-frame .gate-head { border-bottom-color: transparent; }
+  .gate.has-frame .gate-path { border-top-color: transparent; }
+
+  .gate:hover .gate-frame { color: rgba(244, 242, 236, 0.62); }
+
+  /* Above the frame, which fills the whole card behind them. */
+  .gate-head,
+  .gate .button-primary,
+  .gate-path {
+    position: relative;
+    z-index: 1;
+  }
+
+  .gate-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: clamp(11px, 1.3vw, 16px) clamp(14px, 1.8vw, 24px);
+    border-bottom: 1px solid var(--gate-line);
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 0.85vw, 12px);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #949cb0;
+  }
+
+  .gate-head span:last-child { color: #8f9dff; }
+
+  /* The line is the link, full width of the block, so there is no small control
+     to hunt for inside a large frame. */
+  .button-primary {
+    display: flex;
+    align-items: center;
+    gap: clamp(14px, 2vw, 26px);
+    padding: clamp(28px, 4.4vw, 52px) clamp(14px, 1.8vw, 24px);
+    color: #f4f2ec;
+    font-size: clamp(20px, 2.9vw, 40px);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    text-decoration: none;
+  }
+
+  /* The same blue dash that marks every label in the hero. */
+  .button-primary::before {
+    content: "";
+    flex: none;
+    width: clamp(18px, 2.4vw, 34px);
+    height: 2px;
+    background: var(--gate-blue);
+    transition: width 0.7s var(--ease-out);
+  }
+
+  .button-primary:hover::before,
+  .button-primary:focus-visible::before {
+    width: clamp(28px, 3.8vw, 54px);
+  }
+
+  /* The same triangle the hero points with, shrunk to a cursor. It is the only
+     movement this chapter has, and it only moves when reached for. */
+  .button-primary svg {
+    display: block;
+    flex: none;
+    margin-left: auto;
+    width: clamp(11px, 1.15vw, 17px);
+    height: auto;
+    transition: transform 0.7s var(--ease-out);
+  }
+
+  .button-primary:hover svg,
+  .button-primary:focus-visible svg {
+    transform: translateX(7px);
+  }
+
+  /* Where the button actually leads, named in the app's own route order, so
+     pressing it is not a step into the dark. */
+  .gate-path {
+    margin: 0;
+    padding: clamp(11px, 1.3vw, 16px) clamp(14px, 1.8vw, 24px);
+    border-top: 1px solid var(--gate-line);
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 0.85vw, 12px);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #7d8496;
+  }
+
+  /* The label is its own box so the decrypt can pin a width to it while the
+     characters are still noise. */
+  .gate-label { display: inline-block; }
+
+  .threshold-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .button-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    margin-top: clamp(22px, 3.2vw, 38px);
+    color: #9aa1b8;
+    font-size: clamp(12px, 1.1vw, 14px);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(154, 161, 184, 0.36);
+  }
+
+  .button-secondary:hover { color: #f4f2ec; }
+
+  .button-primary:focus-visible {
+    outline: 2px solid #8f9dff;
+    outline-offset: -6px;
+  }
+
+  .button-secondary:focus-visible {
+    outline: 3px solid #8f9dff;
+    outline-offset: 4px;
+  }
+
+  /* ---------- the page on a phone ----------
+     The chapters keep their pinning, their overlap, and everything they draw
+     from scroll position. What a phone changes is proportion, not structure:
+     the columns fold, the holds are shortened because a screen of picture that
+     costs two and a half screens of scrolling is a different, slower page on a
+     thumb, and the one or two things that are literally desktop-shaped are
+     dropped where folding them would not mean anything.
+
+     This is the whole of the difference. Anything not named below is the page
+     as it is at any other width. */
+  @media (max-width: 820px) {
+    .prototype-label {
+      top: 10px;
+      left: 10px;
+      font-size: 9px;
+    }
+
+    /* The holds were set against a landscape screen. A phone's is taller than
+       it is wide, so the same figures in svh buy far more scrolling for the
+       same picture; each chapter is brought back in. */
+    .gateway-hero { min-height: 150svh; }
+    .placeholder-section { min-height: 150svh; margin-top: -12svh; }
+    .threshold-section { min-height: 150svh; margin-top: -8svh; }
+    .voices-sticky-wrap { min-height: 205svh; }
+
+    .chapter {
+      grid-template-columns: 1fr;
+      gap: 10px;
+      padding-top: 68px;
+    }
+
+    /* The chapter's own top padding is small so the strip below it has room;
+       on a phone the fixed label would land on the title without this. 02 also
+       closes the gap under its title harder than the other chapters do, and at
+       this width, with the title set solid, that reads as the paragraph sitting
+       on the baseline rather than under it. */
+    .voices-sticky-panel .chapter { padding-top: 62px; }
+    .voices-sticky-panel .microcopy { margin-top: 20px; }
+
+    .placeholder-grid { grid-template-columns: 1fr; }
+
+    .media-block { min-height: 200px; }
+
+    /* The title arrives from below while the paragraph under it stands still.
+       On a wide screen the two are far enough apart for that to read as depth;
+       at this width, with the title wrapping to two lines, 28px of travel puts
+       it on top of the paragraph. The scaling goes with it — 3.5% of a title
+       this size is not a movement, it is a rounding error. */
+    .section-title {
+      margin-bottom: 12px;
+      transform: translateY(calc((1 - var(--section-progress)) * 10px));
+    }
+
+    /* The giant chapter word is set in vw and has already scaled. It only needs
+       to stop travelling further than the screen it slides across. */
+    .placeholder-panel::before {
+      right: clamp(12px, 4vw, 24px);
+      font-size: 26vw;
+      transform:
+        translateX(calc((1 - var(--section-progress)) * 22vw))
+        translateY(calc(var(--section-progress) * -4vh));
+    }
+
+    /* 02 keeps its sideways run — it is the one chapter whose idea *is* the
+       motion, and stacking it would leave nothing behind. The scenes go nearly
+       full width and the air between them is cut, so four of them still cross
+       inside the travel the chapter has been given. */
+    /* Sized against the screen rather than in pixels, so the strip fills the
+       panel it is pinned inside instead of sitting in the top half of it with
+       half a screen of empty colour underneath. */
+    .voices-photo-stage { min-height: 52svh; }
+
+    .voices-photo-track {
+      gap: 10vw;
+      padding: 0 10vw 0 8vw;
+    }
+
+    .voices-scene { flex: 0 0 84vw; min-height: 50svh; }
+    .voices-scene-title { bottom: 12px; font-size: clamp(30px, 9vw, 46px); }
+    .voices-ascii { font-size: 9px; }
+    .voices-fragments { gap: 10px; }
+    .voices-fragment { min-height: 170px; }
+
+    .voices-fragment:nth-child(2) {
+      min-height: 120px;
+      margin-top: 60px;
+    }
+
+    .voices-gate-mark { width: 100%; }
+    .voices-flow-copy .placeholder-list { margin-left: 0; }
+
+    /* The hero's half of the thread is the one thing here that cannot fold: it
+       is drawn to leave a wordmark standing at a fixed place in a four-column
+       band, and that band is not what this width has. 01 keeps its half and
+       moves it to the gutter, where the chapter number now is, so the blue line
+       still arrives at the thing it was pointing at. */
+    .wordmark::after { display: none; }
+
+    .placeholder-section[data-gateway-section="01-community-pulse"] .placeholder-panel::after {
+      /* Half a gutter in from the chapter's own left edge, so the line runs
+         down beside the number rather than through the nought. */
+      left: calc(clamp(18px, 5vw, 72px) - 9px);
+    }
+
+    .button-primary {
+      gap: 14px;
+      padding: 26px 16px;
+      font-size: 19px;
+    }
+
+    .gate-head { flex-direction: column; gap: 4px; }
+
+    /* Narrow enough and a character frame costs more than it gives: the cells
+       are wider than the hairline it replaces and the card is small. The CSS
+       border does the job instead. */
+    .gate-frame { display: none; }
+    .gate.has-frame { border-color: var(--gate-line); }
+    .gate.has-frame .gate-head { border-bottom-color: var(--gate-line); }
+    .gate.has-frame .gate-path { border-top-color: var(--gate-line); }
+
+    /* The card is the chapter at every width, so it stays centred here too.
+       The left-aligning rules this replaces belonged to the sentence that used
+       to sit above it. */
+    .threshold-inner {
+      width: 100%;
+    }
+
+    /* The card is sized by the words inside it, and on a wide screen those are
+       large enough to make it a card. Set at 19px they are not, and it centres
+       as a small box adrift in a black screen, so at this width it takes the
+       whole of the column it is centred in. */
+    .threshold-actions .gate { align-self: stretch; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition: none !important;
+      animation: none !important;
+      scroll-behavior: auto !important;
+    }
+
+    .hero-panel,
+    .placeholder-panel,
+    .placeholder-panel::before,
+    .section-title,
+    .placeholder-grid,
+    .media-block,
+    .media-block::before,
+    .media-block::after,
+    .placeholder-card,
+    .voices-photo-track,
+    .voices-scene,
+    .voices-fragment img,
+    .voices-observed img,
+    .threshold-panel {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+
+    /* Freezing the sideways move is not enough on its own: the row would stop
+       at scene one while the pinned panel still ate 258svh of scrolling, and
+       scenes two to four would be unreachable. So the chapter gives up its
+       track and its pinning too, and the scenes read as a column. */
+    .voices-sticky-wrap { min-height: auto; }
+
+    .voices-sticky-panel { position: static; }
+
+    .voices-photo-stage {
+      left: auto;
+      width: auto;
+      min-height: auto;
+      margin-left: 0;
+      overflow: visible;
+    }
+
+    .voices-photo-track {
+      display: grid;
+      gap: 28px;
+      min-width: 0;
+      padding: 24px 0 0;
+    }
+
+    .voices-scene { flex-basis: auto; min-height: 320px; }
+
+    /* Everything keyed to scroll position holds its resting state: the headline
+       stays one block, the thread is not drawn, and the chapters simply follow
+       one another. The cursor bubble is never created at all. */
+    .headline span,
+    .hero-scroll {
+      transform: none !important;
+      opacity: 1 !important;
+    }
+
+    .wordmark::after,
+    .placeholder-section[data-gateway-section="01-community-pulse"] .placeholder-panel::after,
+    .hero-panel::after {
+      display: none !important;
+    }
+
+    /* The gradient is a scroll effect: with nothing moving behind the pinned
+       text there is nothing to fade, so 04 is simply the black it was heading
+       for, and the sentence keeps its contrast. */
+    .threshold-section {
+      min-height: auto;
+      margin-top: 0;
+      background: var(--black-out);
+    }
+
+    /* The hero handles this setting itself: its script drops from the moving
+       WebGL bubble to a still one, or to no bubble at all, and stops its render
+       loop with it. Hiding anything here would only fight that. */
+  }
+</style><style>
+/* Keep the homepage source composition and viewport math. */
+.arrow { color:#333; }
+.label a,.gateway a,.bcol a { color:inherit; text-decoration:none; }
+.gateway a:hover,.gateway a:focus-visible,.bcol a:hover { text-decoration:underline; text-underline-offset:4px; }
+.panelbox { z-index:40; }
+.panelbox .row { min-width:0; }
+.panelbox .row label { font-size:12px; }
+.placeholder-card { color:inherit; text-decoration:none; }
+.pulse-grid { display:block; }
+.pulse-grid .placeholder-list { grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(18px,3vw,38px); }
+a.placeholder-card:hover,a.placeholder-card:focus-visible { color:var(--accent); outline-offset:4px; }
+[data-pulse-list] .placeholder-card { opacity:calc(.18 + var(--card-progress,0)*.82); transform:translateX(calc((1 - var(--card-progress,0))*60px)); transition:opacity .16s linear,transform .16s linear; }
+[data-pulse-list] .placeholder-card:focus-visible { opacity:1; transform:none; }
+@media(prefers-reduced-motion:reduce){[data-pulse-list] .placeholder-card{opacity:1;transform:none}}
+@media(max-width:820px){.pulse-grid .placeholder-list{grid-template-columns:1fr;gap:6px}}
+</style><style>/* Keep the four source chapters; make them a practical, responsive homepage. */
+html[data-theme="light"] {
+  color-scheme:light;
+  --paper:#f6f6f2;
+  --ink:#12141a;
+  --muted:#626773;
+  --blue:#263df5;
+  --line:#dcded9;
+  --surface:#fff;
+  --surface-subtle:#eff0eb;
+  --accent-bg:#e8ebff;
+}
+html[data-theme="dark"] {
+  color-scheme:dark;
+  --paper:#13171f;
+  --ink:#f2f3f6;
+  --muted:#a5adba;
+  --blue:#a4b0ff;
+  --line:#35404d;
+  --surface:#1b232d;
+  --surface-subtle:#232d39;
+  --accent-bg:#202b49;
+}
+html,body { background:var(--paper);color:var(--ink); }
+/* Only the invitation column switches appearance; the page stays unchanged. */
+html[data-theme="light"] .gate {
+  color-scheme:dark;
+  --ink:#f2f3f6;--muted:#a5adba;--blue:#a4b0ff;
+  --line:#35404d;--surface:#1b232d;--accent-bg:#202b49;
+}
+html[data-theme="dark"] .gate {
+  color-scheme:light;
+  --ink:#12141a;--muted:#626773;--blue:#263df5;
+  --line:#dcded9;--surface:#fff;--accent-bg:#e8ebff;
+}
+body { font-family:Arial,"Helvetica Neue","Noto Sans JP",sans-serif; }
+.home-replay { flex:none;min-height:44px;font:12px/1.5 var(--font-mono);border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:10px 15px;cursor:pointer; }
+.home-replay:hover { border-color:var(--blue);color:var(--blue); }
+.home-intro { display:flex;flex-wrap:wrap;justify-content:space-between;gap:14px 20px;align-items:center;padding:27px clamp(18px,5vw,72px) 0;font-size:13px;color:var(--muted); }
+.home-intro p { flex:1 1 260px;margin:0; }.home-intro span { font:10px/1.5 var(--font-mono);letter-spacing:.13em; }
+.placeholder-section[data-gateway-section],.threshold-section {
+  --accent:var(--blue);
+  background:var(--paper);
+  color:var(--ink);
+}
+.chapter-body,.placeholder-card { border-color:var(--line); }
+.chapter-number,.kicker { color:var(--muted); }
+.placeholder-section[data-gateway-section="01-community-pulse"] .placeholder-panel::after { background:var(--blue); }
+.voices-sticky-panel::before,.voices-ascii,.voices-scene-title,.voices-gate-mark span { color:var(--ink); }
+.voices-scene::before { background:linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0 / 11vw 100%,linear-gradient(var(--line) 1px,transparent 1px) 0 0 / 100% 18%; }
+.voices-observed-lines { background:linear-gradient(90deg,transparent 0 18%,var(--line) 18% 18.35%,transparent 18.35% 58%,var(--line) 58% 58.2%,transparent 58.2%),linear-gradient(0deg,transparent 0 36%,var(--line) 36% 36.25%,transparent 36.25% 72%,var(--line) 72% 72.18%,transparent 72.18%); }
+html[data-theme="dark"] .voices-fragment,html[data-theme="dark"] .voices-observed { mix-blend-mode:screen; }
+.gate { --gate-line:var(--line);--gate-blue:var(--blue);background:var(--surface); }
+.gate:hover { border-color:var(--blue);background-color:var(--accent-bg); }
+.gate:hover .gate-frame { color:var(--blue); }
+.gate-head,.gate-path,.button-secondary { color:var(--muted); }
+.gate-head span:last-child { color:var(--blue); }
+.button-primary,.button-secondary:hover { color:var(--ink); }
+.button-secondary { border-color:var(--line); }
+.button-primary:focus-visible,.button-secondary:focus-visible,.home-replay:focus-visible { outline:3px solid #f58442;outline-offset:5px; }
+.placeholder-section { min-height:128svh;margin-top:-6svh; }
+.placeholder-section[data-gateway-section="01-community-pulse"] { min-height:122svh; }
+.chapter { padding-top:clamp(36px,5vw,68px);padding-bottom:clamp(38px,5vw,70px); }
+.section-title { font-size:clamp(38px,calc(6.4vw + var(--section-progress)*1.5vw),112px); }
+.placeholder-grid { margin-top:clamp(24px,4vw,48px); }
+.pulse-grid { overflow:clip; }
+.pulse-development-note { max-width:640px;margin:24px 0 0;color:var(--muted);font:13px/1.8 var(--font-sans); }
+.pulse-development-note small { display:block;margin-top:6px;font-size:11px; }
+.pulse-grid .placeholder-list { gap:20px 34px; }
+.placeholder-card { padding:14px 0 18px; }
+.placeholder-card strong { font-size:clamp(20px,2.2vw,30px);line-height:1.25; }
+.placeholder-card span { font-size:10px;letter-spacing:.08em;line-height:1.7; }
+.media-block { min-height:clamp(220px,30vw,360px); }
+.voices-sticky-wrap { min-height:225svh; }
+[data-podcast-card] .placeholder-card strong { text-transform:none; }
+[data-podcast-card] .placeholder-card { transform:none;opacity:1; }
+[data-podcast-card] .placeholder-card > span:last-child { font-family:var(--font-sans);font-size:14px;letter-spacing:0;line-height:1.9;text-transform:none;color:var(--muted); }
+.podcast-source { max-width:460px;margin:20px 0 0 auto;display:grid;gap:14px; }
+.podcast-source a { color:inherit;text-decoration:underline;text-underline-offset:5px;font-size:13px; }
+.podcast-source span { font-size:10px;color:var(--muted); }
+.threshold-section { min-height:128svh;margin-top:-6svh; }
+@media(max-width:820px) {
+  .home-intro { padding:22px 18px 0;font-size:12px;gap:12px; }
+  .home-intro p { flex-basis:100%; }.home-intro span { flex:1 1 140px; }
+  .chapter { padding:35px 18px 38px;gap:10px; }
+  .section-title { font-size:clamp(34px,9vw,68px);transform:none;margin-bottom:10px; }
+  .microcopy { font-size:13px;line-height:1.8;margin-top:18px; }
+  .placeholder-section { min-height:118svh;margin-top:0; }
+  .placeholder-section[data-gateway-section="01-community-pulse"] { min-height:120svh; }
+  .placeholder-grid { margin-top:24px; }.pulse-grid .placeholder-list { gap:6px; }
+  .placeholder-card { padding:13px 0 15px; }.placeholder-card strong { font-size:20px; }
+  .placeholder-card span { font-size:9px;letter-spacing:.07em; }
+  .voices-sticky-wrap { min-height:190svh; }
+  .voices-sticky-panel .chapter { padding-top:36px; }
+  .voices-sticky-panel .microcopy { margin-top:17px; }
+  .voices-photo-stage { min-height:43svh; }.voices-scene { min-height:42svh; }
+  .voices-flow-copy { padding:28px 18px 50px; }
+  [data-gateway-section="03-frequency"] .media-block { display:none; }
+  [data-track-list] .placeholder-card { min-height:82px; }
+  .threshold-section { min-height:115svh;margin-top:0; }
+  .threshold-panel { padding:28px 18px; }.gate-path { letter-spacing:.1em;font-size:9px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .placeholder-section,.placeholder-section[data-gateway-section="01-community-pulse"],.voices-sticky-wrap,.threshold-section { min-height:auto;margin-top:0; }
+  .placeholder-panel { position:static;min-height:auto; }.voices-scene { min-height:280px; }
+}
+</style><style>/* The official player stays unobscured; the title and link sit below it. */
+.voices-sticky-panel .chapter { padding-top:24px; }
+.voices-sticky-panel .chapter-body { padding-top:18px; }
+.voices-sticky-panel .section-title { font-size:clamp(32px,4vw,60px);line-height:1.05;transform:none;margin:10px 0 0; }
+.voices-sticky-panel .microcopy { max-width:none;margin:14px 0 0;font-size:14px; }
+.podcast-toolbar { display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 20px;margin:20px 0 12px; }
+.podcast-toolbar > span { font:10px/1.6 var(--font-mono);letter-spacing:.08em;color:var(--muted); }
+.podcast-toolbar button { min-width:44px;min-height:44px;padding:10px 14px;font:12px/1.5 var(--font-sans);border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer; }
+.podcast-toolbar button:hover { border-color:var(--blue); }
+.podcast-toolbar button:focus-visible,.podcast-scene a:focus-visible,.frequency-link:focus-visible { outline:3px solid #f58442;outline-offset:4px; }
+.voices-photo-stage { left:auto;width:100%;margin-left:0;min-height:0;padding-bottom:22px; }
+.voices-photo-track { align-items:flex-start;min-width:0;width:max-content;padding:0;gap:clamp(24px,4vw,64px); }
+.podcast-scene { --podcast-max-width:min(72vw,760px);margin:0;min-height:0;flex:0 0 clamp(280px,calc((100svh - 400px) * 16 / 9),var(--podcast-max-width));transform:none; }
+.podcast-scene::before,.podcast-scene::after { display:none; }
+.podcast-screen { width:100%;aspect-ratio:16/9;min-height:200px;background:#101116; }
+.podcast-screen > div,.podcast-screen iframe { display:block;width:100%;height:100%;min-height:200px;border:0; }
+.podcast-screen > div { display:grid;place-items:center;color:#d5d9e2; }
+.podcast-screen > img { display:block;width:100%;height:100%;object-fit:contain; }
+.podcast-scene figcaption { padding-top:15px; }
+.podcast-scene-label { margin:0 0 7px;font:10px/1.6 var(--font-mono);letter-spacing:.1em;color:var(--muted); }
+.podcast-scene a { display:inline-block;min-height:44px;color:var(--ink);font:600 clamp(17px,1.7vw,24px)/1.5 var(--font-sans);text-decoration:none;overflow-wrap:anywhere; }
+.podcast-scene a:hover { color:var(--blue); }
+.podcast-status { margin:5px 0 0;font:11px/1.6 var(--font-sans);color:var(--muted); }
+[data-gateway-section="03-frequency"] { min-height:0;margin-top:0; }
+[data-gateway-section="03-frequency"] > .placeholder-panel { position:relative;min-height:0; }
+.frequency-summary,.frequency-disclaimer { font:12px/1.8 var(--font-sans);color:var(--muted); }
+.frequency-summary { display:flex;flex-wrap:wrap;gap:10px 24px;margin:30px 0 22px; }
+.frequency-summary span { font:9px/2.4 var(--font-mono);letter-spacing:.08em; }
+.frequency-list { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 30px;list-style:none;margin:0;padding:0; }
+.frequency-entry { min-width:0;border-top:1px solid var(--line);padding-top:20px; }
+.frequency-listener { display:flex;align-items:center;gap:12px;min-width:0; }
+.frequency-identity { display:grid;gap:3px;min-width:0; }
+.frequency-listener-name { font:12px/1.5 var(--font-sans);color:var(--ink); }
+.frequency-avatar { position:relative;display:grid;place-items:center;flex:none;width:40px;height:40px;border-radius:50%;color:var(--blue);background:color-mix(in srgb,currentColor 10%,var(--surface));border:1px solid color-mix(in srgb,currentColor 24%,transparent); }
+.frequency-avatar-shape,.frequency-avatar-shape::before,.frequency-avatar-shape::after { position:absolute;display:block;box-sizing:border-box; }
+.frequency-avatar[data-avatar="orbit"] .frequency-avatar-shape { width:24px;height:14px;border:1.5px solid currentColor;border-radius:50%;transform:rotate(-35deg); }
+.frequency-avatar[data-avatar="orbit"] .frequency-avatar-shape::before { content:"";width:14px;height:24px;top:-6.5px;left:3.5px;border:1.5px solid currentColor;border-radius:50%; }
+.frequency-avatar[data-avatar="orbit"] .frequency-avatar-shape::after { content:"";width:5px;height:5px;top:3px;left:8px;background:currentColor;border-radius:50%; }
+.frequency-avatar[data-avatar="mosaic"] { color:light-dark(#287267,#85cbb6); }
+.frequency-avatar[data-avatar="mosaic"] .frequency-avatar-shape { width:9px;height:9px;top:9px;left:9px;background:currentColor;box-shadow:11px 11px currentColor; }
+.frequency-avatar[data-avatar="mosaic"] .frequency-avatar-shape::before { content:"";width:9px;height:9px;left:11px;border:1.5px solid currentColor;border-radius:50%; }
+.frequency-avatar[data-avatar="mosaic"] .frequency-avatar-shape::after { content:"";width:9px;height:9px;top:11px;border:1.5px solid currentColor;transform:rotate(45deg) scale(.75); }
+.frequency-avatar[data-avatar="spark"] { color:light-dark(#a35a24,#edb27b); }
+.frequency-avatar[data-avatar="spark"] .frequency-avatar-shape { width:24px;height:24px;background:currentColor;clip-path:polygon(50% 0,60% 33%,85% 15%,67% 40%,100% 50%,67% 60%,85% 85%,60% 67%,50% 100%,40% 67%,15% 85%,33% 60%,0 50%,33% 40%,15% 15%,40% 33%); }
+.frequency-avatar[data-avatar="anonymous"] { color:var(--muted); }
+.frequency-avatar[data-avatar="anonymous"] .frequency-avatar-shape { width:10px;height:10px;top:8px;border:1.5px solid currentColor;border-radius:50%; }
+.frequency-avatar[data-avatar="anonymous"] .frequency-avatar-shape::after { content:"";width:20px;height:11px;top:13px;left:-6.5px;border:1.5px solid currentColor;border-radius:12px 12px 4px 4px; }
+.frequency-link { display:grid;grid-template-columns:112px minmax(0,1fr);align-items:start;gap:16px;padding:16px 0 22px;min-width:0;color:var(--ink);text-decoration:none; }
+.frequency-link:hover .frequency-title { color:var(--blue); }
+.frequency-art { aspect-ratio:16/9;background:var(--surface-subtle);overflow:hidden; }
+.frequency-art img { display:block;width:100%;height:100%;object-fit:cover; }
+.frequency-art img[hidden] { display:none; }
+.frequency-copy { min-width:0;display:grid;gap:7px; }
+.frequency-meta { font:10px/1.6 var(--font-mono);color:var(--muted); }
+.frequency-title { font:600 17px/1.55 var(--font-sans);overflow-wrap:anywhere; }
+.frequency-guest { font:11px/1.7 var(--font-sans);color:var(--muted); }
+.frequency-disclaimer { margin:22px 0 0; }
+@media(max-width:1100px) { .frequency-list { grid-template-columns:1fr; }.frequency-link { grid-template-columns:140px minmax(0,1fr); } }
+@media(max-width:820px) {
+  .podcast-scene { --podcast-max-width:84vw;min-height:0; }
+  .voices-photo-stage { min-height:0; }
+  .podcast-toolbar { margin-top:16px; }
+  .frequency-link { grid-template-columns:100px minmax(0,1fr);gap:14px;padding:20px 0; }
+  .frequency-title { font-size:16px; }
+}
+@media(max-width:380px) { .frequency-link { grid-template-columns:80px minmax(0,1fr);gap:12px; } }
+@media(max-height:600px) {
+  .voices-photo-stage { padding-bottom:16px; }
+  .voices-sticky-panel .section-title { font-size:34px; }
+  .voices-sticky-panel .chapter { display:block;padding-top:10px; }
+  .voices-sticky-panel .chapter-number { display:none; }
+  .voices-sticky-panel .microcopy { font-size:12px;margin-top:12px; }
+  .voices-sticky-panel .chapter-body { padding-top:8px; }
+  .voices-sticky-panel .kicker { display:none; }
+  .podcast-toolbar { margin-top:10px;margin-bottom:8px; }
+  .podcast-scene figcaption { padding-top:8px; }
+  .podcast-scene a { font-size:16px; }
+  .podcast-scene-label { font-size:9px;margin-bottom:4px; }
+  .podcast-status { font-size:10px;margin-top:2px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .podcast-scene { min-height:0; }
+  .voices-photo-track { gap:30px;width:auto; }
+  .podcast-scene { width:auto; }
+}
+</style></head><body>
+<div class="home-intro">
+  <p>いま、コミュニティで動いていること。</p><span>COMMUNITY GATEWAY / DEMO</span>
+  <button type="button" class="home-replay">イントロを再生</button>
+</div>
+<main aria-label="HENKAKU トップページ">  <section class="gateway-section placeholder-section" data-gateway-section="01-community-pulse" aria-labelledby="pulse-title">
+    <div class="gateway-panel placeholder-panel reveal-once" data-panel-label="PULSE">
+      <div class="chapter">
+        <span class="chapter-number">01</span>
+        <div class="chapter-body">
+          <p class="kicker">Community Pulse</p>
+          <h1 class="section-title" id="pulse-title">COMMUNITY PULSE</h1>
+          <p class="microcopy">コミュニティの入口を、みんなでつくる。</p>
+          <p class="pulse-development-note">開発中のため、本家リポジトリの未解決Issueから4件を紹介しています。<small>2026年9月9日確認 · 検討・検証中の内容を含みます。</small></p><div class="placeholder-grid pulse-grid" aria-label="本家リポジトリの重要な未解決Issue">
+            <div class="placeholder-list" data-pulse-list></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="gateway-section placeholder-section" data-gateway-section="02-voices-podcast" aria-labelledby="voices-title">
+    <div class="voices-sticky-wrap" data-voices-scroll>
+      <div class="gateway-panel placeholder-panel voices-sticky-panel reveal-once" data-panel-label="VOICE">
+        <div class="chapter">
+          <span class="chapter-number">02</span>
+          <div class="chapter-body">
+            <p class="kicker">Voices / Podcast</p>
+            <h2 class="section-title" id="voices-title">VOICES / PODCAST</h2>
+            <p class="microcopy">Joi Itoとゲストの対話から、ランダムな一場面。映像は無音で流れます。</p>
+            <div class="podcast-toolbar"><span>JOI ITO’S PODCAST · SOUND OFF</span><button type="button" data-podcast-toggle aria-pressed="true">映像を無音で再開</button></div></div>
+        </div>
+        <div class="voices-photo-stage" aria-label="Joi Itoのポッドキャスト・無音プレビュー">
+              <div class="voices-photo-track" data-photo-strip>
+                <figure class="voices-scene podcast-scene" data-podcast-scene aria-label="ポッドキャストの場面 1">
+                  <div class="podcast-screen"><div data-podcast-player></div></div>
+                  <figcaption>
+                    <p class="podcast-scene-label" data-podcast-label>JOI ITO’S PODCAST</p>
+                    <a data-podcast-link href="https://www.youtube.com/@joiito/podcasts" target="_blank" rel="noopener noreferrer">YouTubeでこの回を見る ↗</a>
+                    <p class="podcast-status" data-podcast-status>無音プレビューを準備しています</p>
+                  </figcaption>
+                </figure>
+                <figure class="voices-scene podcast-scene" data-podcast-scene aria-label="ポッドキャストの場面 2">
+                  <div class="podcast-screen"><div data-podcast-player></div></div>
+                  <figcaption>
+                    <p class="podcast-scene-label" data-podcast-label>JOI ITO’S PODCAST</p>
+                    <a data-podcast-link href="https://www.youtube.com/@joiito/podcasts" target="_blank" rel="noopener noreferrer">YouTubeでこの回を見る ↗</a>
+                    <p class="podcast-status" data-podcast-status>無音プレビューを準備しています</p>
+                  </figcaption>
+                </figure>
+                <figure class="voices-scene podcast-scene" data-podcast-scene aria-label="ポッドキャストの場面 3">
+                  <div class="podcast-screen"><div data-podcast-player></div></div>
+                  <figcaption>
+                    <p class="podcast-scene-label" data-podcast-label>JOI ITO’S PODCAST</p>
+                    <a data-podcast-link href="https://www.youtube.com/@joiito/podcasts" target="_blank" rel="noopener noreferrer">YouTubeでこの回を見る ↗</a>
+                    <p class="podcast-status" data-podcast-status>無音プレビューを準備しています</p>
+                  </figcaption>
+                </figure>
+                <figure class="voices-scene podcast-scene" data-podcast-scene aria-label="ポッドキャストの場面 4">
+                  <div class="podcast-screen"><div data-podcast-player></div></div>
+                  <figcaption>
+                    <p class="podcast-scene-label" data-podcast-label>JOI ITO’S PODCAST</p>
+                    <a data-podcast-link href="https://www.youtube.com/@joiito/podcasts" target="_blank" rel="noopener noreferrer">YouTubeでこの回を見る ↗</a>
+                    <p class="podcast-status" data-podcast-status>無音プレビューを準備しています</p>
+                  </figcaption>
+                </figure>
+              </div>
+            </div>
+      </div>
+    </div>
+    <div class="voices-flow-copy" aria-label="Joi Itoのポッドキャスト紹介">
+      <div class="placeholder-list" data-podcast-card></div><p class="podcast-source"><a href="https://joi.ito.com/podcast/" target="_blank" rel="noopener noreferrer">公式サイトで番組を聴く ↗</a><span>紹介文：公式情報をもとに編集</span></p>
+    </div>
+  </section>
+
+  <section class="gateway-section placeholder-section" data-gateway-section="03-frequency" aria-labelledby="frequency-title">
+    <div class="gateway-panel placeholder-panel reveal-once" data-panel-label="PLAYED">
+      <div class="chapter">
+        <span class="chapter-number">03</span>
+        <div class="chapter-body">
+          <p class="kicker">Frequency / Recently Played</p>
+          <h2 class="section-title" id="frequency-title">FREQUENCY</h2>
+          <p class="microcopy">コミュニティの誰かが聴いた対話から、次の一回に出会う。</p>
+          <p class="frequency-summary">みんなの最近のプレイ履歴 <span>COMMUNITY PLAYS / MOCK</span></p>
+          <ol class="frequency-list" data-track-list aria-label="コミュニティ全体の最近のプレイ履歴"></ol>
+          <p class="frequency-disclaimer">リスナー・アイコン・再生時刻は架空のサンプルです。実際の視聴履歴ではありません。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="gateway-section threshold-section" data-gateway-section="04-threshold" aria-labelledby="threshold-title">
+    <div class="gateway-panel threshold-panel">
+      <div class="threshold-inner">
+        <h2 class="sr-only" id="threshold-title">04 Threshold</h2>
+        <div class="threshold-actions">
+          <div class="gate" data-decrypt-scope>
+            <pre class="gate-frame" data-decrypt data-decrypt-frame aria-hidden="true"></pre>
+            <p class="gate-head">
+              <span data-decrypt>04 / Threshold</span>
+              <span data-decrypt>Entry : Open</span>
+            </p>
+            <a class="button-primary" href="/#setup" target="_top"><span class="gate-label" data-decrypt>joiN</span><svg viewBox="0 0 48 60" aria-hidden="true"><path d="M0 0 L48 37 L19 37 L0 60 Z" fill="currentColor" /></svg></a>
+            <p class="gate-path" data-decrypt>Setup → Initiation → Check-in</p>
+          </div>
+          <a class="button-secondary" href="/#journey" target="_top">参加の流れを見る</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<script type="module" src="./gateway-v1-claude-decrypt.js"></script>
+<script src="./gateway-data.js"></script><script>const root = document.documentElement;
+  const threshold = document.querySelector("[data-gateway-section='04-threshold']");
+  const heroSection = document.querySelector("[data-gateway-section='00-gateway']");
+  const voicesSection = document.querySelector("[data-gateway-section='02-voices-podcast']");
+  const voicesScroll = document.querySelector("[data-voices-scroll]");
+  const photoStrip = document.querySelector("[data-photo-strip]");
+  const scrollSections = Array.from(document.querySelectorAll("[data-gateway-section]"));
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const narrow = window.matchMedia("(max-width: 820px)");
+
+  function card({ label, title, detail, href }) {
+    const item = document.createElement(href ? "a" : "div");
+    if (href) { item.href = href; item.target = href.startsWith("/#") ? "_top" : "_blank"; item.rel = "noopener noreferrer"; }
+    item.className = "placeholder-card";
+    item.innerHTML = `<span>${label}</span><strong>${title}</strong><span>${detail}</span>`;
+    return item;
+  }
+
+  if (window.gatewayMock) {
+    const pulseList = document.querySelector("[data-pulse-list]");
+    window.gatewayMock.pulse.forEach((item) => pulseList.append(card(item)));
+
+    const podcastCard = document.querySelector("[data-podcast-card]");
+    podcastCard.append(card({
+      label: window.gatewayMock.podcast.date,
+      title: window.gatewayMock.podcast.title,
+      href: window.gatewayMock.podcast.href,
+      detail: window.gatewayMock.podcast.summary,
+    }));
+
+  }
+
+  function progressFor(section) {
+    const rect = section.getBoundingClientRect();
+    const travel = Math.max(1, rect.height - window.innerHeight);
+    return Math.min(1, Math.max(0, -rect.top / travel));
+  }
+
+  /* How far chapter 02's row of scenes has to travel, and how much of that
+     travel the reader has paid for. The whole sideways move is this one length:
+     the browser scrolls vertically as it always does, and CSS spends the number
+     on a transform. Stop scrolling and the row stops with you. */
+  function updateVoicesShift() {
+    if (!voicesSection || !voicesScroll || !photoStrip) return;
+    const windowWidth = photoStrip.parentElement.clientWidth;
+    const distance = Math.max(0, photoStrip.scrollWidth - windowWidth);
+    const shift = distance * progressFor(voicesScroll);
+    voicesSection.style.setProperty("--voices-shift", `${shift.toFixed(2)}px`);
+  }
+
+  /* The headline drifts as chapter 00 is scrolled, and the bubble refracts a
+     canvas copy of the hero that was painted before it moved. So the copy has
+     to be redrawn — but redrawing on every frame would be paying a full repaint
+     for a one-pixel change, so it happens in steps, when the drift has actually
+     moved far enough to see. */
+  /* How far the hero has gone once its pinning is over. --section-progress
+     finishes at exactly the moment the panel unpins, so the exit needs its own
+     measure: 0 there, 1 by the time the chapter has left the screen. */
+  function updateHeroExit() {
+    if (!heroSection) return;
+    const rect = heroSection.getBoundingClientRect();
+    const gone = (window.innerHeight - rect.bottom) / window.innerHeight;
+    const exit = gone < 0 ? 0 : gone > 1 ? 1 : gone;
+    heroSection.style.setProperty("--hero-exit", exit.toFixed(3));
+  }
+
+  let platedAt = -1;
+  function keepHeroPlateInStep() {
+    if (!heroSection || typeof window.gatewayHeroRelayout !== "function") return;
+    const progress = progressFor(heroSection);
+    // The lens has faded to nothing by a third of the way through the hold, and
+    // repainting a copy that no longer shows is work for no picture.
+    if (progress > 0.34) return;
+    // Fewer steps on a phone. A repaint costs the same there as anywhere — the
+    // whole hero is walked and redrawn into a canvas — but the machine doing it
+    // has less to spare, and the drift being repainted is a few pixels of type.
+    const step = Math.round(progress * (narrow.matches ? 9 : 22));
+    if (step === platedAt) return;
+    platedAt = step;
+    window.gatewayHeroRelayout();
+  }
+
+  let ticking = false;
+  function updateScrollState() {
+    ticking = false;
+    if (reduceMotion.matches) {
+      root.style.setProperty("--threshold-progress", "1");
+      // Parked at zero: whenever less motion is asked for the scenes are a
+      // plain column and must not be pushed off to one side.
+      if (voicesSection) voicesSection.style.setProperty("--voices-shift", "0px");
+      // Nothing moves behind the hero, so there is no exit to dim.
+      if (heroSection) heroSection.style.setProperty("--hero-exit", "0");
+      scrollSections.forEach((section) => section.style.setProperty("--section-progress", "1"));
+      return;
+    }
+    root.style.setProperty("--threshold-progress", progressFor(threshold).toFixed(4));
+    scrollSections.forEach((section) => {
+      section.style.setProperty("--section-progress", progressFor(section).toFixed(4));
+    });
+    updateVoicesShift();
+    updateHeroExit();
+    keepHeroPlateInStep();
+  }
+
+  function requestScrollUpdate() {
+    if (ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(updateScrollState);
+  }
+
+  window.addEventListener("scroll", requestScrollUpdate, { passive: true });
+  window.addEventListener("resize", requestScrollUpdate);
+  reduceMotion.addEventListener("change", requestScrollUpdate);
+  narrow.addEventListener("change", requestScrollUpdate);
+  requestScrollUpdate();
+
+  /* The cursor belongs to the hero now. gateway-v1-claude-bubble.js listens on
+     the stage itself and moves a real refraction bubble, so the CSS-circle
+     version that used to live here has gone with the markup it followed. */
+
+  const revealObserver = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      entry.target.classList.add("is-visible");
+      revealObserver.unobserve(entry.target);
+    }
+  }, { threshold: 0, rootMargin: "0px 0px -15% 0px" });
+
+  document.querySelectorAll(".reveal-once").forEach((item) => revealObserver.observe(item));
+
+
+const pulseSection = document.querySelector('[data-gateway-section="01-community-pulse"]');
+const pulseCards = [...document.querySelectorAll('[data-pulse-list] .placeholder-card')];
+function updatePulseCards() {
+  const progress = reduceMotion.matches ? 1 : Math.min(1, 0.35 + progressFor(pulseSection) * 0.8);
+  pulseCards.forEach((item, index) => item.style.setProperty('--card-progress', String(Math.min(1, Math.max(0, (progress - index * 0.12) / 0.28)))));
+}
+window.addEventListener('scroll', updatePulseCards, { passive:true });
+window.addEventListener('resize', updatePulseCards);
+reduceMotion.addEventListener('change', updatePulseCards);
+updatePulseCards();
+
+document.querySelector('.home-replay').addEventListener('click', () => window.parent.postMessage({ type:'henkaku:intro:replay' }, location.origin));
+</script><script src="./listening-history.js"></script><script src="./podcast-preview.js"></script></body></html>

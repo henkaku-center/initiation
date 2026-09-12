@@ -1,0 +1,86 @@
+{
+  "generatedOn": "2026-09-09",
+  "tool": "OpenAI built-in image_gen",
+  "purpose": "HENKAKU portal demo community and passport replacement card imagery",
+  "artDirection": "Premium editorial 3D concept photography; ivory, charcoal, cobalt blue, glass/translucent materials; abstract concepts, no real people or events.",
+  "logoReference": "User-provided HENKAKU concave arrow mark, traced as an SVG for the NFT and token reference.",
+  "assets": [
+    {
+      "filename": "community-ai.webp",
+      "path": "/demo-assets/community-ai.webp",
+      "prompt": "Use case: stylized-concept. Premium editorial 3D concept photography for HENKAKU, a Japanese creative community portal. Treat this as sophisticated collectible design imagery with convincing physical materials, elegant simplicity, beautifully controlled studio light and generous breathing room. Palette: warm ivory, rich charcoal, deep cobalt blue, clear or translucent glass and subtle silver. Crisp central subject; refined soft shadows, gentle caustics, tactile microdetails, quietly cinematic. Abstract conceptual imagery, not a depiction of actual people or events. No visible text, numbers, letters, labels, logos, watermarks, interface elements, borders or collage. Do not create a mockup of a webpage.\nPrimary request: A luminous modular network of clear architectural glass structures connected by elegantly restrained cobalt light, expressing collaborative AI experimentation. Arrange several simple glass modules as one central coherent sculptural structure on an ivory gallery surface. Light traveling through the modules becomes delicate cobalt reflections and caustics. Balanced architectural still life, few objects, expansive calm surrounding space. Landscape image, 16:9 aspect ratio.",
+      "sourceDimensions": {
+        "width": 1672,
+        "height": 941
+      },
+      "licensing": "HENKAKU portal demo / CC BY 4.0 where copyright applies. Original AI-generated image.",
+      "changes": "Resized and converted to WebP for this website."
+    },
+    {
+      "filename": "community-art.webp",
+      "path": "/demo-assets/community-art.webp",
+      "prompt": "Use case: stylized-concept. Premium editorial 3D concept photography for HENKAKU, a Japanese creative community portal. Treat this as sophisticated collectible design imagery with convincing physical materials, elegant simplicity, beautifully controlled studio light and generous breathing room. Palette: warm ivory, rich charcoal, deep cobalt blue, clear or translucent glass and subtle silver. Crisp central subject; refined soft shadows, gentle caustics, tactile microdetails, quietly cinematic. Abstract conceptual imagery, not a depiction of actual people or events. No visible text, numbers, letters, labels, logos, watermarks, interface elements, borders or collage. Do not create a mockup of a webpage.\nPrimary request: Beautifully arranged folded translucent paper and sculptural colored geometric forms in a quiet contemporary gallery, expressing co-creation and art. One elegant compositional group: an airy folded translucent ivory sheet, a cobalt curved form and a small frosted glass geometric form, carefully balanced with subtle shadows. Clear main subject with breathing room, warm ivory gallery background, exquisite tactile folds and edges. Landscape image, 16:9 aspect ratio.",
+      "sourceDimensions": {
+        "width": 1672,
+        "height": 941
+      },
+      "licensing": "HENKAKU portal demo / CC BY 4.0 where copyright applies. Original AI-generated image.",
+      "changes": "Resized and converted to WebP for this website."
+    },
+    {
+      "filename": "community-music.webp",
+      "path": "/demo-assets/community-music.webp",
+      "prompt": "Use case: stylized-concept. Premium editorial 3D concept photography for HENKAKU, a Japanese creative community portal. Treat this as sophisticated collectible design imagery with convincing physical materials, elegant simplicity, beautifully controlled studio light and generous breathing room. Palette: warm ivory, rich charcoal, deep cobalt blue, clear or translucent glass and subtle silver. Crisp central subject; refined soft shadows, gentle caustics, tactile microdetails, quietly cinematic. Abstract conceptual imagery, not a depiction of actual people or events. No visible text, numbers, letters, labels, logos, watermarks, interface elements, borders or collage. Do not create a mockup of a webpage.\nPrimary request: A minimalist refined black vinyl record paired with sculptural translucent sound waves, in the warm slanting light of a quiet listening room. An elegant central still life, the record resting at a slight angle with a beautiful readable circular silhouette, a label that is entirely blank and unmarked, and subtle cobalt reflected light. Sound waves represented by a few refined flowing glass arcs. Rich physical grooves, warm ivory and charcoal environment, restrained deep cobalt accent, generous negative space. Landscape image, 16:9 aspect ratio.",
+      "sourceDimensions": {
+        "width": 1672,
+        "height": 941
+      },
+      "licensing": "HENKAKU portal demo / CC BY 4.0 where copyright applies. Original AI-generated image.",
+      "changes": "Resized and converted to WebP for this website."
+    },
+    {
+      "filename": "passport-allowlist.webp",
+      "path": "/demo-assets/passport-allowlist.webp",
+      "prompt": "Use case: stylized-concept. Premium editorial 3D concept photography for HENKAKU, a Japanese creative community portal. Treat this as sophisticated collectible design imagery with convincing physical materials, elegant simplicity, beautifully controlled studio light and generous breathing room. Palette: warm ivory, rich charcoal, deep cobalt blue, clear or translucent glass and subtle silver. Crisp central subject; refined soft shadows, gentle caustics, tactile microdetails, quietly cinematic. Abstract conceptual imagery, not a depiction of actual people or events. No visible text, numbers, letters, labels, logos, watermarks, interface elements, borders or collage. Do not create a mockup of a webpage.\nPrimary request: Layered frosted glass invitation cards form an inviting open doorway. An elegant sculptural metaphor for access and approval, with a few tall rounded rectangular frosted-glass cards aligned in depth so a luminous open passage emerges in the center. A restrained cobalt edge reflection accents the otherwise ivory and silver materials. Refined architectural still life on an ivory seamless surface, generous clear margins, simple strongly legible central composition. Cards must be completely blank; no text, no checkmarks, no symbols. Square image, 1:1 aspect ratio.",
+      "sourceDimensions": {
+        "width": 1254,
+        "height": 1254
+      },
+      "licensing": "HENKAKU portal demo / CC BY 4.0 where copyright applies. Original AI-generated image.",
+      "changes": "Resized and converted to WebP for this website."
+    },
+    {
+      "filename": "passport-membership.webp",
+      "path": "/demo-assets/passport-membership.webp",
+      "prompt": "Use case: stylized-concept. Premium editorial 3D concept photography for HENKAKU, a Japanese creative community portal. Treat this as sophisticated collectible design imagery with convincing physical materials, elegant simplicity, beautifully controlled studio light and generous breathing room. Palette: warm ivory, rich charcoal, deep cobalt blue, clear or translucent glass and subtle silver. Crisp central subject; refined soft shadows, gentle caustics, tactile microdetails, quietly cinematic. Abstract conceptual imagery, not a depiction of actual people or events. No visible text, numbers, letters, labels, logos, watermarks, interface elements, borders or collage. Do not create a mockup of a webpage.\nPrimary request: A luminous circular gathering of translucent glass objects and orbs around a welcoming portal, expressing membership and community. A single small central architectural arch of clear glass glows softly, framed by a harmonious circular arrangement of several varied frosted and clear glass orbs with one or two deep cobalt orbs. Strongly simple central composition with generous ivory breathing room and soft reflections, warmly welcoming, sculpture gallery quality. No people or humanoids. Square image, 1:1 aspect ratio.",
+      "sourceDimensions": {
+        "width": 1254,
+        "height": 1254
+      },
+      "licensing": "HENKAKU portal demo / CC BY 4.0 where copyright applies. Original AI-generated image.",
+      "changes": "Resized and converted to WebP for this website."
+    },
+    {
+      "filename": "passport-nft.webp",
+      "path": "/demo-assets/passport-nft.webp",
+      "prompt": "Use case: stylized-concept. Premium editorial 3D concept photography for HENKAKU, a Japanese creative community portal. Sophisticated collectible design imagery, physically convincing materials, beautifully controlled light, elegant simplicity, generous negative space. Warm ivory, rich charcoal, deep cobalt blue, clear glass and subtle silver. Square image, 1:1 aspect ratio. Abstract conceptual imagery, not actual objects from an existing collection or real events. No text, numbers, letters, writing, labels, watermarks, interface elements, frames or collage.\nInput image 1: reference image only, use the angular concave black arrow/paperplane silhouette as the exact emblem shape. It is not an edit target. The reference image's background should not be reproduced. Preserve its distinctive right-pointing long upper triangle, vertical left edge, inward lower-right notch and pointed lower-left tail. Make the form a beautiful physically dimensional sculpture. The reference mark is the only allowed emblem; no invented brand marks and no H.\nPrimary request: A crystalline architectural portal of clear glass holding the reference angular arrow mark as a single elegant floating sculptural emblem, rendered in deep cobalt glass with subtle metallic edges. The emblem floats centered inside an open luminous glass doorway; light refracts through both to create delicate controlled caustics on an ivory gallery surface. Collectible-quality artwork, one clear focal point, softly lit museum-quality object photography, three-quarter view with the emblem highly legible. Generous clean margins.",
+      "sourceDimensions": {
+        "width": 1254,
+        "height": 1254
+      },
+      "licensing": "HENKAKU portal demo / CC BY 4.0 where copyright applies. Original AI-generated image.",
+      "changes": "Resized and converted to WebP for this website."
+    },
+    {
+      "filename": "passport-token.webp",
+      "path": "/demo-assets/passport-token.webp",
+      "prompt": "Use case: stylized-concept. Premium editorial 3D concept photography for HENKAKU, a Japanese creative community portal. Sophisticated collectible design imagery, physically convincing materials, beautifully controlled light, elegant simplicity, generous negative space. Warm ivory, rich charcoal, deep cobalt blue, clear glass and subtle silver. Square image, 1:1 aspect ratio. Abstract conceptual imagery, not actual objects from an existing collection or real events. No text, numbers, letters, writing, labels, watermarks, interface elements, frames or collage.\nInput image 1: reference image only, use the angular concave black arrow/paperplane silhouette as the exact emblem shape. It is not an edit target. The reference image's background should not be reproduced. Preserve its distinctive right-pointing long upper triangle, vertical left edge, inward lower-right notch and pointed lower-left tail. Make the form a beautiful physically dimensional sculpture. The reference mark is the only allowed emblem; no invented brand marks and no H.\nPrimary request: A single premium metallic cobalt and silver token with the exact reference angular arrow shape embossed prominently on its face. Physically convincing brushed metal and polished bevels, solid precise rim with fine subtle machining, no text or lettering anywhere. Place the token standing at a slight angle on an ivory seamless surface so the dimensional embossed arrow is clear and near frontal. Refined blue reflections on polished silver, cobalt enamel recess, beautifully controlled soft studio lighting, exceptional crafted object finish. Strong central composition with generous breathing room. The coin must have no H, no currency symbol, no numbers.",
+      "sourceDimensions": {
+        "width": 1254,
+        "height": 1254
+      },
+      "licensing": "HENKAKU portal demo / CC BY 4.0 where copyright applies. Original AI-generated image.",
+      "changes": "Resized and converted to WebP for this website."
+    }
+  ]
+}

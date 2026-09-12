@@ -1,0 +1,90 @@
+/* Local viewport shell for the unmodified bubble-multi reference. */
+html, body { width:100%; height:100%; overflow:hidden; }
+.hero { height:100svh; height:100dvh; min-height:0; max-height:none; aspect-ratio:auto; }
+.content { height:100%; grid-template-rows:minmax(0,1fr) auto; padding:clamp(20px,3.5vw,45px) 4.1% 88px; }
+.upper, .col, .arrow, .wordmark { min-height:0; }
+.upper { grid-template-columns:30.3% 8.9% 35% 25.8%; }
+.arrow, .wordmark { overflow:hidden; margin:0; padding:0; }
+.arrow { color:#333; }
+.arrow svg { width:88%; height:auto; max-height:100%; }
+.wordmark { pointer-events:none; }
+.roll { top:0; right:10%; margin-top:0; font-size:clamp(64px,min(12vw,18svh),232px); }
+.headline-wrap { margin-top:clamp(20px,5svh,68px); }
+.label a, .gateway a, .bcol a { color:inherit; text-decoration:none; }
+.col-a > .label a { display:inline-block; }
+.gateway { flex:none; display:flex; gap:12px; padding-top:16px; }
+.gateway > .dash { display:none; }
+.gateway h2 { flex:none; margin:0; font-size:clamp(12px,1.16vw,23px); line-height:1.3; }
+.gateway ul { width:100%; display:grid; gap:0; }
+.gateway li { min-width:0; }
+.gateway a { display:flex; align-items:center; min-height:44px; line-height:1.4; overflow-wrap:anywhere; }
+.bcol a { display:inline-flex; align-items:center; min-height:44px; }
+a:hover { text-decoration:underline; text-underline-offset:4px; }
+a:focus-visible, .panel summary:focus-visible, .panel button:focus-visible { outline:2px solid var(--blue); outline-offset:4px; }
+.panel, html.embedded .panel { display:block; z-index:20; right:16px; bottom:16px; }
+.panel summary { min-height:36px; display:flex; align-items:center; justify-content:flex-end; font-size:11px; }
+.panel[open] { max-height:calc(100dvh - 32px); overflow:auto; }
+.panel .body { max-width:min(88vw,340px); }
+.hint { display:none; }
+
+@media (max-width:820px) {
+  .content { padding:20px 18px 76px; }
+  .upper { grid-template-columns:minmax(0,1fr) minmax(0,1fr); grid-template-rows:auto minmax(0,1fr); gap:0 14px; }
+  .col-a { grid-column:1 / -1; grid-row:1; border:0; padding:0 0 14px; }
+  .col-b { display:none; }
+  .col-a > .label { font-size:10px; }
+  .label + .dash { margin-top:8px; }
+  .headline-wrap { margin-top:12px; }
+  .headline { font-size:clamp(18px,3.2svh,26px); margin-top:8px; }
+  .arrow, .wordmark { grid-column:1; grid-row:2; margin:0; padding:0; align-self:stretch; }
+  .arrow { justify-content:center; }
+  .arrow svg { width:86%; max-height:100%; }
+  .wordmark { display:flex; align-items:center; }
+  .roll { position:static; width:100%; right:auto; margin:0; font-size:clamp(24px,7.7vw,56px); }
+  .roll span { writing-mode:horizontal-tb; letter-spacing:-.03em; }
+  .col-d { grid-column:2; grid-row:2; justify-content:center; }
+  .col-d > .label, .col-d > .dash { display:none; }
+  .gateway { margin-top:0; border-left:0; padding:10px 0 0; gap:10px; }
+  .gateway h2 { font-size:11px; }
+  .gateway ul { font-size:10px; letter-spacing:.08em; }
+  .bottom { grid-template-columns:1fr 1fr; gap:8px 14px; padding-top:10px; }
+  .bcol:nth-child(n) { border:0; padding-left:0; }
+  .bcol p { font-size:8px; line-height:1.6; margin-top:5px; }
+  .bcol .plus { font-size:10px; }
+  .bcol .dash { height:1px; }
+  .panel, html.embedded .panel { top:12px; right:12px; bottom:auto; }
+}
+
+/* A short phone keeps the primary menu and portal entry on screen. */
+@media (max-width:599px) and (max-height:680px) {
+  .bottom { grid-template-columns:1fr; padding-top:8px; }
+  .bottom .bcol:not(:last-child) { display:none; }
+  .bottom .bcol:last-child .dash { display:none; }
+  .bottom .bcol:last-child p { margin:0; }
+}
+
+/* Landscape phones retain three distinct cells and the full-size link targets. */
+@media (min-width:600px) and (max-height:600px) {
+  .content { padding:16px 22px 76px; }
+  .upper { grid-template-columns:minmax(0,1.1fr) minmax(0,.8fr) minmax(0,1.2fr); grid-template-rows:minmax(0,1fr); gap:0 18px; }
+  .col-a { grid-column:1; grid-row:1; padding:0; border:0; }
+  .col-b { display:none; }
+  .col-a > .label { font-size:9px; }
+  .label + .dash { margin-top:7px; }
+  .headline-wrap { margin-top:12px; }
+  .headline { margin-top:7px; font-size:clamp(15px,2.8vw,22px); }
+  .arrow, .wordmark { grid-column:2; grid-row:1; margin:0; padding:0; }
+  .wordmark { display:block; }
+  .roll { position:absolute; top:0; left:0; right:0; width:auto; margin:0; font-size:clamp(38px,14svh,70px); }
+  .roll span { writing-mode:vertical-rl; letter-spacing:-.055em; }
+  .col-d { grid-column:3; grid-row:1; justify-content:center; }
+  .col-d > .label, .col-d > .dash { display:none; }
+  .gateway { margin:0; border-left:0; padding:8px 0 0; gap:8px; }
+  .gateway h2 { font-size:11px; }
+  .gateway ul { font-size:10px; letter-spacing:.08em; }
+  .bottom { grid-template-columns:1fr; padding-top:4px; }
+  .bottom .bcol:not(:last-child), .bottom .bcol:last-child .dash { display:none; }
+  .bottom .bcol:last-child { padding:0; }
+  .bottom .bcol:last-child p { margin:0; font-size:9px; }
+  .panel, html.embedded .panel { top:auto; right:16px; bottom:16px; }
+}
