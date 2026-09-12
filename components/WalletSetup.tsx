@@ -21,15 +21,11 @@ export function WalletSetup() {
     return <p className="text-sm leading-6 text-muted">先にウォレットを接続してください。</p>;
   }
 
-  let token: ReturnType<typeof henkakuTokenConfig>;
+  let token: ReturnType<typeof henkakuTokenConfig> | null;
   try {
     token = henkakuTokenConfig();
   } catch {
-    return (
-      <p className="text-sm font-semibold text-rose-600 dark:text-rose-300" role="alert">
-        HENKAKU トークン設定がありません。NEXT_PUBLIC_HENKAKU_TOKEN_ADDRESS を設定してください。
-      </p>
-    );
+    token = null;
   }
 
   const onPolygon = chainId === polygon.id;
@@ -56,6 +52,7 @@ export function WalletSetup() {
         )}
       </li>
       <li className="rounded-lg border border-border bg-surface-hover p-3 text-sm">
+        {token ? <>
         <button
           className={buttonStyles.secondary}
           type="button"
@@ -84,6 +81,7 @@ export function WalletSetup() {
             追加できませんでした。スキップしても構いません。
           </p>
         )}
+        </> : <p>トークン表示の追加は準備中です。接続とサインインは進められます。</p>}
       </li>
     </ol>
   );

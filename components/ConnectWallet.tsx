@@ -7,7 +7,7 @@ import { buttonStyles } from "@/lib/ui";
 
 export function ConnectWallet() {
   const { address, isConnected } = useAccount();
-  const { connect, connectors, error } = useConnect();
+  const { connect, connectors, error, isPending } = useConnect();
   const { disconnect } = useDisconnect();
 
   if (isConnected) {
@@ -28,10 +28,12 @@ export function ConnectWallet() {
       <button
         className={buttonStyles.primary}
         type="button"
-        onClick={() => connect({ connector: connectors[0] })}
+        disabled={isPending || !connectors[0]}
+        onClick={() => { if (connectors[0]) connect({ connector: connectors[0] }); }}
       >
-        ウォレットを接続
+        {isPending ? "ウォレットでの接続を待っています…" : "ウォレットを接続"}
       </button>
+      {!connectors[0] && <p role="status">対応ウォレットが見つかりません。MetaMaskなどのウォレットを用意してください。</p>}
       {error && (
         <p className="text-sm font-semibold text-rose-600 dark:text-rose-300" role="alert">
           接続できませんでした: {error.message}

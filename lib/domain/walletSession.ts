@@ -1,6 +1,19 @@
 // ABOUTME: 署名したウォレットと操作中のウォレットのずれを判定する。
-// ABOUTME: 画面から切り離して、比較と2つのガードだけをテストできる形にしている。
+// ABOUTME: 画面から切り離して、本人のデータ表示とセッション破棄の条件を検証する。
 import type { Address } from "./types";
+
+/** Page props remain private until both current identities match their owner. */
+export function canDisplayMemberData({ pageAddress, sessionAddress, connectedAddress, connected, sessionError }: {
+  pageAddress: string;
+  sessionAddress: string | null;
+  connectedAddress: string | undefined;
+  connected: boolean;
+  sessionError: boolean;
+}): boolean {
+  return !sessionError && connected && sessionAddress !== null &&
+    pageAddress.toLowerCase() === sessionAddress.toLowerCase() &&
+    connectedAddress?.toLowerCase() === sessionAddress.toLowerCase();
+}
 
 /**
  * 操作中のウォレットがサインイン済みのアドレスとずれていて、

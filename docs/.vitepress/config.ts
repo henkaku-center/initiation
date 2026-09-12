@@ -52,6 +52,7 @@ const jaThemeConfig = {
       text: "理解を深める",
       items: [
         { text: "プロジェクトの構成", link: "/guide/architecture" },
+        { text: "ポータルアプリと公開切替", link: "/guide/portal-app" },
         { text: "トラブルシューティング", link: "/guide/troubleshooting" },
       ],
     },

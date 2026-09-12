@@ -112,3 +112,23 @@ document.querySelector('.home-replay').addEventListener('click', () => window.pa
 fs.writeFileSync(path.join(root,"public/demo-assets/gateway/index.html"), html);
 fs.writeFileSync(path.join(root,"public/demo-assets/gateway/bubble-multi.html"), introHtml);
 fs.writeFileSync(path.join(root,"public/demo-assets/gateway/intro.html"), encryptedIntroHtml);
+
+// The normal app shares the source artwork, with directly addressable routes.
+// Demo histories stay in the explicit demo documents only.
+const applicationRoutes = { home: "/", setup: "/setup", journey: "/initiation", community: "/community", passport: "/passport" };
+function applicationLinks(document) {
+  for (const [screen, route] of Object.entries(applicationRoutes)) {
+    document = document.replaceAll(`href="/#${screen}"`, `href="${route}"`);
+  }
+  // The encrypted reference intercepts clicks, so its dispatcher needs the same route mapping.
+  return document.replace("const screen = url.hash.slice(1);", `const routes = ${JSON.stringify(applicationRoutes)};
+        const screen = url.hash.slice(1) || Object.keys(routes).find((name) => routes[name] === url.pathname);`);
+}
+const applicationHome = applicationLinks(html)
+  .replace(/[ \t]*<section\b[^>]*data-gateway-section="03-frequency"[\s\S]*?<\/section>/, "")
+  .replace('<script src="./listening-history.js"></script>', "")
+  .replace("COMMUNITY GATEWAY / DEMO", "COMMUNITY GATEWAY")
+  .replace("いま、コミュニティで動いていること。", "コミュニティの入口へ、ようこそ。");
+fs.writeFileSync(path.join(root,"public/demo-assets/gateway/app-index.html"), applicationHome);
+fs.writeFileSync(path.join(root,"public/demo-assets/gateway/app-bubble-multi.html"), applicationLinks(introHtml));
+fs.writeFileSync(path.join(root,"public/demo-assets/gateway/app-intro.html"), applicationLinks(encryptedIntroHtml));

@@ -1,6 +1,6 @@
 # ポータル体験デモ
 
-Issue #91の状態表示、指定されたBubble Multi/Gatewayの入口、Game Aの5ステージを組み合わせた独自ブランチのデモです。トップページは参照元のHTML/CSS/JSを基準にし、同一オリジンの文書内で元のスクロール構造を維持しています。上流コミュニティの本番仕様を確定するものではありません。
+PR #102で取り込んだ、Bubble Multi/Gatewayの入口とGame Aの5ステージを組み合わせた体験デモです。通常アプリはこのUIを使って既存の認証・4項目の保存・申請・チェックインへ接続しています。通常アプリの操作と公開切替は[ポータルアプリ](./portal-app.md)を参照してください。この文書は模擬操作を残したデモモードの案内です。
 
 ## ローカルで見る
 
@@ -13,12 +13,12 @@ npm run dev:demo -- --port 3000
 
 本番形式の確認は `npm run build:demo` → `npm start` です。通常アプリは `npm run build` で別途ビルドしてください。同じ `.next` に出力するため、開発サーバー・本番サーバー・ビルドを同時に動かさないでください。
 
-## Vercelの設定
+## デモ専用環境の設定
 
-1. このforkをVercelの新しいデモ専用プロジェクトへImportします。
-2. デプロイ対象ブランチを `codex/portal-demo` にします。継続してProduction URLに反映する場合は、そのプロジェクトのProduction Branchにも指定します。
+1. 公開の許可を得てから、デモ専用プロジェクトと対象コミットを決めます。
+2. 通常アプリとデモでは利用するデータと操作が異なります。どちらを公開するかを明示します。
 3. Root Directoryはリポジトリ直下、FrameworkはNext.js、Node.jsは22以上の対応バージョンを使います。
-4. Build Commandは `vercel.json` の `npm run build:demo` を使います。Install Commandは標準のnpmの設定（明示するなら `npm ci`）、Output DirectoryはNext.jsの標準設定です。
+4. デモ専用環境ではBuild Commandを `npm run build:demo` にします。リポジトリの `vercel.json` は通常アプリ用の `npm run build` です。デモを公開する場合は承認された設定変更で上書きし、実際のビルドログを確認してください。Install Commandは `npm ci`、Output DirectoryはNext.jsの標準設定です。
 5. Environment Variablesは不要です。Supabase、SIWE、管理者、ウォレットのキーを追加する必要はありません。
 6. Deploy後、下の確認手順を実行します。
 
@@ -61,7 +61,7 @@ npm run dev:demo -- --port 3000
 - localStorageが使えない場合は画面に案内し、メモリ内で体験を続けます。この場合、ページを閉じると消えます。
 - 「デモ操作」→「新入りとして最初から体験する」で、このデモの記録だけをリセットできます。
 - デモ画面は `wagmi` や認証API、Repositoryを呼びません。デモビルドのProxyは `/api/*` とすべてのGET/HEAD以外のリクエスト（Server Actionsを含む）を404にします。
-- `/setup`、`/initiation`、`/apply`、`/admin`、`/checkin` のリンクもデモ内の対応画面へ誘導します。
+- `/setup`、`/initiation`、`/apply`、`/passport`、`/admin`、`/checkin`、`/community` のリンクもデモ内の対応画面へ誘導します。
 - サンプル活動は実際の募集ではありません。NFT、トークン、ロール、審査結果もすべて模擬状態です。
 
 ## 素材
@@ -76,14 +76,15 @@ VOICES / PODCASTでは[Joi Ito's Podcast — 変革への道](https://joi.ito.co
 
 ## 検証コマンド
 
-2026-09-09のイントロ・Journey・Podcast更新は依頼によりレイアウト確認のみ実施しました。確認方法と結果は`tests/layout/README.md`を参照してください。以下はプロジェクト全般の検証コマンドです。
+以下は現在のCIに対応する検証コマンドです。通常buildの型生成後に型チェックを行い、最後にデモbuildを確認します。2026-09-09の記録は`tests/layout/README.md`に残していますが、現在の変更の検証結果とは区別します。
 
 ```bash
-npm test
-npm run build:demo
+npm run build
 npx tsc --noEmit
 npm run lint
-npm run build
+npx vitest run tests/unit
+npx vitest run tests/integration
+npm run build:demo
 ```
 
 `npm test`のうち既存のRepository統合テストはローカルSupabaseが必要です。デモの実行と単体テストには不要です。Supabaseなしで単体テストだけを実行する場合は `npx vitest run tests/unit` を使います。

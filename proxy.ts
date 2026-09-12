@@ -20,7 +20,9 @@ export function proxy(request: NextRequest) {
         setup: "setup",
         initiation: "journey",
         checkin: "community",
+        community: "community",
         apply: "passport",
+        passport: "passport",
         admin: "passport",
       } as Record<string, string>
     )[page];

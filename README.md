@@ -12,11 +12,13 @@ HENKAKUコミュニティへの参加を、ウォレット準備からInitiation
 
 画面上部のメニューから、次の順番で進めます。
 
-1. **セットアップ** (`/setup`): ウォレット接続、SIWEサインイン、Polygon切替、HENKAKU追加
-2. **Initiation** (`/initiation`): 質問への回答とクエストの完了。進捗は保存されます
-3. **チェックイン** (`/checkin`): 1日1回の活動記録
-4. **申請** (`/apply`): Allowlist追加とHENKAKU配布の申請
+1. **Setup** (`/setup`): ウォレット接続、Polygon確認、SIWEサインイン。HENKAKUの表示追加は任意
+2. **Initiation** (`/initiation`): 既存4項目への回答とクエストの完了。保存した進捗から再開できます
+3. **Community** (`/community`、従来の`/checkin`): 日本時間で1日1回のチェックインと本人の履歴
+4. **Passport** (`/passport`、従来の`/apply`): Allowlist追加とHENKAKU配布の申請・状態表示
 5. **運営** (`/admin`): 管理者が審査・Allowlist・配布状態を更新
+
+通常buildでポータルUIと実処理を利用します。設定・未接続機能・公開切替・ロールバックは[ポータルアプリの案内](docs/guide/portal-app.md)を参照してください。模擬体験は `npm run dev:demo` / `npm run build:demo` に残しています。
 
 ## 開発環境
 

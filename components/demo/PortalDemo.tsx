@@ -169,7 +169,7 @@ export function PortalDemo() {
         <ThemeToggle />
       </header>
       <main id="demo-main" tabIndex={-1}>
-        {screen === "home" && <ReferenceGateway paused={still} />}
+        {screen === "home" && <ReferenceGateway paused={still} onNavigate={navigateDemo} />}
         {screen === "setup" && <DemoWallet state={state} notify={setMessage} />}
         {screen === "journey" && (
           <DemoJourney

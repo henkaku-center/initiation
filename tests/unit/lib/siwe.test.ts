@@ -1,6 +1,6 @@
 // ABOUTME: 実署名を使って SIWE 検証の境界条件を確認する。
 // ABOUTME: nonce・domain・uri・chainId・有効期限・署名の不一致を受け入れない契約を固定する。
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { SiweMessage } from "siwe";
 import { MAX_SIWE_LIFETIME_MS, parseAllowedDomains, verifySiweMessage } from "@/lib/siwe";
@@ -140,11 +140,17 @@ describe("verifySiweMessage", () => {
   });
 
   it("rejects a tampered signature", async () => {
-    const built = await buildSignedMessage();
-    const result = await verify({
-      message: built.message,
-      signature: ("0x" + "ab".repeat(65)) as `0x${string}`,
-    });
-    expect(result.ok).toBe(false);
+    const reported = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const built = await buildSignedMessage();
+      const result = await verify({
+        message: built.message,
+        signature: ("0x" + "ab".repeat(65)) as `0x${string}`,
+      });
+      expect(result.ok).toBe(false);
+      expect(reported).toHaveBeenCalledWith(expect.objectContaining({ code: "INVALID_ARGUMENT" }));
+    } finally {
+      reported.mockRestore();
+    }
   });
 });

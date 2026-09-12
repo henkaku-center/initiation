@@ -14,7 +14,7 @@ export function demoRequestPolicy(
   )
     return "allow";
   if (
-    ["/setup", "/initiation", "/checkin", "/apply", "/admin"].some(
+    ["/setup", "/initiation", "/checkin", "/community", "/apply", "/passport", "/admin"].some(
       (p) => pathname === p || pathname.startsWith(`${p}/`),
     )
   )

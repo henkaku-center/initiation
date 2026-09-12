@@ -1608,7 +1608,8 @@ document.addEventListener("click", (event) => {
   if (!anchor || window.parent === window) return;
   const url = new URL(anchor.href, location.href);
   const screen = anchor.dataset.introScreen;
-  if (url.origin !== location.origin || url.hash !== "#" + screen ||
+  const appRoutes = { home: "/", setup: "/setup", journey: "/initiation", community: "/community", passport: "/passport" };
+  if (url.origin !== location.origin || (url.hash !== "#" + screen && url.pathname !== appRoutes[screen]) ||
       !["home", "setup", "journey", "community", "passport"].includes(screen)) return;
   try {
     if (window.parent.location.origin !== location.origin) return;
