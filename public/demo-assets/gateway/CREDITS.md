@@ -13,16 +13,24 @@ The homepage is adapted from the supplied HENKAKU UI prototypes:
 
 `thumbs/hero.png`, `thumbs/riso.png`, `thumbs/liquid.png`: the corresponding publicly supplied preview images at https://henkaku-ui.vercel.app/thumbs/ . They remain illustrative previews of those prototypes, not member photographs or commercial music covers.
 
-Changes: user-supplied concave arrow logo, working links to existing demo routes, four Pulse items, shared fictional community play events, parent navigation, multi-bubble/encrypted comparison controls, owned renderer teardown, and isolated same-origin documents so the original viewport/scroll calculations are preserved. No automatic audio playback is added. The multi-bubble source keeps its original source attribution; the older Bubble and DecryptReveal ports are used only by the encrypted comparison.
+Changes: user-supplied concave arrow logo, working links to existing demo routes, four Pulse items, public ListenBrainz music rankings, parent navigation, multi-bubble/encrypted comparison controls, owned renderer teardown, and isolated same-origin documents so the original viewport/scroll calculations are preserved. No automatic audio playback is added. The multi-bubble source keeps its original source attribution; the older Bubble and DecryptReveal ports are used only by the encrypted comparison.
 
 The introduction to “Joi Ito's Podcast — 変革への道” is an original editorial summary based on https://joi.ito.com/podcast/ (accessed 2026-09-09), with a direct link to that official page. Descriptions, transcripts, recordings and artwork are not stored in this repository.
 
-## Joi Ito's Podcast video previews and listening-history demo
+## Archived Joi Ito's Podcast preview references
+
+The following credits describe retained reference data and earlier preview code. Current Home documents do not load the YouTube players, thumbnails or fictional community listening events.
 
 Videos / Joi Ito and the respective rights holders / https://www.youtube.com/@joiito/podcasts → “Joi Ito's Podcast (VIDEO)”, https://www.youtube.com/playlist?list=PLdwOpF5thM-7Q5OILxkZpRnUnrt0w7US2 and the per-video URLs in `gateway-data.js` (checked 2026-09-09) / externally hosted YouTube content, used through the official embedded player; no CC BY 4.0 or repository MIT relicensing is claimed.
 
 Thumbnails / Joi Ito and the respective rights holders / YouTube's `i.ytimg.com/vi/VIDEO_ID/` URLs / externally referenced YouTube thumbnails, subject to their original rights and YouTube's service terms; no local copies are distributed.
 
-The four Voices scenes now show official muted video excerpts, selected from six VIDEO playlist entries: conversations with Kengo Kuma, Dai Tamesue, Aya Miyaguchi, Mizuko Ito, Emily Yang (Pplpleasr), and Lawrence Lessig. Titles are shortened from the linked official video titles; each scene identifies the speakers and links to its YouTube page. When embedding is unavailable, a remotely referenced thumbnail and official link are shown. Frequency's listener labels, icons and relative play times are shared fictional demo fixtures, not actual listening histories. No video, audio, transcript or thumbnail files were downloaded into the project.
+The earlier four Voices scenes showed official muted video excerpts, selected from six VIDEO playlist entries: conversations with Kengo Kuma, Dai Tamesue, Aya Miyaguchi, Mizuko Ito, Emily Yang (Pplpleasr), and Lawrence Lessig. Titles are shortened from the linked official video titles; each scene identifies the speakers and links to its YouTube page. When embedding is unavailable, a remotely referenced thumbnail and official link are shown. The earlier Frequency listener labels, icons and relative play times were fictional fixtures, not actual listening histories. No video, audio, transcript or thumbnail files were downloaded into the project.
 
-Frequency listener indicators (orbit, mosaic, spark and anonymous silhouette) / HENKAKU portal demo, authored with Codex / original CSS geometry in `assets/reference/gateway/podcast.css`, generated into `index.html` / repository MIT-licensed UI code; no third-party artwork or real user avatars.
+Frequency listener indicators (orbit, mosaic, spark and anonymous silhouette) / HENKAKU portal demo, authored with Codex / original CSS geometry in the earlier revision of `assets/reference/gateway/podcast.css` / repository MIT-licensed UI code; no third-party artwork or real user avatars.
+
+## FREQUENCY music rankings
+
+Weekly top recording metadata and aggregate listen counts / ListenBrainz, MetaBrainz Foundation and contributors / https://listenbrainz.org/statistics/?range=week / CC0, as published at https://listenbrainz.org/data/ (checked 2026-09-12).
+
+The public API is read at runtime; audio, album covers and personal histories are not imported. Decorative record geometry / HENKAKU portal / `assets/reference/gateway/podcast.css` / original MIT-licensed CSS.

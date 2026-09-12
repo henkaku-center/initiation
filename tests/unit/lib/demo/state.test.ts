@@ -1,4 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { DemoJourney } from "@/components/demo/DemoJourney";
 import {
   createDemoState,
   demoReducer,
@@ -7,6 +10,13 @@ import {
 } from "@/lib/demo/state";
 
 describe("portal demo journey", () => {
+  it("lets a completed traveler revisit saved answers without losing the passport", () => {
+    const complete = { ...createDemoState(), stage:4, finalQuestion:2, completed:true, participantNFT:true, answers:{ ...createDemoState().answers, name:"保存した呼び名" } };
+    const revisiting = demoReducer(complete, { type:"revisitJourney" });
+    expect(revisiting).toMatchObject({ stage:1, finalQuestion:0, completed:true, participantNFT:true, answers:complete.answers });
+    const html = renderToStaticMarkup(createElement(DemoJourney, { state:complete, audioRef:{current:null}, sound:false, toggleSound:() => {} }));
+    expect(html).toContain("回答を見直す");
+  });
   it("keeps an unavailable wallet reading distinct from zero balances", () => {
     let state = createDemoState();
     expect(walletSnapshot(state).kind).toBe("disconnected");

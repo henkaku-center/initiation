@@ -1,34 +1,24 @@
-// Read-only checks for the homepage iframe. Run before and after the change.
+// ABOUTME: Check the public aggregate music chart and preserved threshold theme.
+// ABOUTME: Run on a ready chart response; failure and loading states use the browser suite.
 export function auditCommunityFrequency(body) {
   const doc = body.ownerDocument;
   const view = doc.defaultView;
   const issues = [];
   const section = doc.querySelector('[data-gateway-section="03-frequency"]');
   const entries = [...doc.querySelectorAll('.frequency-entry')];
-  if (!section?.textContent.includes('みんなの最近のプレイ履歴')) issues.push('Community-wide history heading is missing');
-  if (entries.length !== 4) issues.push('Four community play events are required');
-  if (section?.textContent.match(/あなたの|続きを|聴いた割合/)) issues.push('Personal-history wording remains');
-  if (section?.querySelector('.frequency-progress')) issues.push('Personal progress remains');
-  if (!section?.textContent.includes('架空')) issues.push('Fictional listener disclosure is missing');
-  const variants = new Set();
-  for (const entry of entries) {
-    const avatar = entry.querySelector('.frequency-avatar');
-    const listener = entry.querySelector('.frequency-listener');
-    if (!avatar || !listener?.textContent.trim()) issues.push('Play event is missing its listener');
-    if (avatar) {
-      variants.add(avatar.getAttribute('data-avatar'));
-      const box = avatar.getBoundingClientRect();
-      if (box.width < 32 || box.height < 32) issues.push('Listener icon is too small');
-      if (avatar.getAttribute('aria-hidden') !== 'true') issues.push('Decorative avatar duplicates the listener label');
-    }
-    const url = new URL(entry.querySelector('.frequency-link').href);
-    if (url.searchParams.has('t')) issues.push('Community link resumes someone else’s progress');
-    for (const element of [entry, listener].filter(Boolean)) {
-      const box = element.getBoundingClientRect();
-      if (box.left < -1 || box.right > view.innerWidth + 1 || element.scrollWidth > element.clientWidth + 2) issues.push('Community history is clipped');
-    }
+if (!section?.textContent.includes('ListenBrainz / WEEKLY TOP TRACKS')) issues.push('Music ranking heading is missing');
+if (entries.length !== 4) issues.push('Four public tracks are required for this ready-state audit');
+if (section?.querySelector('.frequency-listener, .frequency-avatar, .frequency-progress')) issues.push('Personal-history indicators remain');
+if (!section?.textContent.includes('ListenBrainz全体の公開ランキング')) issues.push('Source disclosure is missing');
+for (const entry of entries) {
+  const link = entry.querySelector('.frequency-link');
+  const url = link && new URL(link.href);
+  if (!url || !['musicbrainz.org', 'listenbrainz.org'].includes(url.hostname)) issues.push('Track source link is missing');
+  for (const element of [entry, link].filter(Boolean)) {
+    const box = element.getBoundingClientRect();
+    if (box.left < -1 || box.right > view.innerWidth + 1 || element.scrollWidth > element.clientWidth + 2) issues.push('Music chart is clipped');
   }
-  if (variants.size !== 4 || !variants.has('anonymous')) issues.push('Three abstract icons and one anonymous icon are required');
+}
   const threshold = doc.querySelector('.threshold-section');
   const thresholdStyle = threshold && view.getComputedStyle(threshold);
   const dark = doc.documentElement.dataset.theme === 'dark';

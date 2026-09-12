@@ -46,7 +46,7 @@ export function CommunityCards({
   state,
   compact = false,
 }: {
-  state: DemoState;
+  state?: DemoState;
   compact?: boolean;
 }) {
   const [selected, setSelected] = useState<number | null>(null);
@@ -73,7 +73,7 @@ export function CommunityCards({
                 {item.initials}
               </span>
               <span>{item.author}</span>
-              {state.answers.interests.includes(item.interest) && (
+              {state?.answers.interests.includes(item.interest) && (
                 <small>✓ 気になる</small>
               )}
             </div>
@@ -90,11 +90,12 @@ export function CommunityCards({
           </p>
           <button
             className="pd-primary pd-full"
+            disabled={!state}
             onClick={() =>
-              dispatchDemo({ type: "interest", value: signal.interest })
+              state && dispatchDemo({ type: "interest", value: signal.interest })
             }
           >
-            {state.answers.interests.includes(signal.interest)
+            {!state ? "参加受付は準備中" : state.answers.interests.includes(signal.interest)
               ? "気になるに追加済み ✓"
               : "この活動が気になる ↗"}
           </button>

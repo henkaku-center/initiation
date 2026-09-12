@@ -6,13 +6,14 @@
   gap: 25px;
   align-items: center;
 }
-.pd-footer button {
+.pd-footer button,.pd-footer a {
   padding: 0;
   border: 0;
   background: none;
   color: var(--pd-muted);
   font-size: 12px;
 }
+.pd-footer a { display:inline-flex;align-items:center;min-height:44px;text-underline-offset:4px; }
 .pd-page {
   max-width: 1500px;
   margin: auto;

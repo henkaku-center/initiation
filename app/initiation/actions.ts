@@ -2,23 +2,22 @@
 // ABOUTME: ステップ入力を検証して、認証済みmemberのRepositoryへ保存する。
 "use server";
 
-import { findStep } from "@/lib/initiation/content";
+import { journeySteps, validateJourneyAnswer } from "@/lib/initiation/journey";
 import { requireMember, UnauthenticatedError } from "@/lib/auth/guards";
 import { getRepositories } from "@/lib/repositories";
 
 export async function saveStep(
   stepId: string,
-  answer: string | null,
+  answer: unknown,
 ): Promise<{ ok: boolean; error?: string }> {
-  const step = findStep(stepId);
+  const step = journeySteps.find((item) => item.id === stepId);
   if (!step) return { ok: false, error: "不明なステップです" };
-  if (step.kind === "question" && (!answer || answer.trim() === "")) {
-    return { ok: false, error: "回答を入力してください" };
-  }
+  const validated = validateJourneyAnswer(stepId, answer);
+  if (!validated) return { ok: false, error: "回答の形式を確認してください" };
 
   try {
     const member = await requireMember();
-    await getRepositories().progress.save(member.id, stepId, answer);
+    await getRepositories().progress.save(member.id, stepId, JSON.stringify(validated));
     return { ok: true };
   } catch (error) {
     if (error instanceof UnauthenticatedError) {

@@ -1,26 +1,7 @@
 // Browser-only demonstration model. No production repositories or wallet calls.
 export const DEMO_STORAGE_KEY = "henkaku.portal-demo.v1";
-export const interestOptions = [
-  "AI",
-  "ART",
-  "DAO",
-  "MUSIC",
-  "EDUCATION",
-  "PODCAST",
-  "PROJECTS",
-  "EVENTS",
-  "QUESTIONS",
-] as const;
-export const contributionOptions = [
-  "QUESTION",
-  "EXPERIENCE",
-  "IDEA",
-  "CODE",
-  "ART",
-  "DESIGN",
-  "CONNECTION",
-  "CURIOSITY",
-] as const;
+import { interestOptions } from "@/lib/initiation/journey";
+export { interestOptions, contributionOptions } from "@/lib/initiation/journey";
 export type DemoAnswers = {
   name: string;
   interests: string[];
@@ -55,6 +36,7 @@ export type DemoAction =
         | "addToken"
         | "nextStage"
         | "previousStage"
+        | "revisitJourney"
         | "finish"
         | "claimNFT"
         | "apply"
@@ -159,6 +141,8 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
         },
       };
     }
+    case "revisitJourney":
+      return state.completed ? { ...state, stage: 1, finalQuestion: 0 } : state;
     case "nextStage":
       return state.stage === 4
         ? { ...state, finalQuestion: Math.min(2, state.finalQuestion + 1) }

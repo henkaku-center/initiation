@@ -1101,91 +1101,32 @@ html[data-theme="dark"] .voices-fragment,html[data-theme="dark"] .voices-observe
   .placeholder-section,.placeholder-section[data-gateway-section="01-community-pulse"],.voices-sticky-wrap,.threshold-section { min-height:auto;margin-top:0; }
   .placeholder-panel { position:static;min-height:auto; }.voices-scene { min-height:280px; }
 }
-</style><style>/* The official player stays unobscured; the title and link sit below it. */
-.voices-sticky-panel .chapter { padding-top:24px; }
-.voices-sticky-panel .chapter-body { padding-top:18px; }
-.voices-sticky-panel .section-title { font-size:clamp(32px,4vw,60px);line-height:1.05;transform:none;margin:10px 0 0; }
-.voices-sticky-panel .microcopy { max-width:none;margin:14px 0 0;font-size:14px; }
-.podcast-toolbar { display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 20px;margin:20px 0 12px; }
-.podcast-toolbar > span { font:10px/1.6 var(--font-mono);letter-spacing:.08em;color:var(--muted); }
-.podcast-toolbar button { min-width:44px;min-height:44px;padding:10px 14px;font:12px/1.5 var(--font-sans);border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer; }
-.podcast-toolbar button:hover { border-color:var(--blue); }
-.podcast-toolbar button:focus-visible,.podcast-scene a:focus-visible,.frequency-link:focus-visible { outline:3px solid #f58442;outline-offset:4px; }
-.voices-photo-stage { left:auto;width:100%;margin-left:0;min-height:0;padding-bottom:22px; }
-.voices-photo-track { align-items:flex-start;min-width:0;width:max-content;padding:0;gap:clamp(24px,4vw,64px); }
-.podcast-scene { --podcast-max-width:min(72vw,760px);margin:0;min-height:0;flex:0 0 clamp(280px,calc((100svh - 400px) * 16 / 9),var(--podcast-max-width));transform:none; }
-.podcast-scene::before,.podcast-scene::after { display:none; }
-.podcast-screen { width:100%;aspect-ratio:16/9;min-height:200px;background:#101116; }
-.podcast-screen > div,.podcast-screen iframe { display:block;width:100%;height:100%;min-height:200px;border:0; }
-.podcast-screen > div { display:grid;place-items:center;color:#d5d9e2; }
-.podcast-screen > img { display:block;width:100%;height:100%;object-fit:contain; }
-.podcast-scene figcaption { padding-top:15px; }
-.podcast-scene-label { margin:0 0 7px;font:10px/1.6 var(--font-mono);letter-spacing:.1em;color:var(--muted); }
-.podcast-scene a { display:inline-block;min-height:44px;color:var(--ink);font:600 clamp(17px,1.7vw,24px)/1.5 var(--font-sans);text-decoration:none;overflow-wrap:anywhere; }
-.podcast-scene a:hover { color:var(--blue); }
-.podcast-status { margin:5px 0 0;font:11px/1.6 var(--font-sans);color:var(--muted); }
+</style><style>/* ABOUTME: Present public music rankings beside the source podcast scenes. */
+/* ABOUTME: Abstract record artwork and typography adapt to both portal themes. */
+.frequency-link:focus-visible,.frequency-retry:focus-visible,.frequency-disclaimer a:focus-visible { outline:3px solid #f58442;outline-offset:4px; }
 [data-gateway-section="03-frequency"] { min-height:0;margin-top:0; }
 [data-gateway-section="03-frequency"] > .placeholder-panel { position:relative;min-height:0; }
-.frequency-summary,.frequency-disclaimer { font:12px/1.8 var(--font-sans);color:var(--muted); }
+.frequency-summary,.frequency-status,.frequency-disclaimer { font:12px/1.8 var(--font-sans);color:var(--muted); }
 .frequency-summary { display:flex;flex-wrap:wrap;gap:10px 24px;margin:30px 0 22px; }
 .frequency-summary span { font:9px/2.4 var(--font-mono);letter-spacing:.08em; }
+.frequency-status:empty { display:none; }
 .frequency-list { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 30px;list-style:none;margin:0;padding:0; }
-.frequency-entry { min-width:0;border-top:1px solid var(--line);padding-top:20px; }
-.frequency-listener { display:flex;align-items:center;gap:12px;min-width:0; }
-.frequency-identity { display:grid;gap:3px;min-width:0; }
-.frequency-listener-name { font:12px/1.5 var(--font-sans);color:var(--ink); }
-.frequency-avatar { position:relative;display:grid;place-items:center;flex:none;width:40px;height:40px;border-radius:50%;color:var(--blue);background:color-mix(in srgb,currentColor 10%,var(--surface));border:1px solid color-mix(in srgb,currentColor 24%,transparent); }
-.frequency-avatar-shape,.frequency-avatar-shape::before,.frequency-avatar-shape::after { position:absolute;display:block;box-sizing:border-box; }
-.frequency-avatar[data-avatar="orbit"] .frequency-avatar-shape { width:24px;height:14px;border:1.5px solid currentColor;border-radius:50%;transform:rotate(-35deg); }
-.frequency-avatar[data-avatar="orbit"] .frequency-avatar-shape::before { content:"";width:14px;height:24px;top:-6.5px;left:3.5px;border:1.5px solid currentColor;border-radius:50%; }
-.frequency-avatar[data-avatar="orbit"] .frequency-avatar-shape::after { content:"";width:5px;height:5px;top:3px;left:8px;background:currentColor;border-radius:50%; }
-.frequency-avatar[data-avatar="mosaic"] { color:light-dark(#287267,#85cbb6); }
-.frequency-avatar[data-avatar="mosaic"] .frequency-avatar-shape { width:9px;height:9px;top:9px;left:9px;background:currentColor;box-shadow:11px 11px currentColor; }
-.frequency-avatar[data-avatar="mosaic"] .frequency-avatar-shape::before { content:"";width:9px;height:9px;left:11px;border:1.5px solid currentColor;border-radius:50%; }
-.frequency-avatar[data-avatar="mosaic"] .frequency-avatar-shape::after { content:"";width:9px;height:9px;top:11px;border:1.5px solid currentColor;transform:rotate(45deg) scale(.75); }
-.frequency-avatar[data-avatar="spark"] { color:light-dark(#a35a24,#edb27b); }
-.frequency-avatar[data-avatar="spark"] .frequency-avatar-shape { width:24px;height:24px;background:currentColor;clip-path:polygon(50% 0,60% 33%,85% 15%,67% 40%,100% 50%,67% 60%,85% 85%,60% 67%,50% 100%,40% 67%,15% 85%,33% 60%,0 50%,33% 40%,15% 15%,40% 33%); }
-.frequency-avatar[data-avatar="anonymous"] { color:var(--muted); }
-.frequency-avatar[data-avatar="anonymous"] .frequency-avatar-shape { width:10px;height:10px;top:8px;border:1.5px solid currentColor;border-radius:50%; }
-.frequency-avatar[data-avatar="anonymous"] .frequency-avatar-shape::after { content:"";width:20px;height:11px;top:13px;left:-6.5px;border:1.5px solid currentColor;border-radius:12px 12px 4px 4px; }
-.frequency-link { display:grid;grid-template-columns:112px minmax(0,1fr);align-items:start;gap:16px;padding:16px 0 22px;min-width:0;color:var(--ink);text-decoration:none; }
+.frequency-entry { min-width:0;border-top:1px solid var(--line); }
+.frequency-link { display:grid;grid-template-columns:112px minmax(0,1fr);align-items:start;gap:20px;padding:22px 0;min-width:0;color:var(--ink);text-decoration:none; }
 .frequency-link:hover .frequency-title { color:var(--blue); }
-.frequency-art { aspect-ratio:16/9;background:var(--surface-subtle);overflow:hidden; }
-.frequency-art img { display:block;width:100%;height:100%;object-fit:cover; }
-.frequency-art img[hidden] { display:none; }
+.frequency-art { position:relative;display:grid;place-items:center;aspect-ratio:1;background:var(--surface-subtle);color:var(--blue);overflow:hidden; }
+.frequency-record { width:75%;aspect-ratio:1;border-radius:50%;background:repeating-radial-gradient(circle,currentColor 0 1px,transparent 2px 5px);opacity:.65; }
+.frequency-rank { position:absolute;display:grid;place-items:center;width:30px;height:30px;background:var(--surface);border:1px solid currentColor;border-radius:50%;font:10px var(--font-mono); }
 .frequency-copy { min-width:0;display:grid;gap:7px; }
 .frequency-meta { font:10px/1.6 var(--font-mono);color:var(--muted); }
 .frequency-title { font:600 17px/1.55 var(--font-sans);overflow-wrap:anywhere; }
-.frequency-guest { font:11px/1.7 var(--font-sans);color:var(--muted); }
+.frequency-guest { font:12px/1.7 var(--font-sans);color:var(--muted);overflow-wrap:anywhere; }
 .frequency-disclaimer { margin:22px 0 0; }
-@media(max-width:1100px) { .frequency-list { grid-template-columns:1fr; }.frequency-link { grid-template-columns:140px minmax(0,1fr); } }
-@media(max-width:820px) {
-  .podcast-scene { --podcast-max-width:84vw;min-height:0; }
-  .voices-photo-stage { min-height:0; }
-  .podcast-toolbar { margin-top:16px; }
-  .frequency-link { grid-template-columns:100px minmax(0,1fr);gap:14px;padding:20px 0; }
-  .frequency-title { font-size:16px; }
-}
+.frequency-disclaimer a { display:inline-flex;align-items:center;min-height:44px;margin-left:14px;color:inherit;text-underline-offset:4px; }
+.frequency-retry { padding:10px 16px;min-height:44px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:12px var(--font-sans);cursor:pointer; }
+@media(max-width:1100px) { .frequency-list { grid-template-columns:1fr; } }
+@media(max-width:820px) { .frequency-link { grid-template-columns:100px minmax(0,1fr);gap:16px; }.frequency-title { font-size:16px; } }
 @media(max-width:380px) { .frequency-link { grid-template-columns:80px minmax(0,1fr);gap:12px; } }
-@media(max-height:600px) {
-  .voices-photo-stage { padding-bottom:16px; }
-  .voices-sticky-panel .section-title { font-size:34px; }
-  .voices-sticky-panel .chapter { display:block;padding-top:10px; }
-  .voices-sticky-panel .chapter-number { display:none; }
-  .voices-sticky-panel .microcopy { font-size:12px;margin-top:12px; }
-  .voices-sticky-panel .chapter-body { padding-top:8px; }
-  .voices-sticky-panel .kicker { display:none; }
-  .podcast-toolbar { margin-top:10px;margin-bottom:8px; }
-  .podcast-scene figcaption { padding-top:8px; }
-  .podcast-scene a { font-size:16px; }
-  .podcast-scene-label { font-size:9px;margin-bottom:4px; }
-  .podcast-status { font-size:10px;margin-top:2px; }
-}
-@media(prefers-reduced-motion:reduce) {
-  .podcast-scene { min-height:0; }
-  .voices-photo-track { gap:30px;width:auto; }
-  .podcast-scene { width:auto; }
-}
 </style></head><body>
 <div class="home-intro">
   <p>コミュニティの入口へ、ようこそ。</p><span>COMMUNITY GATEWAY</span>
@@ -1215,45 +1156,51 @@ html[data-theme="dark"] .voices-fragment,html[data-theme="dark"] .voices-observe
           <div class="chapter-body">
             <p class="kicker">Voices / Podcast</p>
             <h2 class="section-title" id="voices-title">VOICES / PODCAST</h2>
-            <p class="microcopy">Joi Itoとゲストの対話から、ランダムな一場面。映像は無音で流れます。</p>
-            <div class="podcast-toolbar"><span>JOI ITO’S PODCAST · SOUND OFF</span><button type="button" data-podcast-toggle aria-pressed="true">映像を無音で再開</button></div></div>
-        </div>
-        <div class="voices-photo-stage" aria-label="Joi Itoのポッドキャスト・無音プレビュー">
+            <div class="voices-photo-stage" aria-label="Voices horizontal scene strip">
               <div class="voices-photo-track" data-photo-strip>
-                <figure class="voices-scene podcast-scene" data-podcast-scene aria-label="ポッドキャストの場面 1">
-                  <div class="podcast-screen"><div data-podcast-player></div></div>
-                  <figcaption>
-                    <p class="podcast-scene-label" data-podcast-label>JOI ITO’S PODCAST</p>
-                    <a data-podcast-link href="https://www.youtube.com/@joiito/podcasts" target="_blank" rel="noopener noreferrer">YouTubeでこの回を見る ↗</a>
-                    <p class="podcast-status" data-podcast-status>無音プレビューを準備しています</p>
-                  </figcaption>
-                </figure>
-                <figure class="voices-scene podcast-scene" data-podcast-scene aria-label="ポッドキャストの場面 2">
-                  <div class="podcast-screen"><div data-podcast-player></div></div>
-                  <figcaption>
-                    <p class="podcast-scene-label" data-podcast-label>JOI ITO’S PODCAST</p>
-                    <a data-podcast-link href="https://www.youtube.com/@joiito/podcasts" target="_blank" rel="noopener noreferrer">YouTubeでこの回を見る ↗</a>
-                    <p class="podcast-status" data-podcast-status>無音プレビューを準備しています</p>
-                  </figcaption>
-                </figure>
-                <figure class="voices-scene podcast-scene" data-podcast-scene aria-label="ポッドキャストの場面 3">
-                  <div class="podcast-screen"><div data-podcast-player></div></div>
-                  <figcaption>
-                    <p class="podcast-scene-label" data-podcast-label>JOI ITO’S PODCAST</p>
-                    <a data-podcast-link href="https://www.youtube.com/@joiito/podcasts" target="_blank" rel="noopener noreferrer">YouTubeでこの回を見る ↗</a>
-                    <p class="podcast-status" data-podcast-status>無音プレビューを準備しています</p>
-                  </figcaption>
-                </figure>
-                <figure class="voices-scene podcast-scene" data-podcast-scene aria-label="ポッドキャストの場面 4">
-                  <div class="podcast-screen"><div data-podcast-player></div></div>
-                  <figcaption>
-                    <p class="podcast-scene-label" data-podcast-label>JOI ITO’S PODCAST</p>
-                    <a data-podcast-link href="https://www.youtube.com/@joiito/podcasts" target="_blank" rel="noopener noreferrer">YouTubeでこの回を見る ↗</a>
-                    <p class="podcast-status" data-podcast-status>無音プレビューを準備しています</p>
-                  </figcaption>
-                </figure>
+                <div class="voices-scene" aria-label="Scene 1 ASCII signal">
+                  <pre class="voices-ascii" aria-hidden="true">
+          H E N K A K U
+        +---------------+
+   -----|  . . . . . .  |-----
+        |  .  VOICE  .  |
+        |  .  ROOM   .  |
+   -----|  . . . . . .  |-----
+        +---------------+
+             //  //  //
+                  </pre>
+                  <p class="voices-scene-title">LISTENING ROOM</p>
+                </div>
+                <div class="voices-scene" aria-label="Scene 2 fragmented image">
+                  <div class="voices-fragments" aria-hidden="true">
+                    <div class="voices-fragment"><img src="thumbs/riso.png" alt="" loading="lazy" /></div>
+                    <div class="voices-fragment"><img src="thumbs/hero.png" alt="" loading="lazy" /></div>
+                    <div class="voices-fragment"><img src="thumbs/liquid.png" alt="" loading="lazy" /></div>
+                  </div>
+                  <p class="voices-scene-title">FRAGMENTS</p>
+                </div>
+                <div class="voices-scene" aria-label="Scene 3 observed image">
+                  <div class="voices-observed" aria-hidden="true">
+                    <img src="thumbs/hero.png" alt="" loading="lazy" />
+                    <div class="voices-observed-lines"></div>
+                  </div>
+                  <pre class="voices-ascii" aria-hidden="true">
+OBSERVE: 02
+SIGNAL:  ACTIVE
+LINES:   COMMUNITY / VOICE / TRACE
+                  </pre>
+                  <p class="voices-scene-title">OBSERVED</p>
+                </div>
+                <div class="voices-scene" aria-label="Scene 4 initiation entrance">
+                  <div class="voices-gate" aria-hidden="true">
+                    <div class="voices-gate-mark"><span>next signal<br />initiation threshold</span></div>
+                  </div>
+                  <p class="voices-scene-title">ENTER</p>
+                </div>
               </div>
             </div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="voices-flow-copy" aria-label="Joi Itoのポッドキャスト紹介">
@@ -1261,7 +1208,24 @@ html[data-theme="dark"] .voices-fragment,html[data-theme="dark"] .voices-observe
     </div>
   </section>
 
-
+  <section class="gateway-section placeholder-section" data-gateway-section="03-frequency" aria-labelledby="frequency-title">
+    <div class="gateway-panel placeholder-panel reveal-once" data-panel-label="PLAYED">
+      <div class="chapter">
+        <span class="chapter-number">03</span>
+        <div class="chapter-body">
+          <p class="kicker">Frequency / Recently Played</p>
+          <h2 class="section-title" id="frequency-title">FREQUENCY</h2>
+          <p class="microcopy">世界のどこかで聴かれている音楽から、次の一曲に出会う。</p>
+          <p class="frequency-summary">ListenBrainz / WEEKLY TOP TRACKS <span data-frequency-period></span></p>
+          <p class="frequency-status" data-frequency-status role="status">音楽ランキングを取得中…</p>
+          <ol class="frequency-list" data-track-list aria-label="ListenBrainzの週間音楽ランキング" aria-busy="true"></ol>
+          <button class="frequency-retry" data-frequency-retry type="button" hidden>もう一度取得</button>
+          <p class="frequency-disclaimer">ListenBrainz全体の公開ランキングです。<a href="https://listenbrainz.org/statistics/?range=week" target="_blank" rel="noopener noreferrer">ListenBrainzで見る ↗</a><br />（将来的にはコミュニティメンバーが聞いている曲が共有されるかも！？）</p>
+          <noscript>音楽ランキングの表示にはJavaScriptが必要です。ListenBrainzのリンクから確認できます。</noscript>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <section class="gateway-section threshold-section" data-gateway-section="04-threshold" aria-labelledby="threshold-title">
     <div class="gateway-panel threshold-panel">
@@ -1426,5 +1390,17 @@ window.addEventListener('resize', updatePulseCards);
 reduceMotion.addEventListener('change', updatePulseCards);
 updatePulseCards();
 
+// Let the owning app route Gateway links so previews remain inside /demo.
+document.addEventListener('click', (event) => {
+  const link = event.target.closest?.('a[target="_top"]');
+  if (!link || window.parent === window) return;
+  const url = new URL(link.href, location.href);
+  const routes = { home:'/', setup:'/setup', journey:'/initiation', community:'/community', passport:'/passport' };
+  const destination = url.hash.slice(1) || Object.keys(routes).find((name) => routes[name] === url.pathname);
+  if (url.origin !== location.origin || !Object.hasOwn(routes, destination)) return;
+  event.preventDefault();
+  window.parent.postMessage({ type:'henkaku:home:navigate', screen:destination }, location.origin);
+});
+
 document.querySelector('.home-replay').addEventListener('click', () => window.parent.postMessage({ type:'henkaku:intro:replay' }, location.origin));
-</script><script src="./podcast-preview.js"></script></body></html>
+</script><script src="./frequency.js"></script></body></html>

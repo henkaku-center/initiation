@@ -9,38 +9,7 @@ import {
 import { dispatchDemo, navigateDemo } from "@/lib/demo/useDemo";
 import "./explorer-scene.css";
 
-const stages = [
-  {
-    title: "ARRIVAL",
-    japanese: "まだ何なのか、分からない世界。",
-    caption: "少し立ち止まって、周りを見てみよう。",
-    image: "night",
-  },
-  {
-    title: "SIGNALS",
-    japanese: "ここでは、なんと呼ばれたい？",
-    caption: "あなたの名前が、この世界の最初のしるしになる。",
-    image: "dusk",
-  },
-  {
-    title: "COMMUNITY",
-    japanese: "何か、気になるものはある？",
-    caption: "似ていても、違っていても。その好奇心が出会いになる。",
-    image: "dusk",
-  },
-  {
-    title: "YOUR MOVE",
-    japanese: "あなたの中で、動きはじめたこと。",
-    caption: "大きな目標じゃなくていい。まだ、小さな問いでも。",
-    image: "night",
-  },
-  {
-    title: "HENKAKU",
-    japanese: "持ち寄ることで、世界は変わる。",
-    caption: "あなたのはじまりを、この場所へ。",
-    image: "dusk",
-  },
-];
+import { journeyScenes as stages } from "@/lib/portal/journeyScenes";
 
 export function DemoJourney({
   state,
@@ -54,13 +23,15 @@ export function DemoJourney({
   toggleSound: () => void;
 }) {
   const [look, setLook] = useState(0);
+  const [reviewing, setReviewing] = useState(false);
+  const showComplete = state.completed && !reviewing;
   const question = state.finalQuestion;
   const cardRef = useRef<HTMLDivElement>(null);
   const welcomeRef = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
-    const target = state.completed ? welcomeRef.current : cardRef.current;
+    const target = showComplete ? welcomeRef.current : cardRef.current;
     target?.focus({ preventScroll: true });
-  }, [state.stage, question, state.completed]);
+  }, [state.stage, question, showComplete]);
   const scene = stages[state.stage];
   const update = (
     key: "name" | "curiosity" | "experience" | "readiness" | "contribution",
@@ -70,6 +41,7 @@ export function DemoJourney({
     dispatchDemo({
       type: state.stage === 4 && question === 2 ? "finish" : "nextStage",
     });
+    if (state.stage === 4 && question === 2) setReviewing(false);
     setLook(0);
   };
   const back = () => {
@@ -97,10 +69,10 @@ export function DemoJourney({
 
   return (
     <section
-      className={`pd-game ${state.completed ? "pd-game-complete" : "pd-game-journey"}`}
+      className={`pd-game ${showComplete ? "pd-game-complete" : "pd-game-journey"}`}
       aria-label="Initiationの旅"
     >
-      {state.completed && (
+      {showComplete && (
         <>
           <div className="pd-game-world pd-world-dusk" aria-hidden="true" />
           <div className="pd-game-shade" aria-hidden="true" />
@@ -112,16 +84,16 @@ export function DemoJourney({
         </button>
         <div
           className="pd-game-progress"
-          aria-label={`${state.completed ? 5 : state.stage + 1}/5 ステージ`}
+          aria-label={`${showComplete ? 5 : state.stage + 1}/5 ステージ`}
         >
           {stages.map((s, i) => (
             <span
               key={s.title}
               className={
-                state.completed || i <= state.stage ? "is-reached" : ""
+                showComplete || i <= state.stage ? "is-reached" : ""
               }
               aria-current={
-                !state.completed && i === state.stage ? "step" : undefined
+                !showComplete && i === state.stage ? "step" : undefined
               }
             >
               <b>{String(i + 1).padStart(2, "0")}</b>
@@ -138,7 +110,7 @@ export function DemoJourney({
           {sound ? "Ⅱ" : "♫"} <span>SOUND {sound ? "ON" : "OFF"}</span>
         </button>
       </div>
-      {state.completed ? (
+      {showComplete ? (
         <div className="pd-welcome">
           <div className="pd-welcome-symbol">✳</div>
           <p className="pd-mono">THIS IS YOUR BEGINNING.</p>
@@ -167,6 +139,11 @@ export function DemoJourney({
           >
             あなたのパスポートへ <span>↗</span>
           </button>
+          <button className="pd-text-button" onClick={() => {
+            dispatchDemo({ type: "revisitJourney" });
+            setReviewing(true);
+            setLook(0);
+          }}>回答を見直す</button>
           <p className="pd-game-small">
             ここまでの回答は、このブラウザ内に保存されています。
           </p>

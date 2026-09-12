@@ -13,6 +13,15 @@ const application: Application = { id: "a1", memberId: "m1", reviewStatus: "appr
 const render = (app: Application | null, complete = true, reason: string | null = null) => renderToStaticMarkup(createElement(PortalPassport, { application: app, complete, reviewReason: reason }));
 
 describe("portal passport", () => {
+  it("keeps the four illustrated doors and wallet details from the reference", () => {
+    const html = render(null, false);
+    expect(html).toContain("pd-reward-grid");
+    expect(html).toContain("pd-nft-generated");
+    for (const name of ["allowlist", "token", "membership"]) expect(html).toContain(`passport-${name}.webp`);
+    expect(html).toContain("YOUR SIGNALS");
+    expect(html).toContain("WALLET STATUS");
+    expect(html).toContain("まずは、小さな旅に出よう。");
+  });
   it("keeps approval distinct from adding to Allowlist and distributing tokens", () => {
     const html = render(application);
     expect(html).toContain("承認済み");

@@ -7,7 +7,7 @@ import { polygon } from "wagmi/chains";
 import { henkakuTokenConfig } from "@/lib/henkakuToken";
 import { buttonStyles } from "@/lib/ui";
 
-export function WalletSetup() {
+export function WalletSetup({ part }: { part?: "network" | "token" } = {}) {
   const { chainId, isConnected } = useAccount();
   const { switchChain, error: switchError, isPending: switching } = useSwitchChain();
   const {
@@ -32,7 +32,7 @@ export function WalletSetup() {
 
   return (
     <ol className="space-y-3">
-      <li className="rounded-lg border border-border bg-surface-hover p-3 text-sm">
+      {part !== "token" && <li className="portal-wallet-step">
         {onPolygon ? (
           <p className="font-semibold text-emerald-700 dark:text-emerald-300">✓ Polygon に接続済み</p>
         ) : (
@@ -50,8 +50,8 @@ export function WalletSetup() {
             切り替えできませんでした。もう一度お試しください。
           </p>
         )}
-      </li>
-      <li className="rounded-lg border border-border bg-surface-hover p-3 text-sm">
+      </li>}
+      {part !== "network" && <li className="portal-wallet-step">
         {token ? <>
         <button
           className={buttonStyles.secondary}
@@ -82,7 +82,7 @@ export function WalletSetup() {
           </p>
         )}
         </> : <p>トークン表示の追加は準備中です。接続とサインインは進められます。</p>}
-      </li>
+      </li>}
     </ol>
   );
 }

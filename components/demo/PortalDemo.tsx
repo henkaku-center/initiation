@@ -42,7 +42,7 @@ export function DemoMark() {
   );
 }
 
-export function PortalDemo() {
+export function PortalDemo({ applicationHref }: { applicationHref?: string } = {}) {
   const { state, persistent } = useDemo();
   const screen = useDemoScreen();
   const [still, setStill] = useState(false);
@@ -126,12 +126,6 @@ export function PortalDemo() {
       >
         本文へスキップ
       </a>
-      <div className="pd-demo-notice">
-        <span className="pd-live-dot" /> EXPERIENCE DEMO{" "}
-        <span>
-          ウォレット・申請・報酬は模擬体験です。入力はこのブラウザ内に保存されます。
-        </span>
-      </div>
       <header className="pd-header">
         <a href="#home" className="pd-brand" aria-label="HENKAKU ポータルへ">
           <DemoMark />
@@ -189,6 +183,8 @@ export function PortalDemo() {
       <footer className="pd-footer">
         <span>HENKAKU COMMUNITY</span>
         <div>
+          {applicationHref && <a href={applicationHref}>通常アプリへ戻る ↗</a>}
+          <a href="https://henkaku-center.github.io/initiation/privacy-policy">プライバシーポリシー</a>
           <button onClick={() => setDialog("credits")}>素材・クレジット</button>
           <span>IN PERPETUAL BETA. TOGETHER.</span>
         </div>
@@ -228,7 +224,7 @@ export function PortalDemo() {
           onClose={() => setDialog(null)}
         >
           <p className="pd-dialog-description">
-            仮データを切り替えて、入口の見え方を確認できます。
+            仮データを切り替えて、入口の見え方を確認できます。ここでのウォレット・申請・報酬は模擬体験で、入力はこのブラウザ内だけに保存されます。
           </p>
           <div className="pd-scenario-grid">
             <button onClick={() => simulate("normal")}>

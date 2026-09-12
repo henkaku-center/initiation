@@ -39,10 +39,9 @@ export function CheckinButton({ checked = false }: { checked?: boolean }) {
   }
 
   return (
-    <div className="rounded-2xl border border-brand/20 bg-brand/5 p-6">
-      <p className="text-sm font-semibold text-foreground">今日の参加を記録します。</p>
-      <button className={`${buttonStyles.primary} mt-4`} type="button" disabled={pending || checked} onClick={submit}>
-        {pending ? "チェックイン中…" : checked ? "今日はチェックイン済みです" : "今日のチェックイン"}
+    <div className="portal-checkin-action">
+      <button className={`pd-checkin-button${checked ? " is-checked" : ""}`} type="button" disabled={pending || checked} onClick={submit} aria-label={pending ? "チェックイン中…" : checked ? "今日はチェックイン済みです" : "今日のチェックイン"}>
+        <span aria-hidden="true">{checked ? "✓" : "+"}</span>{pending ? "CHECKING IN…" : checked ? "CHECKED IN" : "CHECK IN"}
       </button>
       {message && <p className="mt-3 text-sm font-semibold text-foreground" role={failed ? "alert" : "status"}>{message}</p>}
       {failed && <button className={`${buttonStyles.secondary} mt-3`} type="button" onClick={() => router.refresh()}>状態を再取得</button>}

@@ -1,5 +1,7 @@
 # 2026-09-09: Frequencyをコミュニティ全体の再生履歴モックへ訂正
 
+2026-09-12追記: 現在のFREQUENCYは[ListenBrainzの公開音楽ランキング](./2026-09-12-frequency-listenbrainz.md)、PODCASTは[通常アプリ接続の決定](./2026-09-12-portal-app-integration.md)に従う。以下は切替前の判断記録。
+
 ユーザーの訂正に従い、ホームのFrequencyを「あなたの最近聴いた回」から「みんなの最近のプレイ履歴」に変更する。[従来の決定](2026-09-09-podcast-preview-and-listening-history.md)のFrequencyと保存方式に関する部分を置き換える。Voicesの動画プレビューは維持する。
 
 - 全員に共通の4件の架空再生イベントを、新しい順の固定サンプルとして表示する。

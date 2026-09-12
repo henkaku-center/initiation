@@ -46,9 +46,25 @@ ruby tests/browser/local-env.rb "$PORTAL_SERVICE_DIR" "$PORTAL_APP_DIR" npm test
 ## 確認する契約
 
 - 接続と認証の区別、Polygon切替、署名待ち・拒否、nonce/認証失敗と再試行。
-- 回答保存の通信失敗で入力が残ること、再読込後に未完了項目へ戻ること、4項目のサーバー記録と完走表示。
+- 回答保存の通信失敗で入力が残ること、再読込後に未完了項目へ戻ること、5問の回答または明示スキップのサーバー記録と完走表示、完走後の再編集・再読込。
 - 申請とチェックインの通信失敗・重複操作、日本時間のサーバー日付、従来URL。
 - アカウント切替・切断、未認証と管理者権限不足、デモlocalStorageの改変、不明な質問ID、他人のmember IDを追加したリクエスト。
 - 直接URL、戻る・進む、キーボードによる本文スキップとダイアログ、ライト／ダーク、360/768/1440px、横はみ出し。
 
 終了後はテスト用サーバーをCtrl+Cで止め、`supabase stop --workdir "$PORTAL_SERVICE_DIR"`でこの専用プロジェクトだけを停止します。共有開発サービスを停止・初期化しないでください。
+
+## 未認証の画面・デモ操作を確認する
+
+`portal-home.mjs`はウォレットを使わず、本人データの保存は行いません。ブラウザ側のセッション応答は未認証として用意し、外部リクエストを遮断します。通常buildのサーバーには上記の専用ローカル設定を渡します（本人用ページのServer Componentがセッションを確認するため）。通常buildを3102番、またはデモbuildを3103番で起動してから実行してください。同じ`.next`でbuildとサーバー起動を同時に行わないでください。
+
+```bash
+node tests/browser/portal-home.mjs "$PORTAL_PLAYWRIGHT_DIR" "$PORTAL_ARTIFACT_DIR" "$PORTAL_CHROMIUM_PATH" http://127.0.0.1:3102
+```
+
+360／768／1440pxのライト・ダークで、PODCASTの4場面・公式リンクとYouTube読み込みがないこと、FREQUENCYの公開音楽ランキング表示（APIはテストデータで置換）、フッターのプライバシーポリシーとTab移動を確認します。通常buildでは未認証のSetup・Initiation・Passport・Communityも撮影し、背景、カード構成、模擬操作内の移動、Journeyの再回答・再読込を確認します。デモbuildでは末尾のURLを`http://127.0.0.1:3103`に置き換えます。
+
+## FREQUENCY
+
+`node tests/browser/frequency.mjs <Playwrightディレクトリ> <成果物ディレクトリ> <Chromium実行ファイル>` は、3102番の生成Homeで取得中・429・再試行・204・4曲表示、出典、UTC期間、キーボードと360/768/1440pxのライト・ダークを検証します。音楽データは `music-fixture.mjs` で置換し、外部通信は遮断します。
+
+末尾に `--live` を付ける場合だけ、ListenBrainzの固定の公開APIへGETを1回許可します。認証情報・Cookie・Refererを送らないことも確認します。実際の集計結果は変わるため、通常の自動テストとライブ接続確認は分けて記録してください。

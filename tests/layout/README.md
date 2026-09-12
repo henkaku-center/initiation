@@ -1,5 +1,7 @@
 # Portal layout checks
 
+2026-09-12: 現在のPODCASTは4つの抽象場面、FREQUENCYはListenBrainzの音楽ランキングです。現行の自動検証は `tests/browser/` を使います。この文書内の9月9日のプレーヤー・架空再生履歴に関する結果は過去の記録です。
+
 ## JavaScript lazy loading — 2026-09-09
 
 The change is limited to JavaScript loading. In a fresh local browser tab, the intro and the top of home had zero YouTube API script tags and zero video iframe elements. Focusing a link in the Voices section brought it into view and inserted exactly one API script. The initial paused state remained unchanged. This browser could not connect to YouTube, so the existing official-thumbnail/link fallback was verified; successful player creation is covered by the runtime unit tests rather than claimed as a live playback check.

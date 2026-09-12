@@ -20,6 +20,8 @@ export function PortalShell({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.getElementById("portal-main")?.focus({ preventScroll: true });
   }, [pathname]);
+  if (pathname === "/demo") return children;
+  const demoScreen = pathname === "/apply" ? "passport" : pathname === "/checkin" ? "community" : Object.entries(portalRoutes).find(([, route]) => route === pathname)?.[0] ?? "home";
   return (
     <div className={`portal-demo portal-app${pathname === "/" ? " pd-reference-home" : ""}`}>
       <a className="pd-skip" href="#portal-main">本文へスキップ</a>
@@ -31,8 +33,8 @@ export function PortalShell({ children }: { children: ReactNode }) {
         <nav aria-label="メインメニュー">
           {([
             [portalRoutes.setup, "Setup"], [portalRoutes.community, "Community"],
-            [portalRoutes.journey, "Initiation"], [portalRoutes.passport, "My passport ↗"],
-          ] as const).map(([href, label]) => <Link key={href} href={href} aria-current={pathname === href || (href === "/passport" && pathname === "/apply") || (href === "/community" && pathname === "/checkin") ? "page" : undefined}>{label}</Link>)}
+            [portalRoutes.journey, "Initiation"], [portalRoutes.passport, "My passport"],
+          ] as const).map(([href, label]) => <Link key={href} href={href} className={href === "/passport" ? "pd-nav-passport" : undefined} aria-current={pathname === href || (href === "/passport" && pathname === "/apply") || (href === "/community" && pathname === "/checkin") ? "page" : undefined}>{label}{href === "/passport" && <span>↗</span>}</Link>)}
         </nav>
         <ThemeToggle />
       </header>
@@ -40,8 +42,13 @@ export function PortalShell({ children }: { children: ReactNode }) {
       <div id="portal-main" tabIndex={-1} className={pathname === "/" ? "portal-home" : "portal-content"}>{children}</div>
       <footer className="pd-footer">
         <span>HENKAKU COMMUNITY</span>
-        <div><button type="button" onClick={() => setCredits(true)}>素材・クレジット</button><span>IN PERPETUAL BETA. TOGETHER.</span></div>
+        <div>
+          <a href="https://henkaku-center.github.io/initiation/privacy-policy">プライバシーポリシー</a>
+          <button type="button" onClick={() => setCredits(true)}>素材・クレジット</button>
+          <span>IN PERPETUAL BETA. TOGETHER.</span>
+        </div>
       </footer>
+      <Link className="pd-demo-controls" href={`/demo#${demoScreen}`}><span>◇</span> デモ操作</Link>
       {credits && <DemoDialog title="素材・クレジット" onClose={() => setCredits(false)}>
         <div className="pd-credits">
           <h3>Backgrounds</h3><p>夜の遺跡・夕暮れの都市、CommunityとPassportの画像：OpenAI image_genによる生成素材。HENKAKU portal demo / CC BY 4.0（権利が成立する範囲）。</p>

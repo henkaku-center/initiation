@@ -13,7 +13,7 @@ HENKAKUコミュニティへの参加を、ウォレット準備からInitiation
 画面上部のメニューから、次の順番で進めます。
 
 1. **Setup** (`/setup`): ウォレット接続、Polygon確認、SIWEサインイン。HENKAKUの表示追加は任意
-2. **Initiation** (`/initiation`): 既存4項目への回答とクエストの完了。保存した進捗から再開できます
+2. **Initiation** (`/initiation`): 関心や好奇心など5つの任意の問いを進めます。回答の保存・再開・再編集ができます
 3. **Community** (`/community`、従来の`/checkin`): 日本時間で1日1回のチェックインと本人の履歴
 4. **Passport** (`/passport`、従来の`/apply`): Allowlist追加とHENKAKU配布の申請・状態表示
 5. **運営** (`/admin`): 管理者が審査・Allowlist・配布状態を更新

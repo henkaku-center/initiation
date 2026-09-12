@@ -73,7 +73,8 @@ export function ReferenceGateway({ paused, onNavigate, application = false }: {
       if (event.origin !== location.origin || leaving) return;
       if (event.source === homepage.current?.contentWindow && event.data?.type === "henkaku:podcast:ready") syncHomeState();
       if (event.source === homepage.current?.contentWindow && event.data?.type === "henkaku:intro:replay") setReplaying(true);
-      if (event.source === intro.current?.contentWindow && event.data?.type === "henkaku:intro:navigate" && typeof event.data.screen === "string" && Object.hasOwn(portalRoutes, event.data.screen)) setDestination(event.data.screen);
+      const navigation = (event.source === intro.current?.contentWindow && event.data?.type === "henkaku:intro:navigate") || (event.source === homepage.current?.contentWindow && event.data?.type === "henkaku:home:navigate");
+      if (navigation && typeof event.data.screen === "string" && Object.hasOwn(portalRoutes, event.data.screen)) setDestination(event.data.screen);
     };
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
