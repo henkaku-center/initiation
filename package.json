@@ -14,7 +14,8 @@
     "test": "vitest run",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:preview": "vitepress preview docs",
+    "docs:check": "tsx scripts/docs/check-translation.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.115.0",

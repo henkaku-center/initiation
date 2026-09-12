@@ -1,5 +1,7 @@
 # HENKAKU Initiation
 
+[English](README.en.md)
+
 HENKAKUコミュニティへの参加を、ウォレット準備からInitiation、チェックイン、申請まで一つの流れで案内するNext.jsアプリです。
 
 現在はフェーズ1 MVP-1のローカル実装です。承認・Allowlist追加・HENKAKU配布は人が行い、AI機能と本番デプロイはまだ保留しています。

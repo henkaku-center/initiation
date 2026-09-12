@@ -5,6 +5,9 @@ name: Docs
 on:
   pull_request:
     paths:
+      - "README*.md"
+      - "scripts/docs/**"
+      - "tests/unit/docs/**"
       - "docs/**"
       - ".github/workflows/docs.yml"
       - "package.json"
@@ -12,6 +15,9 @@ on:
   push:
     branches: [main]
     paths:
+      - "README*.md"
+      - "scripts/docs/**"
+      - "tests/unit/docs/**"
       - "docs/**"
       - ".github/workflows/docs.yml"
       - "package.json"
@@ -46,6 +52,19 @@ jobs:
           cache: npm
 
       - run: npm ci
+
+      - run: npx vitest run tests/unit/docs
+
+      # 翻訳が原文と同じ構造を保っているかを見る。手元での実行を忘れてもここで捕まえる。
+      # トップページは翻訳ではなく個別に書くため対象外(docs/guide/translating.md)。
+      - name: check translations
+        run: |
+          shopt -s globstar nullglob
+          for file in docs/en/**/*.md; do
+            [ "$file" = "docs/en/index.md" ] && continue
+            npm run docs:check -- "$file"
+          done
+          npm run docs:check -- README.en.md
 
       # リンク切れがあるとVitePressのビルドが失敗するため、これが検証を兼ねる
       - run: npm run docs:build

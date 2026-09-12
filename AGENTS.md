@@ -17,6 +17,7 @@ HENKAKU Initiation。docs/development-plan.md が全体計画、docs/superpowers
 ルール本体は各ファイルにあり、ここへは複製しない(片方だけ更新されて食い違うため)。
 
 - `docs/guide/contributing.md` — 作業手順とPull Requestの書き方。着手前にIssueへコメントで宣言する、PR本文に「変更理由 / 検証内容 / 未解決の判断」を書く、UI変更にはスクリーンショットか確認手順を添える
+- `docs/guide/translating.md` — 英語版(`docs/en/`・`README.en.md`)への翻訳手順。翻訳を依頼されたら「AIへの手順」の節に従う。翻訳のみの変更ではテスト追加は不要で、検証は `npm run docs:check -- <訳文のパス>` と `npm run docs:build` を実行する。検査ツールや設定コードの変更は通常のテスト方針に従う。結果は依頼者へ日本語で報告する
 - `CONTRIBUTING.md` — ライセンスと素材の扱い。プロジェクトへ提供する創作物は CC BY 4.0 での利用・改変・再配布の許諾と帰属表示を確認し、`CREDITS.md` へ記録する。第三者素材は出典と元のライセンスを `CREDITS.md` へ記録し、リポジトリのライセンス区分との両立性を確認する。音源は作詞作曲と原盤の権利を両方確認する
 - `docs/guide/architecture.md` — 設計の意図と制約。DBアクセスはRepository経由のみ、ヘッダーで `cookies()` を読まない(全ページが動的になる)、レート制限は認可の直後・処理の前に消費する
 - `gotchas.md` — 実装中に踏むと時間を溶かす罠。wagmiのSSR設定、App Routerのページ配置、`wagmi/connectors` のbarrel import、さくらAIの環境変数
