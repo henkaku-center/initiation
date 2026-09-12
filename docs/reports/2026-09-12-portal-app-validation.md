@@ -1,112 +1,118 @@
 # 2026-09-12 ポータル通常アプリ接続の検証記録
 
-## 対象と結果
+## 対象
 
-既存4項目のID・必須条件・完走判定を維持して、新UIから実認証、保存・再開、完走、申請、日次チェックインまで接続した。追加migration、依存バージョン変更、GitHubへの書き込み、公開環境の変更は行っていない。
+- 作業開始時のbase: `e08755509c23ac651e25a8060aa6e755456871d6`。開始時はmain、作業ツリーはクリーン。
+- [PR #102](https://github.com/henkaku-center/initiation/pull/102)は2026-09-12 01:54:29 UTCにマージ済み。[取り込みレビュー](https://github.com/henkaku-center/initiation/pull/102#pullrequestreview-5184717678)を確認して着手した。
+- 参照SHA `f18db749221b59285809e0b544eec772e82351a7` の成功結果は今回の検証に使っていない。
+- **Local-verifiedの実装SHA: `cca6e140c34d27f025cdff828af0b54c6a000b0d`**。初回接続のコミット `7e7ad85` に、デザイン復元、デモ版質問の採用、再回答、ListenBrainzを加えた実装。
+- ソースSHA-256: `e5d5ce0c5e5525cf8129503f15561214b33d2ccabe35c43007e762e4d3abcfe6`。パス順に並べた327ファイルのSHA-256一覧のハッシュ。envファイルと本報告書は除外し、公開 `.env.example` はGitのコミットから用意した。検証コピーの327ファイルとの一致を確認した。本報告書の追記コミットは実装を変更しない。
 
-- 作業開始時のbase / ローカルHEAD: `e08755509c23ac651e25a8060aa6e755456871d6`。開始時はmain、作業ツリーはクリーン。
-- [PR #102](https://github.com/henkaku-center/initiation/pull/102)は2026-09-12 01:54:29 UTCにマージ済み。[取り込みレビュー](https://github.com/henkaku-center/initiation/pull/102#pullrequestreview-5184717678)を確認した。
-- 参照PR HEAD: `f18db749221b59285809e0b544eec772e82351a7`。この過去SHAのテスト結果は今回の結果に含めていない。
-- **検証対象はbase SHAに本作業の未コミット変更を加えたソース**。コミット済みHEADだけの検証結果ではない。
-- ソース内容のSHA-256: `4052ce830193f8a16b992d7c858d772dcb4a1a46ae5da85d37e0a8aa232ca972`。パス順に並べた311ファイルのSHA-256一覧をハッシュ化した。envファイルと本報告書は除外し、公開`.env.example`だけはbaseから検証コピーへ用意した。検証コピーとの311ファイルの一致を確認済み。
+## 変更と実処理への接続
 
-## 変更したファイルと接続範囲
-
-| 変更単位 | 対象ファイル | 結果 |
+| 範囲 | 主な対象ファイル | 結果 |
 | --- | --- | --- |
-| 通常の入口・共通UI | `app/{layout,page,error}.tsx`、`components/portal/{PortalShell,PortalHome}.tsx`、`components/portal/portal.css`、`lib/portal/navigation.ts` | 実Providersの内側にポータルを配置。通常URLと旧ハッシュに対応。読み込み失敗の再試行を用意 |
-| Home・Intro生成 | `components/demo/{ReferenceGatewayView,PortalDemo}.tsx`、`scripts/demo/build-{gateway,bubble-intro}.mjs`、`public/demo-assets/gateway/{app-index,app-bubble-multi,app-intro,bubble-multi}.html` | 生成元から通常用HTMLを作成。両イントロの通常URLに対応し、架空の再生履歴を通常Homeから除外 |
-| Setup・認証 | `app/setup/page.tsx`、`components/portal/PortalSetup.tsx`、`components/{ConnectWallet,WalletSetup,SignInWithEthereum,SessionStatus}.tsx`、`lib/auth/signInWithWallet.ts`、`lib/useSession.ts`、`lib/useWalletSessionGuard.ts` | 接続とSIWEを別表示。Polygon、署名待ち・拒否、認証・取得失敗、再試行、切断・切替を扱う |
-| 本人のデータ表示 | `components/portal/MemberBoundary.tsx`、`lib/domain/walletSession.ts`、`app/admin/page.tsx`ほか本人用ページ | 接続中のウォレット・サーバーセッション・ページ所有者が一致する場合だけ表示。切替後は古い入力を破棄 |
-| Initiation | `app/initiation/page.tsx`、`components/portal/PortalJourney.tsx` | `saveStep`、`saveDisplayName`、Repositoryを再利用。保存成功後に進め、サーバー記録から再開・完走判定 |
-| Passport・申請 | `app/{apply,passport}/page.tsx`、`components/portal/PortalPassport.tsx`、`components/ApplyForm.tsx` | 既存の完走チェック・重複防止・申請状態・rejected後の再申請へ接続 |
-| Community | `app/{checkin,community}/page.tsx`、`components/portal/PortalCommunity.tsx`、`components/CheckinButton.tsx` | 既存の日次チェックインと本人の履歴。JSTの日付境界で再取得し、DBが日付と一意性を保証 |
-| 配色・ビルド境界 | `app/globals.css`、`package.json`、`vercel.json`、`proxy.ts`、`lib/demo/boundary.ts` | 通常buildを既定にし、noindexとデモのAPI/POST遮断を維持。フォームのdark指定も手動の配色へ追従 |
-| テスト | `tests/unit/lib/portal/*.test.ts`、`tests/unit/lib/siwe.test.ts`、`tests/browser/{portal.mjs,local-env.rb,README.md}` | 各機能の失敗→成功、実SIWEとDBを通すブラウザ検証、既存経路の回帰確認 |
-| 文書 | `README.md`、`docs/.vitepress/config.ts`、`docs/guide/portal-{app,demo}.md`、`docs/decisions/2026-09-12-portal-app-integration.md`、`docs/superpowers/plans/2026-09-12-portal-app-integration.md`、本報告書 | 調査・質問対応・公開切替・ロールバック・未接続範囲を記録 |
+| 共通入口・URL | `app/{layout,page,error}.tsx`、`components/portal/{PortalShell,PortalHome}.tsx`、`lib/portal/navigation.ts` | 実Providers内で新UIを表示。5画面の通常URL・直接表示・再読込・旧ハッシュ・戻る/進むへ対応 |
+| Home・イントロ | `scripts/gateway/build-*.mjs`、`assets/reference/gateway/`、`components/demo/ReferenceGatewayView.tsx`、生成HTML | 編集元から生成。PODCASTは参照Gatewayの4つの抽象場面と横スクロール、公式リンクを維持。YouTube埋め込みと追加紹介文を削除 |
+| FREQUENCY | `assets/reference/gateway/frequency.js`、`podcast.css`、生成 `frequency.js` | ListenBrainzの公開週間上位4曲、アーティスト、再生数、UTC集計期間・更新日。取得中・失敗・再試行・空状態を区別。依頼された将来の音楽共有の一文を追記 |
+| Setup | `components/portal/{PortalSetup,PortalWalletStatus}.tsx`、`components/{ConnectWallet,WalletSetup,SignInWithEthereum,SessionStatus}.tsx`、`lib/auth/signInWithWallet.ts` | 元の2カラムと実接続・Polygon確認・SIWE。接続と認証を別表示。署名待ち/拒否、認証/取得失敗、再試行を扱う |
+| 本人の状態 | `components/portal/MemberBoundary.tsx`、`lib/{useSession,useWalletSessionGuard}.ts`、`lib/domain/walletSession.ts` | ウォレット・セッション・表示データ所有者の一致を確認。切替・切断時に旧データを隠し、古い入力を破棄 |
+| Initiation | `app/initiation/{page,actions}.tsx/ts`、`components/portal/PortalJourney.tsx`、`lib/initiation/{journey,complete}.ts`、`lib/portal/journeyScenes.ts` | 元の背景・探索・導入、任意の呼び名とデモ版5問。型付き回答/明示スキップを保存・再開・再編集。サーバー完走判定、旧4項目記録・完走済み申請資格の互換性 |
+| Passport | `app/{apply,passport}/page.tsx`、`components/portal/PortalPassport.tsx`、`components/ApplyForm.tsx` | 元の4カード。既存申請・rejected後の再申請、審査/Allowlist/配布を実状態へ接続。NFT保有を条件にしない |
+| Community | `app/{checkin,community}/page.tsx`、`components/portal/PortalCommunity.tsx`、`components/CheckinButton.tsx` | 本人の日次チェックイン・履歴。JST境界と1人1日1件をDBで保証。活動カードはサンプルと明記 |
+| デモと配色 | `app/demo/page.tsx`、`components/demo/{PortalDemo,DemoJourney,DemoCommunity}.tsx`、`lib/demo/state.ts`、各CSS | `/demo`を模擬操作として維持し、再回答を追加。EXPERIENCE DEMOの帯を削除。配色のみ端末設定として分離。両フッターにプライバシーポリシー |
+| 公開設定 | `package.json`、`vercel.json`、`proxy.ts`、`lib/demo/boundary.ts` | 通常buildを既定、生成パスを `scripts/gateway/` に変更。noindexとデモAPI/POST遮断を維持 |
+| テスト・文書 | `tests/unit/`、`tests/integration/`、`tests/browser/`、`tests/layout/`、`docs/guide/portal-*.md`、関連決定文書 | TDD、実SIWE・ローカルDBを通すブラウザ検証、公開切替・互換性・ロールバックの記録 |
 
-既存の認証API、質問定義、完走関数、Server Actions、Repository、管理者の審査ルール、Supabase migrationは実処理として再利用した。一般画面に模擬審査は配置していない。既存のライセンス・著作権・素材クレジットは保持した。
+未認証でもJourneyの背景、Passportの4カード、Communityの構成を表示する。本人データの取得・保存・申請は認証後に行う。Repository、既存認証API、管理者認可、審査モデルとmigrationを再利用し、一般ユーザーに模擬審査を与えていない。ライセンス・著作権表示を保持し、ListenBrainzのCC0データの出典をCREDITSへ追加した。
 
 ## Local-verified
 
-Node **22.23.1**、Next.js **16.3.4**、Vitest **5.0.0**を使用。既存の3000番開発サーバーと`.next`を共有しないよう、`/private/tmp/henkaku-portal-verification`へソースをコピーした。既存`.env.local`とシェルの認証情報は引き継いでいない。
+Node **22.23.1**、Next.js **16.3.4**、Vitest **5.0.0**、Chromium **151.0.7922.34**。既存3000番の開発サーバーと `.next` を共有せず、専用コピーで検証した。既存 `.env.local`、本番・ステージングの認証情報は使用していない。
 
-Supabase CLI **2.112.0**で専用プロジェクト`portal-verification`を起動した（API 65421、DB 65422）。既存migrationをこの使い捨てローカルDBへ適用した。共有開発DBのresetや、本番・ステージングへの接続は行っていない。
+Supabase CLI **2.112.0**、専用ローカルプロジェクト `portal-verification`（API 65421、DB 65422）を使用。既存3migrationをこのDBへ適用した。共有開発DBのreset、本番DBへの適用は行っていない。
 
-| 実行コマンド | 実際の結果 |
+| コマンド | 実際の結果 |
 | --- | --- |
-| `npm ci` | 成功。lockfileに合わせた依存を隔離コピーへ導入 |
-| `npm run build` | 成功。通常モードで本人用ページと認証APIは動的ルート |
-| `npx tsc --noEmit` | 成功（通常build後） |
+| `npm ci` | 成功。lockfile一致の依存を隔離コピーへ導入。依存バージョン変更なし |
+| `npm run build` | 成功。通常の認証API・本人用画面が動的ルートになることを確認 |
+| `npx tsc --noEmit` | 成功、通常build後 |
 | `npm run lint` | 成功、エラー・警告なし |
-| `npm test` | **46ファイル、356件成功**。単体335件＋ローカルSupabase統合21件。最終実行12:21 JST |
-| `npm run build:demo` | 成功。サービス用の環境変数なしで成立 |
-| `npm audit --omit=dev --audit-level=high` | 成功、対象となる本番依存の脆弱性0件 |
-| `npm run docs:build` | 成功。決定文書から配信対象外の実装計画へのリンクはGitHub参照へ修正 |
-| `ruby -c tests/browser/local-env.rb` | `Syntax OK`。実際のサーバー起動・全テスト・ブラウザ検証でもこのスクリプトを使用 |
-| `git diff --check` | 成功 |
+| `npm test` | **51ファイル、411件成功**。単体389件＋ローカルSupabase統合22件。14:42 JST実行 |
+| `npm run build:demo` | 成功、サービス用環境変数なし |
+| `npm audit --omit=dev --audit-level=high` | 成功、本番依存の脆弱性0件 |
+| `npm run docs:build` | 成功、リンク検証を含む |
+| `npm run docs:check -- <対象>` | CI対象の英語ガイド3件とREADME.en.mdは成功。setupの既存アンカー警告2件は下記 |
+| `ruby -c tests/browser/local-env.rb` | `Syntax OK`。実際の起動とDBテストでも使用 |
+| `git diff --check`、staged privacy-check | 成功、問題なし |
 
-上記コマンドは、認証情報を引き継がない検証用ラッパー経由で実行した。サービスが必要なコマンドの再現には `tests/browser/local-env.rb <専用サービスディレクトリ> <隔離アプリディレクトリ> <コマンド>`を使える。
+サービスが必要なコマンドは `tests/browser/local-env.rb <専用サービスディレクトリ> <隔離アプリディレクトリ> <コマンド>` で実行し、ローカルAPIのURLを確認してから接続する。秘密値はログに出していない。
 
-### ブラウザ
+### ブラウザの実処理検証
 
-通常buildを3102番で起動し、`node tests/browser/portal.mjs <Playwrightディレクトリ> <成果物ディレクトリ> <Chromium実行ファイル>`を実行した。**Chromium 151.0.7922.34**、Playwrightツール1.60.0-alpha-1774999321000。ウォレット署名は毎回生成する一時鍵で行い、nonce/verify/me、Server ActionsとDBは実処理を通した。実ウォレットへ署名を要求していない。
+通常buildを3102番で起動し、`node tests/browser/portal.mjs <Playwrightディレクトリ> <成果物ディレクトリ> <Chromium実行ファイル>` を実行した。毎回生成した一時鍵をテストproviderに用い、nonce/verify/me、SIWE、Server Actions、DBは実処理を通した。実ウォレットへの署名要求は行っていない。
 
-以下が成功した。
+- 未接続→別ネットワーク→Polygon→nonce失敗・署名拒否・署名待ち・認証失敗→再試行→認証。
+- 選択回答の通信失敗でも入力を保持し、DBには保存されない。再試行して保存、再読込で次の問いへ再開。
+- 採用した5問の正しいID・回答形式・明示スキップをDBで確認。完走後の再編集で値を復元し、回答の変更・スキップによる消去・再読込後の保持・レコード5件のままの上書きを確認。
+- Passportの「回答を見直す」から `/initiation?edit=1` の呼び名入力へ進める。
+- 完走→申請→審査待ち。通信失敗を成功にせず、再送しても申請は1件。
+- チェックインの通信失敗・再試行・保存と再読込。偽の日付や他人のmember IDを余分に送っても、JST当日の本人1件だけ。
+- アカウント切替後に旧ユーザーの状態が消える。別ユーザーのデモlocalStorageを完走・承認済みへ改変しても、実申請は拒否。
+- 不明な質問IDと旧IDへの新規保存を拒否。他人のIDを余分に送っても本人だけ更新し、前ユーザーの回答は不変。一般ユーザーの `/admin` は404。切断後の保存は未認証として拒否。
+- セッション取得503と再試行、旧 `/apply`・`/checkin`、旧ハッシュ、直接アクセス、戻る/進む、キーボードと本文スキップ、クレジットのEnter/Escape、未処理例外なし。
 
-- 未接続→接続→別ネットワーク→Polygon→nonce失敗・署名拒否・署名待ち・認証失敗→再試行→実SIWE認証。
-- 未保存の回答で通信失敗を起こしても入力とDB状態が保たれ、再試行して保存できる。再読込後に未完了の2項目目へ再開し、4つの正しいIDと2つのnull回答をDBで確認。
-- サーバー完走→申請→審査待ち。通信失敗を成功と表示せず、同じ申請リクエストの再送でも1件のまま。
-- チェックインの通信失敗・再試行、保存と再読込。日付やmember IDを追加した再送でも当日の本人1件だけになり、JSTの日付が一致。
-- アカウント切替後に前の表示が消え、別アカウントでサインイン。正常形式のデモ状態を完走・承認済みに改変しても、申請フォームは出ず、直接の申請リクエストもサーバーが拒否。
-- 不明な質問IDを拒否。他人のmember IDを余分に送っても更新は認証済み本人だけで、元ユーザーの回答は変わらない。一般ユーザーの`/admin`は404。切断後の保存は未認証として拒否。
-- セッション取得503のエラー表示と再取得。直接URL、従来の`/apply`・`/checkin`、戻る・進む、旧ハッシュからの移動。
-- 比較用の暗号化イントロからHomeへ進める。ライト／ダークと360/768/1440px、本文スキップ、クレジットのEnter/Escape、横はみ出しなし、未処理のブラウザ例外なし。
+`portal-home.mjs` は通常3102番とデモ3103番の両方で成功。360/768/1440px × ライト/ダークでPODCASTの4場面・YouTubeプレーヤー不在、FREQUENCY、フッター、通常アプリの未認証4画面、デモ画面内の移動、デモJourneyの再回答と再読込を確認した。
 
-Home / Setup / Initiation / Passport / Communityのライト・ダークを目視確認した。Initiationは768pxも確認した。スクリーンショット11点はローカルの`/private/tmp/henkaku-portal-browser/`に保存し、Gitには追加していない。外部動画・RPCへのブラウザ通信は遮断したため、公開動画そのものの再生成功はこの検証に含まない。
+`frequency.mjs` は固定のテスト応答で取得中、429、再試行、204、4曲、元の集計期間と出典、追記文、キーボード、3画面幅と両配色を確認した。さらに `--live` でListenBrainz公開APIへのGETを1回だけ許可し、4曲が実際に表示され、認証情報・Cookie・Refererを送らないことを確認した。音源再生は実装していない。
 
-### デモのHTTP確認
+Home/Setup/Journey/Community/Passportと音楽欄を目視確認し、画像はローカルの検証成果物ディレクトリへ保存した。Gitには追加していない。アカウントの旧4項目と現行5問の併存・上書き・別メンバー分離はローカルRepository統合テストでも確認した。
 
-サービス用環境変数なしで3103番にデモbuildを起動し、`node /private/tmp/portal-demo-smoke.mjs`で確認した。認証API4経路とPOST8経路は404、旧・通常URL7経路は対応するデモ画面へ307、Home・アイコン・生成HTMLは200。デモのtitleとHTMLのnoindexも確認した。
+### デモ境界
 
-### TDDと修正した不具合
+`node /private/tmp/portal-demo-smoke.mjs` は認証API4経路とPOST8経路の404、旧・通常URL7経路のデモ画面への307、Home・アイコン・生成HTMLの200、noindexを確認して成功した。デモの実行にサービスの認証情報は不要だった。
 
-入口と生成物、認証・本人データの境界、Initiation、Passport、Community、公開設定は、それぞれ追加テストの失敗を確認してから実装した。後の確認で見つけた次の問題も、再現テストを追加して修正した。
+### TDDと確認中の修正
 
-| 原因 | 修正と再発防止 |
+入口、認証境界、保存、申請、チェックイン、デザイン復元、再回答、質問の切替、音楽取得は、追加したテストが意図した理由で失敗することを確認してから実装した。初回の356件や4項目の成功結果は、上記の最終411件の代わりにはしていない。
+
+| 原因 | 修正と予防 |
 | --- | --- |
-| トークン設定の取得失敗でWalletSetup全体が早期returnし、Polygon切替まで消える | 任意のトークン表示だけを準備中にし、設定なしの画面テストを追加 |
-| Tailwindのdark指定がOS設定に従い、ポータルの手動切替と一致しない | `data-theme`へ統一し、実際の接続状態の配色が切り替わるブラウザテストを追加 |
-| 比較用イントロのクリック処理がハッシュしか読まず、通常URLを拒否する | 生成処理にURL対応を追加。5経路の生成JavaScriptと実クリックの回帰テストを追加 |
+| 実処理へ接続する際に参照UIの構成を省き、未認証時は単純なカードだけ表示した | 元の幅・2カラム・背景・4カード・場面を復元。公開/認証状態を同じ画面幅で確認するテストを追加 |
+| 任意のトークン設定不足でPolygon切替まで消える | 設定不足を任意機能だけへ限定。設定なしのSetupテストを追加 |
+| ポータルの手動配色とTailwindのOS由来darkが異なる | data-themeへ揃え、実接続状態の色が追従するブラウザテストを追加 |
+| イントロのリンク処理がハッシュだけ読み、通常URLを扱えない | 生成元に通常URLの対応を加え、生成JavaScriptと実クリックを検証 |
+| 隣接するPODCASTのデータをFREQUENCYへ入れていた | 音楽の公開ランキングに変更し、取得元・表示文・CSS・テスト・文書を更新 |
 
-途中の検証失敗は最終結果と区別した。サンドボックス内の通常buildは進まず中断し、隔離コピーのまま許可された実行で成功した。元のnode_modulesとlockfileの差は隔離コピーの`npm ci`で解消した。テストコピーに公開`.env.example`がないことによる失敗も修正した。ブラウザツールのキャッシュと実行ファイルの版が異なったため、存在を確認したChromiumを明示した。Cookie確認はブラウザのfetchで行う（Node側HTTPクライアントとlocalhostのSecure Cookieの扱いが異なる）。
+`npm ci`には既存のESLint 10のpeer範囲警告があった。dev依存を含む監査は既存のmoderate 2件・high 1件を報告したが、CIと同じ本番依存の監査は0件。今回、依存やCI条件は変更していない。
 
-`npm ci`には既存のESLint 10と一部プラグインのpeer範囲に関する警告があった。dev依存を含む監査はmoderate 2件・high 1件を報告したが、本番依存に限定したCIコマンドは0件だった。今回、依存バージョンやCI条件は変更していない。Vitestのworker再利用の提案は性能上の案内であり、テスト失敗ではない。
+翻訳チェックの警告は `setup-windows#windows-docker-setup` と `troubleshooting#wallet-connection-lan-ip`。両方の明示アンカーは原文に存在し、docs buildも成功している。検査ツールの明示アンカー認識に関する既存警告として残し、無関係な修正は混ぜていない。Vitestのworker再利用は性能の提案であり、失敗ではない。
 
 ## CI-verified / Unverified
 
-**CI-verified: なし。** 未コミット変更をpushしていないため、同じ変更を対象にしたCI実行はない。mainやPR #102の過去の緑を、この変更の成功とは扱わない。
+この文書は上記実装SHAの **Local-verified** 記録。文書作成時点では、この変更のCI成功はまだ確認していない。Draft PR作成後はPRの同一HEADのチェックを確認し、CI結果を最終報告へ記載する。mainやPR #102の過去の緑を流用しない。
 
-**Unverified:** 実ウォレット拡張・端末での署名、Safari/Firefox、運営用ウォレットでのブラウザ審査操作、Vercelの設定・デプロイ、本番・ステージングの認証とDB、外部動画の実再生、オンチェーン照会・Allowlist操作・送金・NFT発行・ロール付与。管理者認可・審査状態の回帰は単体／Repositoryテストで確認し、一般ユーザーの管理画面拒否はブラウザでも確認した。
+**Unverified:** 実ウォレット拡張・Safari/Firefox・運営ウォレットでのブラウザ審査操作、Vercelの設定とデプロイ、本番/ステージングの認証とDB、オンチェーン照会・Allowlist操作・送金・NFT発行・ロール付与。管理者認可・状態遷移の回帰は単体/Repositoryテスト、一般ユーザーの拒否はブラウザで確認済み。
 
-## 準備中と後続判断
+指定のClaude Game Artifactは公開フレームで403/Client Challengeとなり、現時点の内容を直接確認できなかった。PR #102に収録された同じ参照元のGameと公開Sangraalデモを基に復元した。このURLの現時点との完全一致は未検証。
 
-| 範囲 | 理由・後続 |
+## 準備中と後続
+
+| 範囲 | 理由 |
 | --- | --- |
-| 残高・オンチェーンAllowlist | #91の情報源・仕様が未確定。アプリの申請記録とは区別する |
-| NFT発行・報酬claim・ロール付与 | 実処理が存在しないため準備中。NFT保有を申請条件にしない |
-| needs_infoの本人からの追加送信 | 現行には状態・理由・運営の再審査だけがあり、本人の追加入力経路は別実装 |
-| デモの質問・「まだ言葉にしない」 | 依頼者の選択に従い、初回は既存4項目を維持。完走仕様を別途決める |
-| Community Field、Discord名など | #46等の後続仕様。架空の活動・履歴を本番データにしない |
+| 残高・オンチェーンAllowlist | #91の情報源・仕様の確定と実取得が必要 |
+| NFT発行・報酬claim・ロール付与 | 実処理がない。NFTは申請条件にしない |
+| needs_infoの本人からの追加送信 | 現行には状態・理由・運営の再審査のみ。本人入力の経路は別実装 |
+| Community Field・Discord名等 | 後続仕様。活動カードはサンプル |
+| 会員の音楽共有 | 将来の構想。本人の同意・公開範囲等を決める必要があり、履歴は収集していない |
+| Pulseの動的Issue取得 | [Issue #104](https://github.com/henkaku-center/initiation/issues/104)を依頼に基づいて起票済み。現行は日付付き固定4件 |
 
-Issue #52・#91は開始時点でOPENであり、この作業で閉じていない。
+厳密さの観点では、実ウォレット、公開環境、後続機能の検証と仕様が残る。初回の通常アプリ接続としては、元の体験を保ちつつサーバーに保存・認可・完走・申請を接続できている。本番運用全体の完成とは扱わない。Issue #52・#91・#104を自動クローズしていない。
 
-厳密さの観点では、実ウォレットと公開環境の検証、準備中機能の仕様が残る。一方、初回の4項目を既存処理につなぐ範囲は、架空状態に頼らずローカルで通し検証できた。これらの残作業を含めて本番運用完了とはしていない。
+## 設定・公開切替・ロールバック
 
-## 設定・公開切替
+追加migrationとAPIキーは不要。既存3migrationとサーバー用の `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` / `SESSION_PASSWORD` / `SIWE_ALLOWED_DOMAINS`、運営には `ADMIN_ADDRESSES` が必要。任意のトークン表示追加は公開トークン設定を使う。値を出力・コミットしていない。
 
-追加migrationは不要。既存3migrationと、サーバー用Supabase設定・SESSION_PASSWORD・SIWE_ALLOWED_DOMAINS、運営にはADMIN_ADDRESSESが必要。任意のウォレット表示追加には公開トークン設定を使う。
+公開時は別途許可を得て、対象コミット・環境・現在のデプロイ・Build Commandを確認する。通常化は `npm run build` と `HENKAKU_DEMO_ONLY=1` の解除を伴う再ビルド。noindexは維持する。ロールバックは以前のデプロイへ戻すか `npm run build:demo` を再ビルドする。後者は実処理を停止する。旧質問版のコードでは現行5問の完走を認識できないため、記録は削除せず復帰後に利用する。DB削除・逆migration・デモ進捗の移行は不要。
 
-公開には別途許可を得たうえで、対象コミット、VercelのBuild Command上書き、環境変数と既存スキーマを確認する。通常化は `npm run build` と `HENKAKU_DEMO_ONLY=1` の解除を伴う再ビルド。noindexは維持する。ロールバックは以前のデプロイへ戻すか、承認された設定で `npm run build:demo` を再ビルドする。DBの削除や逆migrationは行わない。
-
-具体的な手順は[ポータルアプリ](../guide/portal-app.md)に記録した。公開・実ウォレット・資産操作・GitHubへの投稿を今回実行したという報告ではない。
+詳細は[ポータルアプリ](../guide/portal-app.md)。この作業では公開環境・DB・実ウォレット・資産を操作していない。GitHubでは依頼されたIssue #104とDraft PRのみを対象とし、マージとIssueのクローズは行わない。
