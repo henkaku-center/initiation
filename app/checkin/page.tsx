@@ -1,6 +1,5 @@
 // ABOUTME: チェックインページ。今日のチェックインと履歴を表示する。
 // ABOUTME: 履歴取得はServer Componentで行い、実行操作だけClient Componentに委譲する。
-import { redirect } from "next/navigation";
 import { PortalCommunity } from "@/components/portal/PortalCommunity";
 import { MemberBoundary } from "@/components/portal/MemberBoundary";
 import type { Checkin } from "@/lib/domain/types";
@@ -8,7 +7,6 @@ import { requireMember, UnauthenticatedError } from "@/lib/auth/guards";
 import { getRepositories } from "@/lib/repositories";
 
 export default async function CheckinPage() {
-  if (process.env.HENKAKU_DEMO_ONLY === "1") redirect("/");
   const today = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Tokyo" });
   let history: Checkin[];
   let address: string;

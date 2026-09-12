@@ -1505,27 +1505,6 @@
   margin-top: 22px;
   font-size: 13px;
 }
-.pd-demo-controls {
-  position: fixed;
-  bottom: 20px;
-  right: 22px;
-  z-index: 25;
-  background: #161c29;
-  color: #fff;
-  border: 1px solid #929eb254;
-  box-shadow: 0 5px 20px #07101f20;
-  padding: 10px 14px;
-  border-radius: 3px;
-  font-size: 11px;
-  display: flex;
-  gap: 9px;
-  align-items: center;
-}
-.pd-demo-controls > span {
-  font-size: 18px;
-  line-height: 1;
-  color: #96b2ff;
-}
 .pd-toast {
   position: fixed;
   bottom: 78px;
@@ -2077,10 +2056,6 @@
   }
   .pd-wallet-option strong {
     font-size: 13px;
-  }
-  .pd-demo-controls {
-    right: 14px;
-    bottom: 14px;
   }
   .pd-dialog-actions {
     flex-wrap: wrap;

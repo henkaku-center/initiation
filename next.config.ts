@@ -1,8 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Only this nonsecret flag is embedded. Demo deployments need no service keys.
-  env: { HENKAKU_DEMO_ONLY: process.env.HENKAKU_DEMO_ONLY === "1" ? "1" : "0" },
+  redirects() {
+    // Browsers retain the fragment, which PortalHome maps to the normal route.
+    return [{ source: "/demo", destination: "/", permanent: true }];
+  },
 };
 
 export default nextConfig;

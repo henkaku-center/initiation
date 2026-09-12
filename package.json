@@ -8,9 +8,7 @@
   },
   "scripts": {
     "dev": "node scripts/gateway/build-gateway.mjs && next dev",
-    "dev:demo": "node scripts/gateway/build-gateway.mjs && HENKAKU_DEMO_ONLY=1 next dev",
     "build": "node scripts/gateway/build-gateway.mjs && next build",
-    "build:demo": "node scripts/gateway/build-gateway.mjs && HENKAKU_DEMO_ONLY=1 next build",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",

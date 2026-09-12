@@ -1,5 +1,5 @@
-.portal-demo { display:flex;flex-direction:column; }
-.portal-demo > main { flex:1;min-width:0; }
+.portal-app { display:flex;flex-direction:column; }
+.portal-app > main { flex:1;min-width:0; }
 .pd-reference-home { min-height:100svh; }
 .pd-reference-gateway { display:block;width:100%;height:100%;border:0;background:var(--pd-paper); }
 /* Keep the source chapters' viewport scroll canvas inside the shared shell. */

@@ -42,6 +42,7 @@ scrollCode = scrollCode.replace('function card({ label, title, detail })', 'func
 scrollCode = scrollCode.replace('const item = document.createElement("div");', 'const item = document.createElement(href ? "a" : "div");\n    if (href) { item.href = href; item.target = href.startsWith("/#") ? "_top" : "_blank"; item.rel = "noopener noreferrer"; }');
 scrollCode = scrollCode.replace(/    const trackList = document.querySelector\("\[data-track-list\]"\);[\s\S]*?\n  }/, '  }');
 scrollCode = scrollCode.replace('title: window.gatewayMock.podcast.title,', 'title: window.gatewayMock.podcast.title,\n      href: window.gatewayMock.podcast.href,');
+scrollCode = scrollCode.replaceAll("window.gatewayMock", "window.gatewayContent");
 // Each Pulse card enters separately while its section is pinned.
 scrollCode += `\n
 const pulseSection = document.querySelector('[data-gateway-section="01-community-pulse"]');
@@ -55,7 +56,7 @@ window.addEventListener('resize', updatePulseCards);
 reduceMotion.addEventListener('change', updatePulseCards);
 updatePulseCards();
 
-// Let the owning app route Gateway links so previews remain inside /demo.
+// Let the portal route links from the embedded Gateway.
 document.addEventListener('click', (event) => {
   const link = event.target.closest?.('a[target="_top"]');
   if (!link || window.parent === window) return;
@@ -104,7 +105,7 @@ const html = `<!doctype html>
 <script>${homeTheme}</script>
 <style>${gatewayStyle}</style><style>${adapters}</style><style>${homeShell}</style><style>${podcastStyles}</style></head><body>
 <div class="home-intro">
-  <p>いま、コミュニティで動いていること。</p><span>COMMUNITY GATEWAY / DEMO</span>
+  <p>コミュニティの入口へ、ようこそ。</p><span>COMMUNITY GATEWAY</span>
   <button type="button" class="home-replay">イントロを再生</button>
 </div>
 <main aria-label="HENKAKU トップページ">${sections}</main>
@@ -113,11 +114,8 @@ const html = `<!doctype html>
 document.querySelector('.home-replay').addEventListener('click', () => window.parent.postMessage({ type:'henkaku:intro:replay' }, location.origin));
 </script><script src="./frequency.js"></script></body></html>`;
 fs.writeFileSync(path.join(root,"public/demo-assets/gateway/frequency.js"), read("assets/reference/gateway/frequency.js"));
-fs.writeFileSync(path.join(root,"public/demo-assets/gateway/index.html"), html);
-fs.writeFileSync(path.join(root,"public/demo-assets/gateway/bubble-multi.html"), introHtml);
-fs.writeFileSync(path.join(root,"public/demo-assets/gateway/intro.html"), encryptedIntroHtml);
-
-// The normal app shares the source artwork, with directly addressable routes.
+fs.writeFileSync(path.join(root,"public/demo-assets/gateway/gateway-data.js"), read("assets/reference/gateway/gateway-data.js"));
+// Adapt the source artwork to directly addressable application routes.
 // Frequency uses public music statistics and never reads a member's viewing history.
 const applicationRoutes = { home: "/", setup: "/setup", journey: "/initiation", community: "/community", passport: "/passport" };
 function applicationLinks(document) {
@@ -128,9 +126,6 @@ function applicationLinks(document) {
   return document.replace("const screen = url.hash.slice(1);", `const routes = ${JSON.stringify(applicationRoutes)};
         const screen = url.hash.slice(1) || Object.keys(routes).find((name) => routes[name] === url.pathname);`);
 }
-const applicationHome = applicationLinks(html)
-  .replace("COMMUNITY GATEWAY / DEMO", "COMMUNITY GATEWAY")
-  .replace("いま、コミュニティで動いていること。", "コミュニティの入口へ、ようこそ。");
-fs.writeFileSync(path.join(root,"public/demo-assets/gateway/app-index.html"), applicationHome);
-fs.writeFileSync(path.join(root,"public/demo-assets/gateway/app-bubble-multi.html"), applicationLinks(introHtml));
-fs.writeFileSync(path.join(root,"public/demo-assets/gateway/app-intro.html"), applicationLinks(encryptedIntroHtml));
+fs.writeFileSync(path.join(root,"public/demo-assets/gateway/index.html"), applicationLinks(html));
+fs.writeFileSync(path.join(root,"public/demo-assets/gateway/bubble-multi.html"), applicationLinks(introHtml));
+fs.writeFileSync(path.join(root,"public/demo-assets/gateway/intro.html"), applicationLinks(encryptedIntroHtml));

@@ -1,7 +1,9 @@
+// ABOUTME: Display portal details in a modal dialog with native focus containment.
+// ABOUTME: Escape and the close button return focus to the triggering control.
 "use client";
 import { useEffect, useId, useRef, type ReactNode } from "react";
 
-export function DemoDialog({
+export function PortalDialog({
   title,
   onClose,
   children,
@@ -14,8 +16,12 @@ export function DemoDialog({
   const titleId = useId();
   useEffect(() => {
     const node = dialog.current;
+    const trigger = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     node?.showModal();
-    return () => node?.close();
+    return () => {
+      node?.close();
+      if (trigger?.isConnected) trigger.focus({ preventScroll: true });
+    };
   }, []);
   return (
     <dialog

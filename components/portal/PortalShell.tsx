@@ -7,11 +7,11 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SessionStatus } from "@/components/SessionStatus";
-import { DemoDialog } from "@/components/demo/DemoDialog";
+import { PortalDialog } from "./PortalDialog";
 import { portalRoutes } from "@/lib/portal/navigation";
-import "@/components/demo/portal-demo.css";
-import "@/components/demo/experience.css";
-import "@/components/demo/reference-gateway.css";
+import "./base.css";
+import "./experience.css";
+import "./reference-gateway.css";
 import "./portal.css";
 
 export function PortalShell({ children }: { children: ReactNode }) {
@@ -20,10 +20,8 @@ export function PortalShell({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.getElementById("portal-main")?.focus({ preventScroll: true });
   }, [pathname]);
-  if (pathname === "/demo") return children;
-  const demoScreen = pathname === "/apply" ? "passport" : pathname === "/checkin" ? "community" : Object.entries(portalRoutes).find(([, route]) => route === pathname)?.[0] ?? "home";
   return (
-    <div className={`portal-demo portal-app${pathname === "/" ? " pd-reference-home" : ""}`}>
+    <div className={`portal-app${pathname === "/" ? " pd-reference-home" : ""}`}>
       <a className="pd-skip" href="#portal-main">本文へスキップ</a>
       <header className="pd-header">
         <Link href="/" className="pd-brand" aria-label="HENKAKU ポータルへ">
@@ -48,8 +46,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
           <span>IN PERPETUAL BETA. TOGETHER.</span>
         </div>
       </footer>
-      <Link className="pd-demo-controls" href={`/demo#${demoScreen}`}><span>◇</span> デモ操作</Link>
-      {credits && <DemoDialog title="素材・クレジット" onClose={() => setCredits(false)}>
+      {credits && <PortalDialog title="素材・クレジット" onClose={() => setCredits(false)}>
         <div className="pd-credits">
           <h3>Backgrounds</h3><p>夜の遺跡・夕暮れの都市、CommunityとPassportの画像：OpenAI image_genによる生成素材。HENKAKU portal demo / CC BY 4.0（権利が成立する範囲）。</p>
           <h3>Music</h3><p>Breeze Zero / karawapo / CC BY 4.0。既存のMIDIから合成した試聴用音源です。</p>
@@ -58,7 +55,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
           <p>トップページは参照元のソースを基に構成し、元のライセンス・著作権表示を保持しています。公開動画の権利は各権利者に帰属します。</p>
           <p><a href="/demo-assets/CREDITS.md">素材のクレジット</a><br /><a href="/demo-assets/gateway/CREDITS.md">参照コード・Podcastのクレジット</a><br /><a href="/demo-assets/polished-provenance.json">素材の出典・生成プロンプト</a></p>
         </div>
-      </DemoDialog>}
+      </PortalDialog>}
     </div>
   );
 }

@@ -1,5 +1,7 @@
 # Portal layout checks
 
+> The 2026-09-09 results below are historical. The separate demo application has been retired. Use [the current browser checks](../browser/README.md) for application routes, public charts, and layouts.
+
 2026-09-12: 現在のPODCASTは4つの抽象場面、FREQUENCYはListenBrainzの音楽ランキングです。現行の自動検証は `tests/browser/` を使います。この文書内の9月9日のプレーヤー・架空再生履歴に関する結果は過去の記録です。
 
 ## JavaScript lazy loading — 2026-09-09
@@ -55,7 +57,7 @@ The only tests run for this revision were responsive layout checks. No unit/inte
 
 `portal-layout.mjs` exports read-only geometry checks for a connected browser. They are separate from Vitest's backend/domain suite and require a rendered page, not Node's DOM mocks.
 
-1. Start `npm run dev:demo -- --port 3000` and open `http://localhost:3000/#home`. Use `localhost` consistently: Next's development-origin protection rejects some script requests through `127.0.0.1`.
+1. Start `npm run dev -- --port 3000` and open `http://localhost:3000/#home`. Use `localhost` consistently: Next's development-origin protection rejects some script requests through `127.0.0.1`.
 2. Apply each viewport: 360×800, 390×844, 768×1024, 844×390, 1440×900. Check the additional short-screen intro breakpoint at 667×375.
 3. Run `auditPortalLayout` with the connected browser's read-only `page.evaluate` on the parent page, then on the `body` of the intro/home iframe as applicable.
 4. On the default multi-bubble intro, run `auditMultiBubbleLayout` and `auditIntroLinkPlacement` in the iframe, and `auditIntroComparisonControls` in the parent. Select `暗号化＋泡`, click an empty area, wait for `#reveal[data-phase="done"]`, then run `auditIntroLinkPlacement` again. Switch back using `複数の泡`. Links in the multi-bubble version are immediately available.

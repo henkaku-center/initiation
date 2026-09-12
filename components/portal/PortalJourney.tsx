@@ -11,7 +11,7 @@ import { saveDisplayName } from "@/app/members/actions";
 import { readJourneyAnswer, type JourneyStep, type JourneyAnswer } from "@/lib/initiation/journey";
 import type { ProgressEntry } from "@/lib/domain/types";
 import { journeyScenes } from "@/lib/portal/journeyScenes";
-import "@/components/demo/explorer-scene.css";
+import "./explorer-scene.css";
 
 export function PortalJourney({ steps, entries, displayName, complete, signedIn = true, review = false }: {
   steps: JourneyStep[];

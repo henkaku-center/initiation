@@ -1,6 +1,5 @@
 // ABOUTME: 申請ページ。現在の申請状態を表示し、未申請なら申請フォームを出す。
 // ABOUTME: 申請後のAllowlist追加とHENKAKU送付は運営が手作業で行う。
-import { redirect } from "next/navigation";
 import { latestReasonsByApplication } from "@/lib/domain/applicationEvents";
 import type { Application } from "@/lib/domain/types";
 import { requireMember, UnauthenticatedError } from "@/lib/auth/guards";
@@ -10,7 +9,6 @@ import { MemberBoundary } from "@/components/portal/MemberBoundary";
 import { isInitiationComplete } from "@/lib/initiation/complete";
 
 export default async function ApplyPage() {
-  if (process.env.HENKAKU_DEMO_ONLY === "1") redirect("/");
   let application: Application | null;
   let address: string;
   let complete: boolean;

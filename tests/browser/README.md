@@ -53,15 +53,15 @@ ruby tests/browser/local-env.rb "$PORTAL_SERVICE_DIR" "$PORTAL_APP_DIR" npm test
 
 終了後はテスト用サーバーをCtrl+Cで止め、`supabase stop --workdir "$PORTAL_SERVICE_DIR"`でこの専用プロジェクトだけを停止します。共有開発サービスを停止・初期化しないでください。
 
-## 未認証の画面・デモ操作を確認する
+## 未認証の画面・旧デモURLを確認する
 
-`portal-home.mjs`はウォレットを使わず、本人データの保存は行いません。ブラウザ側のセッション応答は未認証として用意し、外部リクエストを遮断します。通常buildのサーバーには上記の専用ローカル設定を渡します（本人用ページのServer Componentがセッションを確認するため）。通常buildを3102番、またはデモbuildを3103番で起動してから実行してください。同じ`.next`でbuildとサーバー起動を同時に行わないでください。
+`portal-home.mjs`はウォレットを使わず、本人データの保存は行いません。ブラウザ側のセッション応答は未認証として用意し、外部リクエストを遮断します。通常buildのサーバーには上記の専用ローカル設定を渡します（本人用ページのServer Componentがセッションを確認するため）。通常buildを3102番で起動してから実行してください。同じ`.next`でbuildとサーバー起動を同時に行わないでください。
 
 ```bash
 node tests/browser/portal-home.mjs "$PORTAL_PLAYWRIGHT_DIR" "$PORTAL_ARTIFACT_DIR" "$PORTAL_CHROMIUM_PATH" http://127.0.0.1:3102
 ```
 
-360／768／1440pxのライト・ダークで、PODCASTの4場面・公式リンクとYouTube読み込みがないこと、FREQUENCYの公開音楽ランキング表示（APIはテストデータで置換）、フッターのプライバシーポリシーとTab移動を確認します。通常buildでは未認証のSetup・Initiation・Passport・Communityも撮影し、背景、カード構成、模擬操作内の移動、Journeyの再回答・再読込を確認します。デモbuildでは末尾のURLを`http://127.0.0.1:3103`に置き換えます。
+360／768／1440pxのライト・ダークで、PODCASTの4場面・公式リンクとYouTube読み込みがないこと、FREQUENCYの公開音楽ランキング表示（APIはテストデータで置換）、フッターのプライバシーポリシーとTab移動を確認します。未認証のSetup・Initiation・Passport・Communityも撮影し、背景とカード構成を確認します。旧 `/demo` の308、5画面のフラグメント・不明なフラグメントからの移動と再読込、デモ操作の不在、旧localStorageから状態を復元しないこと、サンプル活動ダイアログのキーボード操作を検証します。回答の保存・再編集は `portal.mjs` で実処理を通します。
 
 ## FREQUENCY
 

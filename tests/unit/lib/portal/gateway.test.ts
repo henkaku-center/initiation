@@ -1,7 +1,7 @@
-// ABOUTME: Build the actual Gateway documents and check the application/demo boundary.
+// ABOUTME: Build the Gateway documents used by the application.
 // ABOUTME: Navigation, fictional histories and robots policy are checked on generated output.
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { runInNewContext } from "node:vm";
 import { beforeAll, describe, expect, it } from "vitest";
 
@@ -11,13 +11,13 @@ describe("application Gateway generation", () => {
   beforeAll(() => { execFileSync(process.execPath, ["scripts/gateway/build-gateway.mjs"]); });
   it("builds the shared Gateway from the application script directory", () => {
     const { scripts } = JSON.parse(readFileSync("package.json", "utf8"));
-    for (const name of ["dev", "dev:demo", "build", "build:demo"]) {
+    for (const name of ["dev", "build"]) {
       expect(scripts[name]).toContain("node scripts/gateway/build-gateway.mjs");
       expect(scripts[name]).not.toContain("scripts/demo/");
     }
   });
   it("generates a normal home with public ListenBrainz music charts", () => {
-    const html = read("app-index.html");
+    const html = read("index.html");
     expect(html).toContain('href="/setup" target="_top"');
     expect(html).toContain('href="/initiation" target="_top"');
     expect(html).not.toContain('href="/#');
@@ -31,8 +31,8 @@ describe("application Gateway generation", () => {
     expect(html).not.toContain("listening-history.js");
     expect(html).toContain('content="noindex,nofollow"');
   });
-  it.each(["app-index.html", "index.html"])("shows the podcast introduction without embedded YouTube players in %s", (file) => {
-    const html = read(file);
+  it("shows the podcast introduction without embedded YouTube players", () => {
+    const html = read("index.html");
     expect(html).toContain("VOICES / PODCAST");
     expect(html).toContain('href="https://joi.ito.com/podcast/"');
     expect(html).toContain('aria-label="Voices horizontal scene strip"');
@@ -45,26 +45,32 @@ describe("application Gateway generation", () => {
     expect(html).not.toContain("無音プレビュー");
     expect(html).not.toContain("映像は無音で流れます");
   });
-  it.each(["app-bubble-multi.html", "app-intro.html"])("uses normal URL fallbacks in %s", (file) => {
+  it.each(["bubble-multi.html", "intro.html"])("uses normal URL fallbacks in %s", (file) => {
     const html = read(file);
     for (const route of ["/setup", "/initiation", "/community", "/passport"]) expect(html).toContain(`href="${route}"`);
     expect(html).not.toContain('href="/#');
     expect(html).toContain('content="noindex,nofollow"');
   });
-  it("uses the same public music source in the explicit demo build", () => {
-    expect(read("index.html")).toContain('href="/#setup"');
-    expect(read("index.html")).toContain("ListenBrainz / WEEKLY TOP TRACKS");
+  it("generates a single application edition from the music source", () => {
+    expect(read("index.html")).not.toContain("COMMUNITY GATEWAY / DEMO");
+    for (const name of ["index", "bubble-multi", "intro"]) expect(existsSync(`public/demo-assets/gateway/app-${name}.html`)).toBe(false);
     expect(read("frequency.js")).toBe(readFileSync("assets/reference/gateway/frequency.js", "utf8"));
   });
+  it("does not publish unused mock listening histories or player code", () => {
+    expect(read("gateway-data.js").includes("communityPlays")).toBe(false);
+    expect(read("gateway-data.js").includes("episodes:")).toBe(false);
+    expect(existsSync("public/demo-assets/gateway/listening-history.js")).toBe(false);
+    expect(existsSync("public/demo-assets/gateway/podcast-preview.js")).toBe(false);
+  });
   it.each([["/", "home"], ["/setup", "setup"], ["/initiation", "journey"], ["/community", "community"], ["/passport", "passport"]])("the encrypted intro dispatches %s to its parent", (route, screen) => {
-    const html = read("app-intro.html");
+    const html = read("intro.html");
     const start = html.indexOf("const url = new URL(link.href, location.href);");
     const end = html.indexOf("if (url.origin === location.origin", start);
     expect(start).toBeGreaterThan(0);
     expect(end).toBeGreaterThan(start);
     const result = runInNewContext(`${html.slice(start, end)}; screen;`, {
       URL, link: { href: `http://localhost:3102${route}` },
-      location: { href: "http://localhost:3102/demo-assets/gateway/app-intro.html" },
+      location: { href: "http://localhost:3102/demo-assets/gateway/intro.html" },
     });
     expect(result).toBe(screen);
   });

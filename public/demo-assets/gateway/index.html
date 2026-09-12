@@ -1129,7 +1129,7 @@ html[data-theme="dark"] .voices-fragment,html[data-theme="dark"] .voices-observe
 @media(max-width:380px) { .frequency-link { grid-template-columns:80px minmax(0,1fr);gap:12px; } }
 </style></head><body>
 <div class="home-intro">
-  <p>いま、コミュニティで動いていること。</p><span>COMMUNITY GATEWAY / DEMO</span>
+  <p>コミュニティの入口へ、ようこそ。</p><span>COMMUNITY GATEWAY</span>
   <button type="button" class="home-replay">イントロを再生</button>
 </div>
 <main aria-label="HENKAKU トップページ">  <section class="gateway-section placeholder-section" data-gateway-section="01-community-pulse" aria-labelledby="pulse-title">
@@ -1238,10 +1238,10 @@ LINES:   COMMUNITY / VOICE / TRACE
               <span data-decrypt>04 / Threshold</span>
               <span data-decrypt>Entry : Open</span>
             </p>
-            <a class="button-primary" href="/#setup" target="_top"><span class="gate-label" data-decrypt>joiN</span><svg viewBox="0 0 48 60" aria-hidden="true"><path d="M0 0 L48 37 L19 37 L0 60 Z" fill="currentColor" /></svg></a>
+            <a class="button-primary" href="/setup" target="_top"><span class="gate-label" data-decrypt>joiN</span><svg viewBox="0 0 48 60" aria-hidden="true"><path d="M0 0 L48 37 L19 37 L0 60 Z" fill="currentColor" /></svg></a>
             <p class="gate-path" data-decrypt>Setup → Initiation → Check-in</p>
           </div>
-          <a class="button-secondary" href="/#journey" target="_top">参加の流れを見る</a>
+          <a class="button-secondary" href="/initiation" target="_top">参加の流れを見る</a>
         </div>
       </div>
     </div>
@@ -1266,16 +1266,16 @@ LINES:   COMMUNITY / VOICE / TRACE
     return item;
   }
 
-  if (window.gatewayMock) {
+  if (window.gatewayContent) {
     const pulseList = document.querySelector("[data-pulse-list]");
-    window.gatewayMock.pulse.forEach((item) => pulseList.append(card(item)));
+    window.gatewayContent.pulse.forEach((item) => pulseList.append(card(item)));
 
     const podcastCard = document.querySelector("[data-podcast-card]");
     podcastCard.append(card({
-      label: window.gatewayMock.podcast.date,
-      title: window.gatewayMock.podcast.title,
-      href: window.gatewayMock.podcast.href,
-      detail: window.gatewayMock.podcast.summary,
+      label: window.gatewayContent.podcast.date,
+      title: window.gatewayContent.podcast.title,
+      href: window.gatewayContent.podcast.href,
+      detail: window.gatewayContent.podcast.summary,
     }));
 
   }
@@ -1390,7 +1390,7 @@ window.addEventListener('resize', updatePulseCards);
 reduceMotion.addEventListener('change', updatePulseCards);
 updatePulseCards();
 
-// Let the owning app route Gateway links so previews remain inside /demo.
+// Let the portal route links from the embedded Gateway.
 document.addEventListener('click', (event) => {
   const link = event.target.closest?.('a[target="_top"]');
   if (!link || window.parent === window) return;

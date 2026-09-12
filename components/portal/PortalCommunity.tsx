@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CheckinButton } from "@/components/CheckinButton";
 import type { Checkin } from "@/lib/domain/types";
-import { CommunityCards } from "@/components/demo/DemoCommunity";
+import { CommunityCards } from "./CommunityCards";
 
 export function PortalCommunity({ history, today, signedIn = true }: { history: Checkin[]; today: string; signedIn?: boolean }) {
   const router = useRouter();

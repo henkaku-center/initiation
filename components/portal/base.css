@@ -1,4 +1,4 @@
-.portal-demo {
+.portal-app {
   --pd-blue: #263df5;
   --pd-ink: #12141a;
   --pd-paper: #f6f6f2;
@@ -27,7 +27,7 @@
   line-height: 1.6;
   color-scheme: light;
 }
-html[data-theme="dark"] .portal-demo {
+html[data-theme="dark"] .portal-app {
   --pd-blue: #a4b0ff;
   --pd-ink: #f2f3f6;
   --pd-paper: #13171f;
@@ -49,35 +49,35 @@ html[data-theme="dark"] .portal-demo {
   --pd-warning-line: #8c6939;
   color-scheme: dark;
 }
-.portal-demo * {
+.portal-app * {
   box-sizing: border-box;
 }
-.portal-demo button,
-.portal-demo a,
-.portal-demo input,
-.portal-demo textarea,
-.portal-demo select {
+.portal-app button,
+.portal-app a,
+.portal-app input,
+.portal-app textarea,
+.portal-app select {
   -webkit-tap-highlight-color: transparent;
 }
-.portal-demo button,
-.portal-demo a {
+.portal-app button,
+.portal-app a {
   touch-action: manipulation;
 }
-.portal-demo button {
+.portal-app button {
   cursor: pointer;
 }
-.portal-demo button:disabled {
+.portal-app button:disabled {
   cursor: not-allowed;
   opacity: 0.4;
 }
-.portal-demo a {
+.portal-app a {
   text-decoration: none;
 }
-.portal-demo button:focus-visible,
-.portal-demo a:focus-visible,
-.portal-demo input:focus-visible,
-.portal-demo textarea:focus-visible,
-.portal-demo select:focus-visible {
+.portal-app button:focus-visible,
+.portal-app a:focus-visible,
+.portal-app input:focus-visible,
+.portal-app textarea:focus-visible,
+.portal-app select:focus-visible {
   outline: 3px solid #f58442;
   outline-offset: 5px;
 }
@@ -92,23 +92,6 @@ html[data-theme="dark"] .portal-demo {
 }
 .pd-skip:focus {
   top: 15px;
-}
-.pd-demo-notice {
-  min-height: 34px;
-  background: #17191e;
-  color: #fff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  padding: 7px 20px;
-  font-size: 12px;
-  letter-spacing: 0.09em;
-}
-.pd-demo-notice span:last-child {
-  font-size: 12px;
-  letter-spacing: 0.025em;
-  color: #c7cbd5;
 }
 .pd-live-dot {
   height: 6px;
@@ -339,7 +322,7 @@ html[data-theme="dark"] .portal-demo {
   color: var(--pd-muted);
 }
 @media (prefers-reduced-motion: reduce) {
-  .portal-demo * {
+  .portal-app * {
     animation: none !important;
     transition: none !important;
     scroll-behavior: auto !important;
@@ -363,15 +346,6 @@ html[data-theme="dark"] .portal-demo {
   }
 }
 @media (max-width: 620px) {
-  .pd-demo-notice {
-    flex-wrap: wrap;
-    gap: 5px 8px;
-    line-height: 1.35;
-    padding: 8px 14px;
-  }
-  .pd-demo-notice span:last-child {
-    font-size: 10px;
-  }
   .pd-header {
     height: auto;
     min-height: 82px;

@@ -1,34 +1,29 @@
-// ABOUTME: Keep the published privacy policy accessible from both portal footers.
+// ABOUTME: Keep the published privacy policy accessible from the application footer.
 // ABOUTME: Render the actual shells so their public navigation stays covered.
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { PortalShell } from "@/components/portal/PortalShell";
-import { PortalDemo } from "@/components/demo/PortalDemo";
 
 vi.mock("next/navigation", () => ({ usePathname: () => "/" }));
 vi.mock("@/components/SessionStatus", () => ({ SessionStatus: () => null }));
 vi.mock("@/components/ThemeToggle", () => ({ ThemeToggle: () => null }));
 
 describe("portal footer", () => {
-  it("keeps the experience banner out of the page", () => {
-    const html = renderToStaticMarkup(createElement<{ applicationHref?: string }>(PortalDemo, { applicationHref: "/" }));
+  it("keeps retired demo controls out of the application", () => {
+    const html = renderToStaticMarkup(createElement(PortalShell, null, "Content"));
     expect(html).not.toContain("EXPERIENCE DEMO");
     expect(html).not.toContain("pd-demo-notice");
-    expect(html).toContain("デモ操作");
-    expect(html).toContain('href="/"');
+    expect(html).not.toContain("デモ操作");
+    expect(html).not.toContain('href="/demo');
   });
-  it("offers isolated demo controls and the outlined passport navigation", () => {
+  it("keeps the outlined passport navigation", () => {
     const html = renderToStaticMarkup(createElement(PortalShell, null, "Content"));
     expect(html).toContain('class="pd-nav-passport"');
-    expect(html).toContain('href="/demo#home"');
-    expect(html).toContain("デモ操作");
+    expect(html).toContain('href="/passport"');
   });
-  it.each([
-    ["application", () => createElement(PortalShell, null, "Content")],
-    ["demo", () => createElement(PortalDemo)],
-  ] as const)("links to the existing privacy policy in the %s", (_, element) => {
-    const html = renderToStaticMarkup(element());
+  it("links to the existing privacy policy and credits", () => {
+    const html = renderToStaticMarkup(createElement(PortalShell, null, "Content"));
     const footer = html.match(/<footer\b[^>]*>([\s\S]*?)<\/footer>/)?.[1];
     expect(footer).toBeDefined();
     expect(footer).toContain('href="https://henkaku-center.github.io/initiation/privacy-policy"');

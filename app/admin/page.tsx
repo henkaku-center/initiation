@@ -9,10 +9,9 @@ import {
   latestTxIdsByApplication,
 } from "@/lib/domain/applicationEvents";
 import { getRepositories } from "@/lib/repositories";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
 export default async function AdminPage() {
-  if (process.env.HENKAKU_DEMO_ONLY === "1") redirect("/");
   let address: string;
   try {
     ({ address } = await requireAdmin());

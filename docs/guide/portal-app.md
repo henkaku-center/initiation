@@ -1,6 +1,6 @@
 # ポータルアプリ
 
-通常の `npm run dev` / `npm run build` は、PR #102の画面・演出・構成を通常アプリとして使い、既存の参加処理へ接続します。「デモ操作」は `/demo` にある隔離された[試用画面](./portal-demo.md)を開きます。
+`npm run dev` / `npm run build` は、PR #102の画面・演出・構成を使い、既存の参加処理へ接続します。別の模擬アプリと「デモ操作」は[廃止しました](../decisions/2026-09-12-retire-portal-demo.md)。
 
 ## 画面と保存
 
@@ -13,7 +13,7 @@
 | Passport | `/passport`、従来の`/apply` | 完走状態、申請・再申請、審査・Allowlist・配布の状態 |
 | 運営 | `/admin` | 既存の管理者認可・審査・実行記録・監査イベント |
 
-旧Homeの `/#setup` / `/#journey` / `/#community` / `/#passport` は対応する通常URLへ移動します。直接アクセス・再読込は、そのURLの認証済みサーバーデータを取得します。
+旧Homeの `/#setup` / `/#journey` / `/#community` / `/#passport` は対応する通常URLへ移動します。旧 `/demo` は `/` へ308リダイレクトし、`/demo#journey` なども同じマッピングで通常画面へ進みます。直接アクセス・再読込は、そのURLの認証済みサーバーデータを取得します。
 
 未認証でもJourneyの背景・導入、Passportの4つのカード、Communityのサンプルを表示します。本人の記録は取得せず、保存・申請・チェックインにはサインインが必要です。Journeyの5場面は演出であり、必須項目数とは別です。
 
@@ -35,7 +35,7 @@
 
 - Discord名、Field閲覧記録、メンバーの音楽共有は後続の仕様判断です。個人の視聴履歴は収集・公開していません。Issue #52・#91はこの接続だけで完了しません。
 
-フッターから[既存のプライバシーポリシー](../privacy-policy.md)を確認できます。EXPERIENCE DEMOの帯は表示せず、試用時の模擬操作の説明は「デモ操作」内に置きます。
+フッターから[既存のプライバシーポリシー](../privacy-policy.md)と素材のクレジットを確認できます。通常版に必要な画像・音源は取り込み時の `public/demo-assets/` に保持しています。この素材URLは別の模擬アプリや保存経路を意味しません。
 
 ## FREQUENCYの音楽
 
@@ -61,11 +61,11 @@ APIキー・ユーザー名・ウォレットアドレス・Cookieは送信し�
 1. 公開の明示的な許可を得て、対象コミットと利用する環境を確定します。現在のデプロイとBuild Commandをロールバック先として記録します。
 2. 対象環境の設定・既存スキーマを確認します。開発用テストに本番・ステージングの認証情報を持ち込まないでください。
 3. Node 22以上、Install Command `npm ci`、Build Command `npm run build`、Next.js標準出力を使います。リポジトリの `vercel.json` はこの通常buildを指定します。管理画面側に上書きがある場合は、実際のBuild Commandとビルドログを照合します。
-4. `HENKAKU_DEMO_ONLY=1` の環境変数を外して通常buildを作ります。モードはビルドに埋め込まれるため、実行時の環境変数変更だけでは切り替わりません。
+4. 以前の `build:demo` の上書きがある場合は `npm run build` へ変更し、不要になった `HENKAKU_DEMO_ONLY` を設定から除きます。このフラグはコードから削除されており、残っていても模擬モードへ切り替わりません。対象コミットを通常buildで再ビルドします。
 5. 許可された環境で認証→保存→再開→完走→申請→チェックインを確認します。実ウォレット署名、外部アカウント変更、Allowlist操作、送金、NFT発行はそれぞれ別途確認が必要です。
 6. HTMLのrobotsとVercelの `X-Robots-Tag: noindex, nofollow` を維持します。`noindex` はアクセス制限ではなく、解除には別の公開方針の判断が必要です。
 
-ロールバックは、記録した以前のデプロイへ戻すか、承認された設定で `npm run build:demo` を再ビルドします。後者は実認証・保存・申請が使えない模擬体験へ戻ります。APIとPOSTはデモのProxyで404になります。DB記録は残るため、デモへ戻すためのDB削除や逆migrationは不要です。デモのlocalStorageを本番へ戻す移行処理もありません。
+ロールバックは記録した以前のデプロイへ戻します。現行コードには別のデモbuildはありません。戻すデプロイが模擬版なら実認証・保存・申請は利用できなくなるため、対象の動作を確認してください。DB記録は保持し、DB削除・逆migration・デモlocalStorageの移行は行いません。
 
 この変更は設定ファイルと手順を用意するもので、デプロイや公開環境の設定変更を実施したものではありません。
 
@@ -80,7 +80,6 @@ npx tsc --noEmit
 npm run lint
 npx vitest run tests/unit
 npx vitest run tests/integration
-npm run build:demo
 npm audit --omit=dev --audit-level=high
 ```
 

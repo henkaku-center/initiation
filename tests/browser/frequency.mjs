@@ -37,7 +37,7 @@ await context.route("**/*", async (route) => {
   return new URL(request.url()).origin === origin ? route.continue() : route.abort();
 });
 try {
-  await page.goto(`${origin}/demo-assets/gateway/app-index.html`);
+  await page.goto(`${origin}/demo-assets/gateway/index.html`);
   const status = page.locator("[data-frequency-status]");
   if (!live) {
     await status.filter({ hasText: "取得中" }).waitFor();

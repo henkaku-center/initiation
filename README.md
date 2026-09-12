@@ -18,7 +18,7 @@ HENKAKUコミュニティへの参加を、ウォレット準備からInitiation
 4. **Passport** (`/passport`、従来の`/apply`): Allowlist追加とHENKAKU配布の申請・状態表示
 5. **運営** (`/admin`): 管理者が審査・Allowlist・配布状態を更新
 
-通常buildでポータルUIと実処理を利用します。設定・未接続機能・公開切替・ロールバックは[ポータルアプリの案内](docs/guide/portal-app.md)を参照してください。模擬体験は `npm run dev:demo` / `npm run build:demo` に残しています。
+通常buildでポータルUIと実処理を利用します。設定・未接続機能・公開切替・ロールバックは[ポータルアプリの案内](docs/guide/portal-app.md)を参照してください。別の模擬アプリは廃止し、旧 `/demo` は通常アプリへ移動します。
 
 ## 開発環境
 

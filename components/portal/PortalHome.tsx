@@ -4,7 +4,7 @@
 
 import { useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ReferenceGateway } from "@/components/demo/ReferenceGatewayView";
+import { ReferenceGateway } from "./ReferenceGatewayView";
 import { legacyPortalDestination, portalRoutes, type PortalScreen } from "@/lib/portal/navigation";
 
 export function PortalHome() {
@@ -21,5 +21,5 @@ export function PortalHome() {
     window.addEventListener("hashchange", followBookmark);
     return () => window.removeEventListener("hashchange", followBookmark);
   }, [router]);
-  return <main><ReferenceGateway paused={false} application onNavigate={navigate} /></main>;
+  return <main><ReferenceGateway onNavigate={navigate} /></main>;
 }

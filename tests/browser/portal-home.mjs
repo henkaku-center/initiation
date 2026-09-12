@@ -7,7 +7,7 @@ import { pathToFileURL } from "node:url";
 import { musicChart, musicApi } from "./music-fixture.mjs";
 
 const origin = process.argv[5] ?? "http://127.0.0.1:3102";
-assert.ok(["http://127.0.0.1:3102", "http://127.0.0.1:3103"].includes(origin), "Use a local verification server");
+assert.equal(origin, "http://127.0.0.1:3102", "Use a local verification server");
 const playwright = process.argv[2] ? pathToFileURL(resolve(process.argv[2], "index.mjs")).href : "playwright";
 const { chromium } = await import(playwright);
 const output = resolve(process.argv[3] ?? "/private/tmp/henkaku-portal-home");
@@ -38,7 +38,7 @@ try {
   assert.match(await home.locator('.frequency-disclaimer').innerText(), /ListenBrainz全体の公開ランキング/);
   await home.locator('.frequency-entry').nth(3).waitFor();
   assert.equal(await home.locator('.frequency-entry').count(), 4);
-  assert.equal(await page.locator('.pd-demo-controls').count(), 1);
+  assert.equal(await page.locator('.pd-demo-controls').count(), 0);
   for (const width of [360, 768, 1440]) {
     for (const theme of ["light", "dark"]) {
       await page.setViewportSize({ width, height: 1000 });
@@ -66,63 +66,63 @@ try {
   const setupBox = await page.locator('.pd-setup-grid').boundingBox();
   assert.ok(Math.abs(setupBox.x - 72) < 2 && Math.abs(setupBox.width - 1296) < 2, "Keep the reference page width and side margins");
   assert.equal(await page.locator('.pd-status-panel').count(), 1);
-  if (new URL(origin).port === "3102") {
-    for (const width of [360, 768, 1440]) {
-      for (const theme of ["light", "dark"]) {
-        await page.setViewportSize({ width, height:1000 });
-        await page.getByRole("button", { name:theme === "light" ? "ライトモード" : "ダークモード", exact:true }).click();
-        for (const [route, selector] of [["setup", ".pd-setup-grid"], ["initiation", ".pd-journey-scene"], ["passport", ".pd-reward-grid"], ["community", ".pd-community-grid"]]) {
-          await page.goto(`${origin}/${route}`);
-          await page.locator(selector).waitFor();
-          assert.equal(await page.locator(".pd-demo-notice").count(), 0);
-          assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `${route}, ${width}, ${theme}: no overflow`);
-          if (route === "initiation") {
-            assert.equal(await page.getByRole("heading", { name:"はじめまして、旅人。", exact:true }).count(), 1);
-            assert.match(await page.locator(".pd-game-world").evaluate((element) => getComputedStyle(element).backgroundImage), /night\.webp/);
-            await page.getByRole("button", { name:"右を見る", exact:true }).click();
-            assert.match(await page.locator(".pd-look-bearing").innerText(), /EAST/);
-            await page.getByRole("button", { name:"正面を見る", exact:true }).click();
-          }
-          if (route === "passport") {
-            assert.equal(await page.locator(".pd-reward-card").count(), 4);
-            assert.equal(await page.getByRole("button", { name:"申請する", exact:true }).count(), 0);
-          }
-          await page.screenshot({ path:`${output}/${route}-${width}-${theme}.png`, fullPage:true });
+  for (const width of [360, 768, 1440]) {
+    for (const theme of ["light", "dark"]) {
+      await page.setViewportSize({ width, height:1000 });
+      await page.getByRole("button", { name:theme === "light" ? "ライトモード" : "ダークモード", exact:true }).click();
+      for (const [route, selector] of [["setup", ".pd-setup-grid"], ["initiation", ".pd-journey-scene"], ["passport", ".pd-reward-grid"], ["community", ".pd-community-grid"]]) {
+        await page.goto(`${origin}/${route}`);
+        await page.locator(selector).waitFor();
+        assert.equal(await page.locator(".pd-demo-notice").count(), 0);
+        assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `${route}, ${width}, ${theme}: no overflow`);
+        if (route === "initiation") {
+          assert.equal(await page.getByRole("heading", { name:"はじめまして、旅人。", exact:true }).count(), 1);
+          assert.match(await page.locator(".pd-game-world").evaluate((element) => getComputedStyle(element).backgroundImage), /night\.webp/);
+          await page.getByRole("button", { name:"右を見る", exact:true }).click();
+          assert.match(await page.locator(".pd-look-bearing").innerText(), /EAST/);
+          await page.getByRole("button", { name:"正面を見る", exact:true }).click();
         }
+        if (route === "passport") {
+          assert.equal(await page.locator(".pd-reward-card").count(), 4);
+          assert.equal(await page.getByRole("button", { name:"申請する", exact:true }).count(), 0);
+        }
+        for (const picture of await page.locator("img").all()) {
+          await picture.evaluate((element) => element.scrollIntoView({ block:"center" }));
+          await picture.evaluate((element) => element.decode());
+        }
+        await page.evaluate(() => window.scrollTo(0, 0));
+        await page.screenshot({ path:`${output}/${route}-${width}-${theme}.png`, fullPage:true });
       }
     }
-    await page.goto(`${origin}/`);
-    await page.getByRole("link", { name:"◇ デモ操作", exact:true }).click();
-    await page.waitForURL(`${origin}/demo#home`);
-    await home.locator('a[href="/#setup"]').first().click();
-    await page.waitForURL(`${origin}/demo#setup`);
-    await page.getByRole("button", { name:"◇ デモ操作", exact:true }).click();
-    assert.match(await page.getByRole("dialog").innerText(), /模擬体験/);
-    await page.getByRole("button", { name:"閉じる", exact:true }).click();
-    await page.evaluate(() => localStorage.setItem("henkaku.portal-demo.v1", JSON.stringify({
-      version:1, connected:false, account:"newcomer", network:"polygon", signedIn:false,
-      readStatus:"ready", tokenAdded:false, stage:4, finalQuestion:2,
-      answers:{ name:"保存した呼び名", interests:["AI"], curiosity:"気になること", experience:"", readiness:"", contribution:"" },
-      completed:true, participantNFT:true, application:"none", rewardClaimed:false, checkins:[],
-    })));
-    await page.goto(`${origin}/demo#journey`);
-    await page.reload();
-    await page.getByRole("button", { name:"回答を見直す", exact:true }).click();
-    assert.equal(await page.locator("#demo-name").inputValue(), "保存した呼び名");
-    await page.locator("#demo-name").fill("書き直した呼び名");
-    for (let step = 0; step < 5; step++) await page.getByRole("button", { name:"NEXT →", exact:true }).click();
-    await page.getByRole("button", { name:"旅を終える →", exact:true }).click();
-    await page.getByRole("heading", { name:"WELCOME TO HENKAKU.", exact:true }).waitFor();
-    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("henkaku.portal-demo.v1")));
-    assert.equal(saved.answers.name, "書き直した呼び名");
-    assert.equal(saved.answers.curiosity, "気になること");
-    assert.equal(saved.participantNFT, true);
-    await page.reload();
-    await page.getByRole("button", { name:"回答を見直す", exact:true }).click();
-    assert.equal(await page.locator("#demo-name").inputValue(), "書き直した呼び名");
-    await page.getByRole("link", { name:"通常アプリへ戻る ↗", exact:true }).click();
-    await page.waitForURL(`${origin}/`);
   }
+  const retiredState = JSON.stringify({ connected:true, signedIn:true, completed:true, participantNFT:true, application:"approved", rewardClaimed:true });
+  await page.evaluate((value) => localStorage.setItem("henkaku.portal-demo.v1", value), retiredState);
+  const redirect = await context.request.get(`${origin}/demo`, { maxRedirects:0 });
+  assert.equal(redirect.status(), 308);
+  assert.equal(redirect.headers().location, "/");
+  for (const [hash, pathname] of [["", "/"], ["#home", "/"], ["#setup", "/setup"], ["#journey", "/initiation"], ["#community", "/community"], ["#passport", "/passport"], ["#unknown", "/"]]) {
+    await page.goto(`${origin}/demo${hash}`);
+    await page.waitForURL((url) => url.pathname === pathname);
+    assert.equal(await page.locator(".portal-app").count(), 1);
+    assert.equal(await page.getByText("デモ操作", { exact:true }).count(), 0);
+    assert.equal(await page.getByText("WELCOME TO HENKAKU.", { exact:true }).count(), 0, "Retired progress is not restored");
+    await page.reload();
+    await page.waitForURL((url) => url.pathname === pathname);
+  }
+  await page.goto(`${origin}/community`);
+  const card = page.locator(".pd-community-card").first();
+  for (const close of ["Escape", "button"]) {
+    await card.focus();
+    await page.keyboard.press("Enter");
+    const dialog = page.getByRole("dialog");
+    assert.match(await dialog.innerText(), /サンプル/);
+    assert.equal(await dialog.getByRole("button", { name:"参加受付は準備中", exact:true }).isDisabled(), true);
+    if (close === "Escape") await page.keyboard.press("Escape");
+    else await dialog.getByRole("button", { name:"閉じる", exact:true }).click();
+    await dialog.waitFor({ state:"hidden" });
+    assert.equal(await card.evaluate((element) => element === document.activeElement), true);
+  }
+  assert.equal(await page.evaluate(() => localStorage.getItem("henkaku.portal-demo.v1")), retiredState);
   assert.deepEqual(errors, [], "No unhandled page error");
   console.log(`Public portal passed: ${origin}, Chromium ${browser.version()}, 3 widths × 2 themes, no YouTube player, footer link and keyboard focus`);
 } finally {
