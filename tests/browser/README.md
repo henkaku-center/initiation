@@ -68,3 +68,17 @@ node tests/browser/portal-home.mjs "$PORTAL_PLAYWRIGHT_DIR" "$PORTAL_ARTIFACT_DI
 `node tests/browser/frequency.mjs <Playwrightディレクトリ> <成果物ディレクトリ> <Chromium実行ファイル>` は、3102番の生成Homeで取得中・429・再試行・204・4曲表示、出典、UTC期間、キーボードと360/768/1440pxのライト・ダークを検証します。音楽データは `music-fixture.mjs` で置換し、外部通信は遮断します。
 
 末尾に `--live` を付ける場合だけ、ListenBrainzの固定の公開APIへGETを1回許可します。認証情報・Cookie・Refererを送らないことも確認します。実際の集計結果は変わるため、通常の自動テストとライブ接続確認は分けて記録してください。
+
+## COMMUNITY PULSE
+
+通常buildを3102番で起動した状態で、次を実行します。
+
+```bash
+node tests/browser/community-pulse.mjs "$PORTAL_PLAYWRIGHT_DIR" "$PORTAL_ARTIFACT_DIR" "$PORTAL_CHROMIUM_PATH"
+```
+
+ブラウザの `/api/community-pulse` 応答をテストデータへ置き換え、GitHubへはアクセスしません。取得中、6件表示、古いデータ、0件、503、長いタイトルとHTMLを含むタイトル、最終取得時刻とIssue更新時刻、キーボード、360/768/1440pxのライト・ダーク、非同期カード追加後の演出、通常Homeのiframe内での表示を検証します。スクリーンショットは指定ディレクトリに保存します。
+
+取得・キャッシュは `npm test -- tests/unit/lib/communityPulse` で検証します。GitHub通信は置き換え、Next.jsの実際の `unstable_cache` をメモリ上の保存アダプターで動かし、1時間の再利用・バックグラウンド更新・失敗時の前回成功分保持・成功時刻・Retry-Afterを確認します。
+
+実接続はブラウザの置き換えを使わずHomeまたは `/api/community-pulse` を開いて確認できます。本家の `community-pulse` ラベル付きopen Issueが0件なら「掲載対象なし」が正常です。ラベル付与・Issue更新・クローズは運営の操作で行い、1時間経過後のアクセスが更新を開始すること、更新が完了した後のアクセスで新しい一覧と取得時刻になることを確認します。バックグラウンド更新が完了しても、開いたままの画面は自動更新しません。

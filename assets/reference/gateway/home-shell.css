@@ -66,6 +66,11 @@ html[data-theme="dark"] .voices-fragment,html[data-theme="dark"] .voices-observe
 .pulse-grid { overflow:clip; }
 .pulse-development-note { max-width:640px;margin:24px 0 0;color:var(--muted);font:13px/1.8 var(--font-sans); }
 .pulse-development-note small { display:block;margin-top:6px;font-size:11px; }
+.pulse-status,.pulse-time,.pulse-source { max-width:720px;margin:8px 0 0;color:var(--muted);font:12px/1.8 var(--font-sans); }
+.pulse-status:empty,.pulse-time:empty { display:none; }
+.pulse-source a { color:inherit;text-underline-offset:4px; }
+.pulse-source a:focus-visible { outline:2px solid var(--blue);outline-offset:4px; }
+.pulse-grid .placeholder-card { min-width:0;overflow-wrap:anywhere; }
 .pulse-grid .placeholder-list { gap:20px 34px; }
 .placeholder-card { padding:14px 0 18px; }
 .placeholder-card strong { font-size:clamp(20px,2.2vw,30px);line-height:1.25; }

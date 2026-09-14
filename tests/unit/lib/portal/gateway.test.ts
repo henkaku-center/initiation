@@ -56,6 +56,17 @@ describe("application Gateway generation", () => {
     for (const name of ["index", "bubble-multi", "intro"]) expect(existsSync(`public/demo-assets/gateway/app-${name}.html`)).toBe(false);
     expect(read("frequency.js")).toBe(readFileSync("assets/reference/gateway/frequency.js", "utf8"));
   });
+  it("wires live Pulse from its source and retains source links before JavaScript runs", () => {
+    const html = read("index.html");
+    expect(html).toContain('src="./community-pulse.js"');
+    expect(html).toContain('data-pulse-status role="status"');
+    expect(html).toContain('data-pulse-list aria-busy="true"');
+    expect(html).toContain('href="https://github.com/henkaku-center/initiation/issues?');
+    expect(html).not.toContain("2026年9月9日確認");
+    expect(html).not.toContain("gatewayContent.pulse");
+    expect(read("gateway-data.js")).not.toContain("pulse:");
+    expect(read("community-pulse.js")).toBe(readFileSync("assets/reference/gateway/community-pulse.js", "utf8"));
+  });
   it("does not publish unused mock listening histories or player code", () => {
     expect(read("gateway-data.js").includes("communityPlays")).toBe(false);
     expect(read("gateway-data.js").includes("episodes:")).toBe(false);
