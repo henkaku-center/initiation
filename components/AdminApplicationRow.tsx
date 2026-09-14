@@ -1,5 +1,5 @@
 // ABOUTME: 申請1件の行と、現在状態に応じた管理操作を表示する。
-// ABOUTME: 状態変更はServer Actionへ委譲し、成功後に一覧を再取得する。
+// ABOUTME: 状態変更はServer Actionへ委譲し、成功後に一覧を再取得する。配布の操作は Allowlist 追加後にだけ出す。
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -51,6 +51,9 @@ export function AdminApplicationRow({
   }
 
   const review = application.reviewStatus;
+  // Runbook の直列フロー(Allowlist 追加 → 配布)を画面でも守る(Issue #112)。
+  const allowlistAdded = application.allowlistStatus === "added";
+  const canRecordDistribution = review === "approved" && allowlistAdded && application.distributionStatus !== "sent";
   const recorded = FIELDS.map((field) => ({ field, reason: reasons[field], tx: txIds[field] })).filter(
     (entry) => entry.reason || entry.tx,
   );
@@ -129,7 +132,10 @@ export function AdminApplicationRow({
               </button>
             </>
           )}
-          {review === "approved" && application.distributionStatus !== "sent" && (
+          {review === "approved" && !allowlistAdded && (
+            <p className="basis-full text-sm text-muted">Allowlist 追加後に配布を記録できます。</p>
+          )}
+          {canRecordDistribution && (
             <>
               <label className="flex items-center gap-2 text-sm font-semibold text-muted">
                 <span className="sr-only">配布 tx hash</span>
@@ -154,7 +160,7 @@ export function AdminApplicationRow({
           {/* 完了状態(added / sent)に達するまでは、何度失敗しても記録できる(Issue #20)。
               完了ボタンの表示条件と同じ形にして、成功と失敗の記録が常に対になるようにする。 */}
           {review === "approved" &&
-            (application.allowlistStatus !== "added" || application.distributionStatus !== "sent") && (
+            (!allowlistAdded || application.distributionStatus !== "sent") && (
               <>
                 <label className="flex items-center gap-2 text-sm font-semibold text-muted">
                   <span className="sr-only">失敗理由</span>
@@ -166,7 +172,7 @@ export function AdminApplicationRow({
                     placeholder="失敗理由（失敗として記録する場合）"
                   />
                 </label>
-                {application.allowlistStatus !== "added" && (
+                {!allowlistAdded && (
                   <button
                     className={buttonStyles.quiet}
                     type="button"
@@ -176,7 +182,7 @@ export function AdminApplicationRow({
                     Allowlist 失敗として記録
                   </button>
                 )}
-                {application.distributionStatus !== "sent" && (
+                {canRecordDistribution && (
                   <button
                     className={buttonStyles.quiet}
                     type="button"
