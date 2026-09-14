@@ -8,7 +8,8 @@ import type { Application } from "@/lib/domain/types";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 vi.mock("@/app/apply/actions", () => ({ submitApplication: vi.fn() }));
-vi.mock("@/components/portal/PortalWalletStatus", () => ({ PortalWalletStatus: () => "Wallet readings" }));
+const walletStatus = vi.hoisted(() => vi.fn(() => "Wallet readings"));
+vi.mock("@/components/portal/PortalWalletStatus", () => ({ PortalWalletStatus: walletStatus }));
 
 const application: Application = { id: "a1", memberId: "m1", reviewStatus: "approved", allowlistStatus: "pending", distributionStatus: "pending", distributionTxId: null, reason: null, createdAt: "2026-09-12", updatedAt: "2026-09-12" };
 const render = (app: Application | null, complete = true, reason: string | null = null) => renderToStaticMarkup(createElement(PortalPassport, { application: app, complete, reviewReason: reason }));
@@ -37,6 +38,14 @@ describe("portal passport", () => {
     const html = render({ ...application, reviewStatus: "needs_info" }, true, "回答を確認してください");
     expect(html).toContain("回答を確認してください");
     expect(html).not.toContain("もう一度申請する");
+  });
+  it("hands the application record to the wallet status so mismatches can be explained", () => {
+    walletStatus.mockClear();
+    render(application);
+    expect(walletStatus).toHaveBeenCalledWith(expect.objectContaining({ application }), undefined);
+    walletStatus.mockClear();
+    render(null, false);
+    expect(walletStatus).toHaveBeenCalledWith(expect.objectContaining({ application: null }), undefined);
   });
   it("allows reapplication after rejection", () => {
     expect(render({ ...application, reviewStatus: "rejected" })).toContain("もう一度申請する");

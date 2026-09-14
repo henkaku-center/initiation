@@ -84,8 +84,11 @@ Polygon上の記録や、Discordが独自に保持する情報は、運営だけ
 | [Vercel](https://vercel.com/legal/privacy-notice) | アプリの配信、実行ログ | Vercelの契約とプライバシー通知に従います |
 | [Discord](https://discord.com/privacy) | 問い合わせチケット | Discordのプライバシーポリシーに従います |
 | [GitHub Pages](https://docs.github.com/ja/site-policy/privacy-policies/github-general-privacy-statement) | 本方針を含む公開ドキュメントの配信 | GitHubのプライバシーステートメントに従います |
+| Polygonの公開RPC(既定は[dRPC](https://drpc.org/privacy-policy)) | 接続中のウォレットのHENKAKU残高とAllowlist登録状況の読み取り | RPC事業者のプライバシーポリシーに従います |
 
 各事業者の設備や再委託先により、日本国外で情報が処理される場合があります。
+
+ウォレット接続後の状態確認では、利用者のブラウザからPolygonの公開RPCへ直接問い合わせるため、接続中のウォレットアドレスと閲覧者のIPアドレスがRPC事業者へ送られます。これは本サービスのサーバーを経由せず、運営はこの問い合わせ内容を保存しません。サインインは不要で、送られるのは公開されているブロックチェーン上の情報の照会だけです。
 
 運営は、次の場合を除き、保存した個人データを委託先以外の第三者に提供しません。
 

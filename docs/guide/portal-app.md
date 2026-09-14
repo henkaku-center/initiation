@@ -27,7 +27,7 @@
 
 ## 準備中の範囲
 
-- トークン残高・オンチェーンAllowlist登録は、接続中のアドレスについてPolygonのHENKAKUトークン契約から直接読みます(サインイン不要、`NEXT_PUBLIC_POLYGON_RPC_URL` で RPC を差し替え可能)。判定元と表示方針は[Issue #91](https://github.com/henkaku-center/initiation/issues/91)の決定記録(`docs/decisions/2026-09-13-wallet-status-readings.md`、PR #106)を参照してください。`/passport` で申請記録と並べて補足文を出す部分は#91の残りの作業です。トークン表示追加の設定がなくてもネットワーク切替と認証は進められます。
+- トークン残高・オンチェーンAllowlist登録は、接続中のアドレスについてPolygonのHENKAKUトークン契約から直接読みます(サインイン不要、`NEXT_PUBLIC_POLYGON_RPC_URL` で RPC を差し替え可能)。判定元と表示方針は[Issue #91](https://github.com/henkaku-center/initiation/issues/91)の決定記録(`docs/decisions/2026-09-13-wallet-status-readings.md`、PR #106)を参照してください。`/passport` では申請記録と並べて表示し、食い違いがある場合は補足文を出します。トークン表示追加の設定がなくてもネットワーク切替と認証は進められます。
 - NFT発行、報酬claim、ロール付与は未実装です。NFT保有は申請条件ではありません。Allowlist追加とHENKAKU送付は既存の手動運用で、画面は運営が記録した状態を示します。
 - `needs_info` は理由を表示します。本人から追加入力する処理は未実装で、運営の案内に従います。再申請できるのは既存モデルの `rejected` です。
 - Communityの活動カードは元の構成を保ったサンプル表示です。架空の活動であることを明示します。Community Fieldの実データ・参加受付は未実装です。

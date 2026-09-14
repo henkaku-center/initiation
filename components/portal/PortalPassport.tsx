@@ -1,5 +1,5 @@
 // ABOUTME: Show real initiation and application records in the adopted passport layout.
-// ABOUTME: Unsupported NFT and membership operations remain unavailable.
+// ABOUTME: WALLET STATUS reads Polygon and notes mismatches against the application record.
 import Link from "next/link";
 import Image from "next/image";
 import { ApplyForm } from "@/components/ApplyForm";
@@ -45,7 +45,7 @@ export function PortalPassport({ application, reviewReason, complete, displayNam
         <h2>ここから、一緒に。</h2><p>次はあなたの活動が、新しく来る誰かの入口になります。</p><span className="pd-application-state">メンバーロールの付与は準備中です。</span><Link className="pd-primary pd-full" href="/community">コミュニティへ <span>↗</span></Link>
       </section>
     </div>
-    <p className="pd-passport-disclaimer">NFT保有は申請条件ではありません。申請・配布の表示は運営の記録で、現在のトークン保有照会ではありません。準備中の操作で資産やロールは付与されません。</p>
-    <div className="pd-passport-details"><section className="pd-panel"><div className="pd-panel-top"><span className="pd-mono">WALLET STATUS</span><Link className="pd-text-button" href="/setup">ウォレットを見る ↗</Link></div><PortalWalletStatus /></section><section className="pd-panel pd-your-signals"><span className="pd-mono">YOUR SIGNALS</span><h3>{displayName || "まだ名のない旅人"}</h3><p>まだ言葉になっていない好奇心も、ここに。</p><Link className="pd-text-button" href="/initiation">あなたの旅を振り返る ↗</Link></section></div>
+    <p className="pd-passport-disclaimer">NFT保有は申請条件ではありません。申請・配布の表示は運営の記録です。WALLET STATUSはPolygon上の現在の状態で、運営の記録とは別に表示します。準備中の操作で資産やロールは付与されません。</p>
+    <div className="pd-passport-details"><section className="pd-panel"><div className="pd-panel-top"><span className="pd-mono">WALLET STATUS</span><Link className="pd-text-button" href="/setup">ウォレットを見る ↗</Link></div><PortalWalletStatus application={application} /></section><section className="pd-panel pd-your-signals"><span className="pd-mono">YOUR SIGNALS</span><h3>{displayName || "まだ名のない旅人"}</h3><p>まだ言葉になっていない好奇心も、ここに。</p><Link className="pd-text-button" href="/initiation">あなたの旅を振り返る ↗</Link></section></div>
   </main>;
 }
