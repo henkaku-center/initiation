@@ -28,9 +28,9 @@ const FAILED = "取得できませんでした";
  * 切り捨てで少額の保有が「0」に見えないようにする(決定記録 2026-09-13)。
  */
 export function formatHenkakuBalance(balance: bigint, decimals: number): string {
-  if (balance <= 0n) return "0";
-  const whole = balance / 10n ** BigInt(decimals);
-  if (whole === 0n) return "1未満";
+  if (balance <= BigInt(0)) return "0";
+  const whole = balance / BigInt(10) ** BigInt(decimals);
+  if (whole === BigInt(0)) return "1未満";
   return whole.toLocaleString("en-US");
 }
 
@@ -44,7 +44,7 @@ export function tokenReadingView(input: {
   if (input.balance.status === "loading") return { state: "loading", text: LOADING };
   if (input.balance.status === "error") return { state: "error", text: FAILED };
   const text = `${formatHenkakuBalance(input.balance.value, input.decimals)} ${input.symbol}`;
-  return input.balance.value > 0n
+  return input.balance.value > BigInt(0)
     ? { state: "positive", text, verdict: "保有している" }
     : { state: "negative", text, verdict: "保有していない" };
 }

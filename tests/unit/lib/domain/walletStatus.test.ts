@@ -9,23 +9,24 @@ import {
   tokenReadingView,
 } from "@/lib/domain/walletStatus";
 
-const ONE = 10n ** 18n;
+const ONE = BigInt(10) ** BigInt(18);
+const n = BigInt;
 
 describe("formatHenkakuBalance", () => {
   it("shows zero as 0", () => {
-    expect(formatHenkakuBalance(0n, 18)).toBe("0");
+    expect(formatHenkakuBalance(n(0), 18)).toBe("0");
   });
   it("shows a balance below one token as 1未満 instead of rounding to 0", () => {
-    expect(formatHenkakuBalance(1n, 18)).toBe("1未満");
-    expect(formatHenkakuBalance(ONE - 1n, 18)).toBe("1未満");
+    expect(formatHenkakuBalance(n(1), 18)).toBe("1未満");
+    expect(formatHenkakuBalance(ONE - n(1), 18)).toBe("1未満");
   });
   it("floors to an integer with thousands separators", () => {
     expect(formatHenkakuBalance(ONE, 18)).toBe("1");
-    expect(formatHenkakuBalance(10n * ONE, 18)).toBe("10");
-    expect(formatHenkakuBalance(1234n * ONE + ONE / 2n, 18)).toBe("1,234");
+    expect(formatHenkakuBalance(n(10) * ONE, 18)).toBe("10");
+    expect(formatHenkakuBalance(n(1234) * ONE + ONE / n(2), 18)).toBe("1,234");
   });
   it("respects the configured decimals", () => {
-    expect(formatHenkakuBalance(2500n, 3)).toBe("2");
+    expect(formatHenkakuBalance(n(2500), 3)).toBe("2");
   });
 });
 
@@ -48,15 +49,15 @@ describe("tokenReadingView", () => {
     expect(view.text).toContain("取得できませんでした");
   });
   it("shows a zero balance as not holding", () => {
-    const view = tokenReadingView({ ...base, balance: { status: "ready", value: 0n } });
+    const view = tokenReadingView({ ...base, balance: { status: "ready", value: n(0) } });
     expect(view).toMatchObject({ state: "negative", text: "0 HENKAKU", verdict: "保有していない" });
   });
   it("shows a positive balance with the holding verdict", () => {
-    const view = tokenReadingView({ ...base, balance: { status: "ready", value: 10n * ONE } });
+    const view = tokenReadingView({ ...base, balance: { status: "ready", value: n(10) * ONE } });
     expect(view).toMatchObject({ state: "positive", text: "10 HENKAKU", verdict: "保有している" });
   });
   it("treats dust as holding", () => {
-    const view = tokenReadingView({ ...base, balance: { status: "ready", value: 1n } });
+    const view = tokenReadingView({ ...base, balance: { status: "ready", value: n(1) } });
     expect(view).toMatchObject({ state: "positive", text: "1未満 HENKAKU", verdict: "保有している" });
   });
 });

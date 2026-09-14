@@ -8,6 +8,7 @@ import type { Application } from "@/lib/domain/types";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 vi.mock("@/app/apply/actions", () => ({ submitApplication: vi.fn() }));
+vi.mock("@/components/portal/PortalWalletStatus", () => ({ PortalWalletStatus: () => "Wallet readings" }));
 
 const application: Application = { id: "a1", memberId: "m1", reviewStatus: "approved", allowlistStatus: "pending", distributionStatus: "pending", distributionTxId: null, reason: null, createdAt: "2026-09-12", updatedAt: "2026-09-12" };
 const render = (app: Application | null, complete = true, reason: string | null = null) => renderToStaticMarkup(createElement(PortalPassport, { application: app, complete, reviewReason: reason }));
@@ -20,6 +21,7 @@ describe("portal passport", () => {
     for (const name of ["allowlist", "token", "membership"]) expect(html).toContain(`passport-${name}.webp`);
     expect(html).toContain("YOUR SIGNALS");
     expect(html).toContain("WALLET STATUS");
+    expect(html).toContain("Wallet readings");
     expect(html).toContain("まずは、小さな旅に出よう。");
   });
   it("keeps approval distinct from adding to Allowlist and distributing tokens", () => {
