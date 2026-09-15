@@ -50,6 +50,7 @@ Set the values in `.env.local`. Keep secrets in this file only; do not include t
 | `SUPABASE_URL` | Supabase connection URL | Depends on the environment |
 | `SUPABASE_SERVICE_ROLE_KEY` | Server-side Repository connection | Private |
 | `ADMIN_ADDRESSES` | Wallets allowed to access the admin screen (comma-separated) | Addresses are public information, but managed through an environment variable |
+| `COMMUNITY_PULSE_GITHUB_TOKEN` | GitHub token for Community Pulse (optional; public access works without it) | Private; server-side only |
 | `NEXT_PUBLIC_HENKAKU_TOKEN_ADDRESS` | HENKAKU contract on Polygon | Public; default provided |
 | `NEXT_PUBLIC_HENKAKU_TOKEN_SYMBOL` | Token display name | Public; default provided |
 | `NEXT_PUBLIC_HENKAKU_TOKEN_DECIMALS` | Token decimal places | Public; default provided |

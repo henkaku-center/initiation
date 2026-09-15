@@ -50,6 +50,7 @@ cp .env.example .env.local
 | `SUPABASE_URL` | Supabase接続先 | 環境による |
 | `SUPABASE_SERVICE_ROLE_KEY` | サーバー側Repository接続 | 非公開 |
 | `ADMIN_ADDRESSES` | 管理画面を使えるウォレット（カンマ区切り） | アドレス自体は公開情報だが環境変数で管理 |
+| `COMMUNITY_PULSE_GITHUB_TOKEN` | Community PulseのGitHub取得用トークン（任意・未設定でも公開取得可） | 非公開・サーバー専用 |
 | `NEXT_PUBLIC_HENKAKU_TOKEN_ADDRESS` | Polygon上のHENKAKUコントラクト | 公開可・既定値あり |
 | `NEXT_PUBLIC_HENKAKU_TOKEN_SYMBOL` | トークン表示名 | 公開可・既定値あり |
 | `NEXT_PUBLIC_HENKAKU_TOKEN_DECIMALS` | トークン小数桁 | 公開可・既定値あり |

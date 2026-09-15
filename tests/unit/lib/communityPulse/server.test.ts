@@ -75,7 +75,7 @@ describe("Community Pulse Route Handler and Next Data Cache", () => {
     const result = await request();
     expect(result.response.status).toBe(503);
     expect(result.response.headers.get("retry-after")).toBe("60");
-    expect(result.body).toMatchObject({ status: "unavailable", issues: [], lastSuccessAt: null, sourceUrl: "https://github.com/henkaku-center/initiation/issues?q=is%3Aissue+is%3Aopen+label%3Acommunity-pulse" });
+    expect(result.body).toEqual({ status: "unavailable", issues: [], lastSuccessAt: null });
     expect(JSON.stringify(result.body)).not.toContain("secret");
     await request();
     expect(fetch).toHaveBeenCalledTimes(1);

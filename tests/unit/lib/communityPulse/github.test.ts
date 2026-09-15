@@ -10,6 +10,7 @@ const issue = (number: number, overrides = {}) => ({
 });
 const api = "https://api.github.com/repos/henkaku-center/initiation/issues";
 const pageTwo = `${api}?state=open&labels=community-pulse&sort=updated&direction=desc&per_page=100&page=2`;
+const pullRequests = (count = 100) => Array.from({ length: count }, (_, i) => issue(1000 + i, { pull_request: {} }));
 afterEach(() => vi.useRealTimers());
 
 describe("Community Pulse GitHub reader", () => {
@@ -29,9 +30,13 @@ describe("Community Pulse GitHub reader", () => {
     expect(result.issues[0]).toEqual({ number: 8, title: "議題 8", url: `${"https://github.com/henkaku-center/initiation/issues/"}8`, updatedAt: "2026-09-14T02:08:00.000Z" });
   });
 
-  it("follows GitHub pagination when the first page contains only PRs", async () => {
+  it.each([
+    `<${pageTwo}>; rel="next"`,
+    '<https://api.github.com/repositories/1325289105/issues?state=open&labels=community-pulse&sort=updated&direction=desc&per_page=100&after=Y3Vyc29y&page=2>; rel="next"',
+    undefined,
+  ])("reads the next full page without depending on Link format (%s)", async (link) => {
     const request = vi.fn()
-      .mockResolvedValueOnce(Response.json([issue(20, { pull_request: {} })], { headers: { Link: `<${pageTwo}>; rel="next"` } }))
+      .mockResolvedValueOnce(Response.json(pullRequests(), { headers: link ? { Link: link } : {} }))
       .mockResolvedValueOnce(Response.json([issue(6), issue(5), issue(4), issue(3), issue(2), issue(1)]));
     const result = await createPulseFetcher({ fetch: request, now: () => start })();
     expect(request).toHaveBeenCalledTimes(2);
@@ -41,15 +46,43 @@ describe("Community Pulse GitHub reader", () => {
 
   it("deduplicates issues seen on moving pages", async () => {
     const request = vi.fn()
-      .mockResolvedValueOnce(Response.json([issue(8)], { headers: { Link: `<${pageTwo}>; rel="next"` } }))
+      .mockResolvedValueOnce(Response.json([issue(8), ...pullRequests(99)], { headers: { Link: `<${pageTwo}>; rel="next"` } }))
       .mockResolvedValueOnce(Response.json([issue(8), issue(7)]));
     expect((await createPulseFetcher({ fetch: request })()).issues.map((item) => item.number)).toEqual([8, 7]);
   });
 
-  it.each(["https://example.com/steal", `${api}?state=all`, `${api}?state=open&labels=other`])("rejects unsafe next-page URL %s before forwarding credentials", async (next) => {
-    const request = vi.fn().mockResolvedValue(Response.json([], { headers: { Link: `<${next}>; rel="next"` } }));
-    await expect(createPulseFetcher({ fetch: request, token: () => "test-token" })()).rejects.toBeInstanceOf(PulseFetchError);
+  it.each(["https://example.com/steal", `${api}?state=all`, `${api}?state=open&labels=other`])("ignores external pagination URL %s and keeps credentials on the fixed endpoint", async (next) => {
+    const request = vi.fn()
+      .mockResolvedValueOnce(Response.json(pullRequests(), { headers: { Link: `<${next}>; rel="next"` } }))
+      .mockResolvedValueOnce(Response.json([]));
+    await expect(createPulseFetcher({ fetch: request, token: () => "test-token" })()).resolves.toHaveProperty("issues", []);
+    expect(request).toHaveBeenCalledTimes(2);
+    for (const [index, [url, options]] of request.mock.calls.entries()) {
+      expect(url).toBe(`${api}?state=open&labels=community-pulse&sort=updated&direction=desc&per_page=100&page=${index + 1}`);
+      expect(options.headers.Authorization).toBe("Bearer test-token");
+      expect(options.redirect).toBe("error");
+    }
+  });
+
+  it.each(["Community-Pulse", "COMMUNITY-PULSE", { name: "Community-Pulse" }, { name: "COMMUNITY-PULSE" }])("matches label capitalization returned by GitHub (%s)", async (label) => {
+    const request = vi.fn().mockResolvedValue(Response.json([issue(1, { labels: [label] })]));
+    expect((await createPulseFetcher({ fetch: request })()).issues.map((item) => item.number)).toEqual([1]);
+  });
+
+  it("stops after six issues even when the page is full", async () => {
+    const request = vi.fn().mockResolvedValue(Response.json([
+      ...pullRequests(94), ...Array.from({ length: 6 }, (_, i) => issue(i + 1)),
+    ], { headers: { Link: `<${pageTwo}>; rel="next"` } }));
+    expect((await createPulseFetcher({ fetch: request })()).issues).toHaveLength(6);
     expect(request).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects a failed later page instead of publishing the partial list", async () => {
+    const request = vi.fn()
+      .mockResolvedValueOnce(Response.json([issue(1), ...pullRequests(99)]))
+      .mockResolvedValueOnce(new Response("upstream failure", { status: 503 }));
+    await expect(createPulseFetcher({ fetch: request })()).rejects.toBeInstanceOf(PulseFetchError);
+    expect(request).toHaveBeenCalledTimes(2);
   });
 
   it("treats a successful empty list as a timestamped snapshot", async () => {
@@ -102,12 +135,16 @@ describe("Community Pulse GitHub reader", () => {
   });
 
   it("bounds a paginated read instead of reporting partial data as complete", async () => {
-    const request = vi.fn(async (url: string) => {
-      const next = new URL(url);
-      next.searchParams.set("page", String(Number(next.searchParams.get("page") || "1") + 1));
-      return Response.json([], { headers: { Link: `<${next}>; rel="next"` } });
-    });
+    const request = vi.fn().mockImplementation(async () => Response.json(pullRequests()));
     await expect(createPulseFetcher({ fetch: request })()).rejects.toBeInstanceOf(PulseFetchError);
+    expect(request).toHaveBeenCalledTimes(5);
+  });
+
+  it.each([0, 6])("accepts a complete result with %s issues on the fifth page", async (count) => {
+    const request = vi.fn(async (url: string) => Response.json(new URL(url).searchParams.get("page") === "5"
+      ? count === 0 ? [] : [...pullRequests(94), ...Array.from({ length: count }, (_, i) => issue(i + 1))]
+      : pullRequests()));
+    expect((await createPulseFetcher({ fetch: request })()).issues).toHaveLength(count);
     expect(request).toHaveBeenCalledTimes(5);
   });
 });
