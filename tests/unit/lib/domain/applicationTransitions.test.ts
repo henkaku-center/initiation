@@ -1,5 +1,5 @@
 // ABOUTME: 申請ステータスの許可・拒否ルールを検証する。
-// ABOUTME: 審査承認前の実行禁止と終端状態の保護を確認する。
+// ABOUTME: 審査承認前の実行禁止、Allowlist追加前の配布禁止、終端状態の保護を確認する。
 import { describe, expect, it } from "vitest";
 import { currentStatus, validateTransition } from "@/lib/domain/applicationTransitions";
 import type { Application } from "@/lib/domain/types";
@@ -40,15 +40,44 @@ describe("validateTransition", () => {
     expect(validateTransition(app({ reviewStatus: "approved" }), "allowlist", "added")).toEqual({ ok: true });
   });
 
-  it("allows distribution failed -> sent retry after approval", () => {
+  it("allows distribution failed -> sent retry after approval and allowlist", () => {
     expect(
-      validateTransition(app({ reviewStatus: "approved", distributionStatus: "failed" }), "distribution", "sent"),
+      validateTransition(
+        app({ reviewStatus: "approved", allowlistStatus: "added", distributionStatus: "failed" }),
+        "distribution",
+        "sent",
+      ),
+    ).toEqual({ ok: true });
+  });
+
+  // Runbook は「Allowlist 追加 → 配布」の直列。未登録アドレスへの転送はコントラクトが
+  // 拒否するため、順序を守らない記録は実態と食い違う(Issue #112)。
+  it("forbids recording a distribution before the allowlist is added", () => {
+    for (const allowlistStatus of ["pending", "failed"] as const) {
+      for (const toStatus of ["sent", "failed"]) {
+        const result = validateTransition(app({ reviewStatus: "approved", allowlistStatus }), "distribution", toStatus);
+        expect(result.ok).toBe(false);
+        if (!result.ok) expect(result.reason).toContain("Allowlist");
+      }
+    }
+  });
+
+  it("allows distribution once the allowlist is added", () => {
+    expect(
+      validateTransition(app({ reviewStatus: "approved", allowlistStatus: "added" }), "distribution", "sent"),
+    ).toEqual({ ok: true });
+    expect(
+      validateTransition(app({ reviewStatus: "approved", allowlistStatus: "added" }), "distribution", "failed"),
     ).toEqual({ ok: true });
   });
 
   it("forbids leaving a terminal sent state", () => {
     expect(
-      validateTransition(app({ reviewStatus: "approved", distributionStatus: "sent" }), "distribution", "failed").ok,
+      validateTransition(
+        app({ reviewStatus: "approved", allowlistStatus: "added", distributionStatus: "sent" }),
+        "distribution",
+        "failed",
+      ).ok,
     ).toBe(false);
   });
 
@@ -61,7 +90,11 @@ describe("validateTransition", () => {
 
   it("allows recording a repeated distribution failure", () => {
     expect(
-      validateTransition(app({ reviewStatus: "approved", distributionStatus: "failed" }), "distribution", "failed"),
+      validateTransition(
+        app({ reviewStatus: "approved", allowlistStatus: "added", distributionStatus: "failed" }),
+        "distribution",
+        "failed",
+      ),
     ).toEqual({ ok: true });
   });
 

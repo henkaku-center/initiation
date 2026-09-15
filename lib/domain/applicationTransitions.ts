@@ -49,6 +49,12 @@ export function validateTransition(
     return { ok: false, reason: "承認前に実行状態は変更できません" };
   }
 
+  // Runbook の「Allowlist 追加 → 配布」の直列を守る。未登録アドレスへの転送は
+  // コントラクトが拒否するため、追加前の配布記録(成功・失敗とも)は実態と食い違う(Issue #112)。
+  if (field === "distribution" && app.allowlistStatus !== "added") {
+    return { ok: false, reason: "Allowlist 追加前に配布状態は変更できません" };
+  }
+
   const transitions = EXECUTION_TRANSITIONS[field];
   if (!transitions) {
     return { ok: false, reason: `不明な状態フィールドです: ${field}` };

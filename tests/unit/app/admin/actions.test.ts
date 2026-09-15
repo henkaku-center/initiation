@@ -196,7 +196,7 @@ describe("transitionApplication", () => {
   });
 
   it("requires txId when marking distribution as sent", async () => {
-    listAllMock.mockResolvedValue([application({ reviewStatus: "approved" })]);
+    listAllMock.mockResolvedValue([application({ reviewStatus: "approved", allowlistStatus: "added" })]);
 
     const result = await transitionApplication({
       applicationId: "a1",
@@ -279,7 +279,7 @@ describe("transitionApplication", () => {
   });
 
   it("trims a distribution tx hash before recording it", async () => {
-    listAllMock.mockResolvedValue([application({ reviewStatus: "approved" })]);
+    listAllMock.mockResolvedValue([application({ reviewStatus: "approved", allowlistStatus: "added" })]);
 
     const result = await transitionApplication({
       applicationId: "a1",
@@ -342,7 +342,7 @@ describe("transitionApplication", () => {
   });
 
   it("rejects a whitespace-only failure reason", async () => {
-    listAllMock.mockResolvedValue([application({ reviewStatus: "approved" })]);
+    listAllMock.mockResolvedValue([application({ reviewStatus: "approved", allowlistStatus: "added" })]);
 
     const result = await transitionApplication({
       applicationId: "a1",
@@ -377,7 +377,7 @@ describe("transitionApplication", () => {
   });
 
   it("records a distribution failure with the reason", async () => {
-    listAllMock.mockResolvedValue([application({ reviewStatus: "approved" })]);
+    listAllMock.mockResolvedValue([application({ reviewStatus: "approved", allowlistStatus: "added" })]);
 
     const result = await transitionApplication({
       applicationId: "a1",
@@ -441,7 +441,7 @@ describe("transitionApplication", () => {
 
   it("still requires a reason for a repeated failure", async () => {
     listAllMock.mockResolvedValue([
-      application({ reviewStatus: "approved", distributionStatus: "failed" }),
+      application({ reviewStatus: "approved", allowlistStatus: "added", distributionStatus: "failed" }),
     ]);
 
     const result = await transitionApplication({
@@ -452,6 +452,26 @@ describe("transitionApplication", () => {
 
     expect(result).toEqual({ ok: false, error: "失敗理由を入力してください" });
     expect(transitionMock).not.toHaveBeenCalled();
+  });
+
+  // Runbook の直列フロー(Allowlist 追加 → 配布)を Server Action でも守る(Issue #112)。
+  it("rejects a distribution change before the allowlist is added without touching the repository", async () => {
+    for (const allowlistStatus of ["pending", "failed"] as const) {
+      for (const toStatus of ["sent", "failed"]) {
+        transitionMock.mockClear();
+        listAllMock.mockResolvedValue([application({ reviewStatus: "approved", allowlistStatus })]);
+        const result = await transitionApplication({
+          applicationId: "a1",
+          field: "distribution",
+          toStatus,
+          txId: "0xabc",
+          reason: "ガス不足",
+        });
+        expect(result.ok).toBe(false);
+        expect(result.error).toContain("Allowlist");
+        expect(transitionMock).not.toHaveBeenCalled();
+      }
+    }
   });
 
   it("returns an error for an unknown application id", async () => {
