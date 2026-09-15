@@ -17,6 +17,22 @@
 3. `SUPABASE_URL` と `SUPABASE_SERVICE_ROLE_KEY` が対象環境を指していることを確認する
 4. 配布実行者はSafe WalletでPolygonネットワークと送付先・数量を確認できる状態にする
 
+## 運用入力
+
+Issue #48 で確認した正式な実行元と数量です([決定記録](decisions/2026-09-15-manual-flow-inputs.md))。ここに書いてあるのはすべて公開情報で、秘密鍵・署名者と実名の対応・リカバリ情報は含めません。値を変更するときは決定記録を追加してからこの表を更新します。
+
+| 項目 | 値 |
+| --- | --- |
+| ネットワーク | Polygon(chain ID 137) |
+| HENKAKUトークンコントラクト | `0x0cc91a5FFC2E9370eC565Ab42ECE33bbC08C11a2`([henkaku-v2 `HenkakuToken.sol`](https://github.com/henkaku-center/henkaku-v2/blob/main/contracts/HenkakuToken.sol)) |
+| Allowlist追加の実行元 Safe | `0x3F1D35bF5f182D7b4ef95a3f298f059BC33d2020`(コントラクトの `gateKeeper`) |
+| Allowlist追加の呼び出し | 上記トークンコントラクトの `addWhitelistUser(address user)`(`onlyAdmin`: owner / gateKeeper / dev のみ実行できる) |
+| HENKAKU配布の実行元 Safe | `0x1C9D58eBd2A9F4952C2A4a8f9906FeF133056a33` |
+| 配布数量 | 申請者1名あたり **10 HENKAKU**(18 decimals。最小単位では `10000000000000000000`) |
+| 参考トランザクション | Allowlist追加: [0x8b70…1fe9](https://polygonscan.com/tx/0x8b70c61edd3e4aa49f2ffd751c7aad86ca34303301256087dbeed4cc2ccd1fe9) / 配布: [0x7be6…1eaf7](https://polygonscan.com/tx/0x7be694998170bf8b48cada064700dd2aba870c2b6ee19fdbf35a072042c1eaf7)(数量は今回と異なる。配布方法の参考) |
+
+Allowlist は HENKAKU トークンコントラクト内の `whitelist` で管理されており、別の Allowlist コントラクトや管理画面はありません。追加・配布とも Safe Wallet(<https://app.safe.global/>)で Polygon を選び、手動でトランザクションを作成します。
+
 ## 日次フロー
 
 ### 1. 申請を確認する
@@ -38,22 +54,34 @@
 
 ### 3. Allowlistへ追加する
 
-1. 承認済み申請のウォレットアドレスをコピーし、Allowlistを管理する公式のコントラクト操作画面または管理ツールを開く
-2. 対象ネットワーク、コントラクトアドレス、対象アドレスを二者で照合する
-3. Allowlist追加トランザクションを実行し、成功をブロックエクスプローラーで確認する
-4. `/admin` に戻り、成功したトランザクション hash を「Allowlist tx hash」に入力して「Allowlist 追加済みにする」を選ぶ
+1. `/admin` で承認済み申請のウォレットアドレスをコピーする
+2. Safe Wallet で Allowlist追加の実行元 Safe(`0x3F1D…2020`)を Polygon で開き、Transaction Builder でトークンコントラクト `0x0cc9…11a2` の `addWhitelistUser` を選び、`user` に申請者のアドレスを貼り付ける
+3. 実行前に次を二者で照合する(**確認項目**)
+   - ネットワークが Polygon である
+   - 宛先コントラクトが上記のトークンコントラクトと一致する
+   - `user` が `/admin` の申請行のアドレスと**全桁**一致する(先頭と末尾だけで判断しない)
+   - 実行元が Allowlist追加の Safe である(配布 Safe と取り違えない)
+4. Safe の承認フローに従って署名・実行し、Polygonscan で成功(Status: Success)を確認する
+5. `/admin` に戻り、成功したトランザクション hash を「Allowlist tx hash」に入力して「Allowlist 追加済みにする」を選ぶ
 
 tx hashの入力は必須です。このアプリはAllowlist追加を実行しません。入力するtx hashは、実行済みトランザクションの確認記録です。
 
-実コントラクトの関数名・管理画面URL・承認者は、コントラクト運用が確定した時点でこの節に追記します。未確定の手順で本番トランザクションを実行しません。
+追加後は申請者が `/setup` または `/passport` の WALLET STATUS でオンチェーンの登録状況を確認できます(Issue #91)。
 
 ### 4. Safe WalletからHENKAKUを送付する
 
-1. Allowlist追加済みであることと、送付数量・送付先・ネットワークを二者で照合する
-2. Safe WalletでHENKAKU送付トランザクションを作成する
-3. Safeの承認フローに従って署名・実行し、ブロックエクスプローラーで成功を確認する
-4. 成功したトランザクション hash を `/admin` の「配布 tx hash」に入力し、「配布済みにする」を選ぶ
-5. 申請者の `/apply` で「承認済み / 追加済み / 送付済み (tx)」が表示されることを確認する
+Allowlist追加と配布は直列です。Allowlist に未登録のアドレスへの転送はコントラクト側で失敗するため、必ず手順3の完了後に行います。
+
+1. `/admin` で対象申請の Allowlist が `added` で、tx hash が記録されていることを確認する
+2. Safe Wallet で配布の実行元 Safe(`0x1C9D…6a33`)を Polygon で開き、「Send tokens」で HENKAKU を選び、宛先に申請者のアドレス、数量に `10` を入力する
+3. 実行前に次を二者で照合する(**確認項目**)
+   - ネットワークが Polygon で、トークンが上記のコントラクトアドレスの HENKAKU である(同名の別トークンを選んでいない)
+   - 宛先が `/admin` の申請行のアドレスと**全桁**一致し、手順3で Allowlist に追加したアドレスと同じである
+   - 数量が 10 HENKAKU である(単位を wei にしていない)
+   - 同じ申請へ送付済みでない(`/admin` の配布状態と履歴を確認する)
+4. Safe の承認フローに従って署名・実行し、Polygonscan で成功と `Transfer` の宛先・数量を確認する
+5. 成功したトランザクション hash を `/admin` の「配布 tx hash」に入力し、「配布済みにする」を選ぶ
+6. 申請者の `/passport` で「承認済み / 追加済み / 送付済み (tx)」が表示されることを確認し、コミュニティが指定した連絡手段で申請者へ完了を連絡する
 
 このアプリはSafeの署名・送付を実行しません。画面に入力するtx hashは、実行済みトランザクションの確認記録です。
 
