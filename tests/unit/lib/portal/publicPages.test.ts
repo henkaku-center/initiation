@@ -17,6 +17,7 @@ vi.mock("@/app/initiation/actions", () => ({ saveStep: vi.fn() }));
 vi.mock("@/app/members/actions", () => ({ saveDisplayName: vi.fn() }));
 vi.mock("@/app/apply/actions", () => ({ submitApplication: vi.fn() }));
 vi.mock("@/app/checkin/actions", () => ({ checkin: vi.fn() }));
+vi.mock("@/components/portal/PortalWalletStatus", () => ({ PortalWalletStatus: () => "Wallet readings" }));
 
 describe("public participation pages", () => {
   it.each([

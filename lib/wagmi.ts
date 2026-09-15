@@ -7,7 +7,8 @@ import { injected } from "wagmi/connectors/injected";
 export const wagmiConfig = createConfig({
   chains: [polygon],
   connectors: [injected()],
-  transports: { [polygon.id]: http() },
+  // 未設定なら viem の既定RPC(polygon.drpc.org)。残高・Allowlistの読み取りにも使う(Issue #91)。
+  transports: { [polygon.id]: http(process.env.NEXT_PUBLIC_POLYGON_RPC_URL || undefined) },
   // Persisted wallet state is restored after SSR hydration to keep the first HTML identical.
   ssr: true,
 });

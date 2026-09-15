@@ -29,3 +29,32 @@ export function henkakuTokenConfig(): HenkakuTokenConfig {
     image: process.env.NEXT_PUBLIC_HENKAKU_TOKEN_LOGO_URL || undefined,
   };
 }
+
+/**
+ * 画面から読む関数だけを持つ最小ABI(henkaku-v2 `HenkakuToken.sol`)。
+ * `isAllowed` は `onlyOwner` の view 関数で、`eth_call` の `from` に `owner()` を
+ * 指定して読む(docs/decisions/2026-09-13-wallet-status-readings.md)。
+ */
+export const henkakuTokenAbi = [
+  {
+    type: "function",
+    name: "balanceOf",
+    stateMutability: "view",
+    inputs: [{ name: "account", type: "address" }],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "owner",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "address" }],
+  },
+  {
+    type: "function",
+    name: "isAllowed",
+    stateMutability: "view",
+    inputs: [{ name: "user", type: "address" }],
+    outputs: [{ name: "", type: "bool" }],
+  },
+] as const;

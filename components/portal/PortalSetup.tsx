@@ -1,5 +1,5 @@
 // ABOUTME: Connect the portal's wallet screen to the existing wallet and SIWE components.
-// ABOUTME: Token and on-chain Allowlist readings remain explicitly unavailable.
+// ABOUTME: The status aside reads HENKAKU balance and Allowlist registration from Polygon.
 import Link from "next/link";
 import { ConnectWallet } from "@/components/ConnectWallet";
 import { WalletSetup } from "@/components/WalletSetup";
