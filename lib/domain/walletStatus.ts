@@ -67,8 +67,15 @@ export type AllowlistNote = { text: string; txId: string | null };
  * オンチェーンの登録状況と申請記録が食い違ったときの補足文。
  * 2つを統合せず、確認できた状態をそのまま伝える。承認を確約する表現は使わない。
  * `onChain` が null(取得中・失敗)のときは補足しない。
+ *
+ * `allowlistTxId` は Allowlist 登録操作の tx hash(`application_events.tx_id`)。
+ * `applications.distribution_tx_id` は配布操作の tx で別物なので、代用しない。記録がなければ省略する。
  */
-export function allowlistNote(onChain: boolean | null, application: Application | null): AllowlistNote | null {
+export function allowlistNote(
+  onChain: boolean | null,
+  application: Application | null,
+  allowlistTxId: string | null = null,
+): AllowlistNote | null {
   if (onChain === null || !application) return null;
   const recorded = application.allowlistStatus;
   if (onChain) {
@@ -77,7 +84,7 @@ export function allowlistNote(onChain: boolean | null, application: Application 
       : { text: "Allowlistには登録済みです。申請記録は未更新です", txId: null };
   }
   if (recorded === "added") {
-    return { text: "オンチェーンで確認できません。運営に連絡してください", txId: application.distributionTxId };
+    return { text: "オンチェーンで確認できません。運営に連絡してください", txId: allowlistTxId };
   }
   if (recorded === "failed") return null; // 申請記録の行に「運営が対応中です」が出る
   switch (application.reviewStatus) {

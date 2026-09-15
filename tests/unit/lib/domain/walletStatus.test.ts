@@ -93,10 +93,22 @@ describe("allowlistNote", () => {
     expect(allowlistNote(true, app({ allowlistStatus: "failed" }))?.text).toBe(expected);
     expect(allowlistNote(true, app({ allowlistStatus: "added" }))).toBeNull();
   });
-  it("asks to contact operators when the record says added but the chain does not", () => {
-    const note = allowlistNote(false, app({ allowlistStatus: "added", distributionTxId: "0xabc" }));
+  it("asks to contact operators when the record says added but the chain does not, pointing at the Allowlist tx", () => {
+    // 配布txとAllowlist登録txは別の操作。表示するのは登録操作のtx(PR #110 レビュー)。
+    const added = app({ reviewStatus: "approved", allowlistStatus: "added", distributionStatus: "sent", distributionTxId: "0xdistribution" });
+    const note = allowlistNote(false, added, "0xallowlist");
     expect(note?.text).toBe("オンチェーンで確認できません。運営に連絡してください");
-    expect(note?.txId).toBe("0xabc");
+    expect(note?.txId).toBe("0xallowlist");
+  });
+  it("omits the tx instead of substituting the distribution tx", () => {
+    const added = app({ reviewStatus: "approved", allowlistStatus: "added", distributionStatus: "sent", distributionTxId: "0xdistribution" });
+    const note = allowlistNote(false, added, null);
+    expect(note?.text).toBe("オンチェーンで確認できません。運営に連絡してください");
+    expect(note?.txId).toBeNull();
+  });
+  it("stays silent when the chain confirms the recorded addition while distribution is still pending", () => {
+    const added = app({ reviewStatus: "approved", allowlistStatus: "added", distributionStatus: "pending" });
+    expect(allowlistNote(true, added, "0xallowlist")).toBeNull();
   });
   it("does not promise approval while the review is still open", () => {
     const expected = "申請が承認されると、運営が追加します";

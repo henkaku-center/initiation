@@ -34,7 +34,7 @@ vi.mock("wagmi", () => ({
 
 import { PortalWalletStatus } from "@/components/portal/PortalWalletStatus";
 
-const render = (application: Application | null = null) => renderToStaticMarkup(createElement(PortalWalletStatus, { application }));
+const render = (application: Application | null = null, allowlistTxId: string | null = null) => renderToStaticMarkup(createElement(PortalWalletStatus, { application, allowlistTxId }));
 const readyFor = (address: string, balance: bigint, allowed: boolean) => {
   mocks.readings.owner = { data: OWNER };
   mocks.readings[`balanceOf:${address}`] = { data: balance };
@@ -129,6 +129,24 @@ describe("PortalWalletStatus", () => {
     const application: Application = { id: "a1", memberId: "m1", reviewStatus: "approved", allowlistStatus: "pending", distributionStatus: "pending", distributionTxId: null, reason: null, createdAt: "2026-09-12", updatedAt: "2026-09-12" };
     expect(render(application)).toContain("Allowlistには登録済みです。申請記録は未更新です");
     expect(render()).not.toContain("申請記録は未更新です");
+  });
+
+  it("links the recorded Allowlist tx on Polygonscan when the chain does not confirm the record", () => {
+    readyFor(ADDRESS_A, ZERO, false);
+    const application: Application = { id: "a1", memberId: "m1", reviewStatus: "approved", allowlistStatus: "added", distributionStatus: "sent", distributionTxId: "0xdistribution", reason: null, createdAt: "2026-09-12", updatedAt: "2026-09-12" };
+    const html = render(application, "0xallowlist");
+    expect(html).toContain("オンチェーンで確認できません。運営に連絡してください");
+    expect(html).toContain('href="https://polygonscan.com/tx/0xallowlist"');
+    expect(html).not.toContain("0xdistribution");
+  });
+
+  it("omits the tx link when no Allowlist tx is recorded, without falling back to the distribution tx", () => {
+    readyFor(ADDRESS_A, ZERO, false);
+    const application: Application = { id: "a1", memberId: "m1", reviewStatus: "approved", allowlistStatus: "added", distributionStatus: "sent", distributionTxId: "0xdistribution", reason: null, createdAt: "2026-09-12", updatedAt: "2026-09-12" };
+    const html = render(application, null);
+    expect(html).toContain("オンチェーンで確認できません。運営に連絡してください");
+    expect(html).not.toContain("/tx/");
+    expect(html).not.toContain("0xdistribution");
   });
 
   it("explains a missing token configuration instead of failing the page", () => {

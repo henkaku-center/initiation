@@ -33,7 +33,14 @@ function safeTokenConfig() {
   }
 }
 
-export function PortalWalletStatus({ application = null }: { application?: Application | null }) {
+export function PortalWalletStatus({
+  application = null,
+  allowlistTxId = null,
+}: {
+  application?: Application | null;
+  /** Allowlist 登録操作の tx hash(監査イベント由来)。配布 tx とは別物。 */
+  allowlistTxId?: string | null;
+}) {
   const { address } = useAccount();
   const token = safeTokenConfig();
   const connected = Boolean(address);
@@ -73,7 +80,7 @@ export function PortalWalletStatus({ application = null }: { application?: Appli
     ? allowlistReadingView({ connected, allowed: owner.isError ? { status: "error" } : toReading(allowed) })
     : { state: "error", text: "トークンの設定がないため取得できません" };
   const onChain = allowlistView.state === "positive" ? true : allowlistView.state === "negative" ? false : null;
-  const note = allowlistNote(onChain, application);
+  const note = allowlistNote(onChain, application, allowlistTxId);
 
   const refetch = () => {
     void balance.refetch();
@@ -91,10 +98,15 @@ export function PortalWalletStatus({ application = null }: { application?: Appli
       <span className="pd-reading-label"><span className="pd-token-icon pd-outline-token">✓</span> ALLOWLIST</span>
       <Reading view={allowlistView} />
       <span className="pd-reading-note">
-        {note ? <>{note.text}{note.txId && <> (tx: {note.txId})</>}</> : "Polygon上の状態です。申請記録とは別に表示します。"}
+        {note ? <>{note.text}{note.txId && <>{" "}<a className="pd-text-button" href={txUrl(note.txId)} target="_blank" rel="noopener noreferrer">登録txを確認 ↗</a></>}</> : "Polygon上の状態です。申請記録とは別に表示します。"}
       </span>
     </div>
   </div>;
+}
+
+/** 記録済みの Allowlist 登録 tx を Polygon のエクスプローラーで確認するリンク。 */
+function txUrl(txId: string): string {
+  return `${polygon.blockExplorers.default.url}/tx/${txId}`;
 }
 
 function Reading({ view }: { view: ReadingView }) {

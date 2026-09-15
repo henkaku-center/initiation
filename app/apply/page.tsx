@@ -1,6 +1,6 @@
 // ABOUTME: 申請ページ。現在の申請状態を表示し、未申請なら申請フォームを出す。
 // ABOUTME: 申請後のAllowlist追加とHENKAKU送付は運営が手作業で行う。
-import { latestReasonsByApplication } from "@/lib/domain/applicationEvents";
+import { latestReasonsByApplication, latestTxIdsByApplication } from "@/lib/domain/applicationEvents";
 import type { Application } from "@/lib/domain/types";
 import { requireMember, UnauthenticatedError } from "@/lib/auth/guards";
 import { getRepositories } from "@/lib/repositories";
@@ -14,6 +14,7 @@ export default async function ApplyPage() {
   let complete: boolean;
   let displayName: string | null;
   let reviewReason: string | null = null;
+  let allowlistTxId: string | null = null;
   try {
     const member = await requireMember();
     const repositories = getRepositories();
@@ -26,6 +27,9 @@ export default async function ApplyPage() {
     if (application) {
       const events = await repositories.applications.listEvents([application.id]);
       reviewReason = latestReasonsByApplication(events).get(application.id)?.review?.reason ?? null;
+      // Allowlist 登録の tx は applications 側に列がなく、履歴だけが持つ(Issue #33)。
+      // WALLET STATUS の食い違い表示で確認リンクに使う。配布 tx で代用しない(Issue #91)。
+      allowlistTxId = latestTxIdsByApplication(events).get(application.id)?.allowlist?.txId ?? null;
     }
   } catch (error) {
     if (error instanceof UnauthenticatedError) {
@@ -34,5 +38,5 @@ export default async function ApplyPage() {
     throw error;
   }
 
-  return <MemberBoundary address={address}><PortalPassport application={application} complete={complete} reviewReason={reviewReason} displayName={displayName} /></MemberBoundary>;
+  return <MemberBoundary address={address}><PortalPassport application={application} complete={complete} reviewReason={reviewReason} displayName={displayName} allowlistTxId={allowlistTxId} /></MemberBoundary>;
 }

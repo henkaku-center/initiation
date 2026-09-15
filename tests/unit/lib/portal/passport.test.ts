@@ -12,7 +12,7 @@ const walletStatus = vi.hoisted(() => vi.fn(() => "Wallet readings"));
 vi.mock("@/components/portal/PortalWalletStatus", () => ({ PortalWalletStatus: walletStatus }));
 
 const application: Application = { id: "a1", memberId: "m1", reviewStatus: "approved", allowlistStatus: "pending", distributionStatus: "pending", distributionTxId: null, reason: null, createdAt: "2026-09-12", updatedAt: "2026-09-12" };
-const render = (app: Application | null, complete = true, reason: string | null = null) => renderToStaticMarkup(createElement(PortalPassport, { application: app, complete, reviewReason: reason }));
+const render = (app: Application | null, complete = true, reason: string | null = null, allowlistTxId: string | null = null) => renderToStaticMarkup(createElement(PortalPassport, { application: app, complete, reviewReason: reason, allowlistTxId }));
 
 describe("portal passport", () => {
   it("keeps the four illustrated doors and wallet details from the reference", () => {
@@ -39,13 +39,13 @@ describe("portal passport", () => {
     expect(html).toContain("回答を確認してください");
     expect(html).not.toContain("もう一度申請する");
   });
-  it("hands the application record to the wallet status so mismatches can be explained", () => {
+  it("hands the application record and the Allowlist tx to the wallet status so mismatches can be explained", () => {
     walletStatus.mockClear();
-    render(application);
-    expect(walletStatus).toHaveBeenCalledWith(expect.objectContaining({ application }), undefined);
+    render(application, true, null, "0xallowlist");
+    expect(walletStatus).toHaveBeenCalledWith(expect.objectContaining({ application, allowlistTxId: "0xallowlist" }), undefined);
     walletStatus.mockClear();
     render(null, false);
-    expect(walletStatus).toHaveBeenCalledWith(expect.objectContaining({ application: null }), undefined);
+    expect(walletStatus).toHaveBeenCalledWith(expect.objectContaining({ application: null, allowlistTxId: null }), undefined);
   });
   it("allows reapplication after rejection", () => {
     expect(render({ ...application, reviewStatus: "rejected" })).toContain("もう一度申請する");

@@ -7,7 +7,7 @@ import { allowlistLabel, distributionLabel, reviewLabel } from "@/lib/applicatio
 import type { Application } from "@/lib/domain/types";
 import { PortalWalletStatus } from "./PortalWalletStatus";
 
-export function PortalPassport({ application, reviewReason, complete, displayName = null, signedIn = true }: { application: Application | null; reviewReason: string | null; complete: boolean; displayName?: string | null; signedIn?: boolean }) {
+export function PortalPassport({ application, reviewReason, complete, displayName = null, signedIn = true, allowlistTxId = null }: { application: Application | null; reviewReason: string | null; complete: boolean; displayName?: string | null; signedIn?: boolean; /** Allowlist 登録操作の tx hash(監査イベント由来)。WALLET STATUS の食い違い表示で使う。 */ allowlistTxId?: string | null }) {
   const canApply = signedIn && complete && (!application || application.reviewStatus === "rejected");
   return <main className="pd-page pd-passport-page">
     <header className="pd-page-heading"><p className="pd-eyebrow">YOUR PLACE IN HENKAKU</p><h1>あなたの、はじまりのしるし。</h1><p>{complete ? `${displayName || "旅人"}さん、おかえりなさい。次の入口が開いています。` : "旅を終えた先に、あなたのパスポートが待っています。"}</p></header>
@@ -46,6 +46,6 @@ export function PortalPassport({ application, reviewReason, complete, displayNam
       </section>
     </div>
     <p className="pd-passport-disclaimer">NFT保有は申請条件ではありません。申請・配布の表示は運営の記録です。WALLET STATUSはPolygon上の現在の状態で、運営の記録とは別に表示します。準備中の操作で資産やロールは付与されません。</p>
-    <div className="pd-passport-details"><section className="pd-panel"><div className="pd-panel-top"><span className="pd-mono">WALLET STATUS</span><Link className="pd-text-button" href="/setup">ウォレットを見る ↗</Link></div><PortalWalletStatus application={application} /></section><section className="pd-panel pd-your-signals"><span className="pd-mono">YOUR SIGNALS</span><h3>{displayName || "まだ名のない旅人"}</h3><p>まだ言葉になっていない好奇心も、ここに。</p><Link className="pd-text-button" href="/initiation">あなたの旅を振り返る ↗</Link></section></div>
+    <div className="pd-passport-details"><section className="pd-panel"><div className="pd-panel-top"><span className="pd-mono">WALLET STATUS</span><Link className="pd-text-button" href="/setup">ウォレットを見る ↗</Link></div><PortalWalletStatus application={application} allowlistTxId={allowlistTxId} /></section><section className="pd-panel pd-your-signals"><span className="pd-mono">YOUR SIGNALS</span><h3>{displayName || "まだ名のない旅人"}</h3><p>まだ言葉になっていない好奇心も、ここに。</p><Link className="pd-text-button" href="/initiation">あなたの旅を振り返る ↗</Link></section></div>
   </main>;
 }
