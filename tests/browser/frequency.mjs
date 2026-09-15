@@ -34,7 +34,10 @@ await context.route("**/*", async (route) => {
     if (mode === "empty") return route.fulfill({ status: 204 });
     return route.fulfill({ json: musicChart });
   }
-  return new URL(request.url()).origin === origin ? route.continue() : route.abort();
+  const url = new URL(request.url());
+  if (url.origin !== origin) return route.abort();
+  if (url.pathname === "/api/community-pulse") return route.fulfill({ json: { status: "fresh", issues: [], lastSuccessAt: "2026-09-14T03:00:00Z" } });
+  return route.continue();
 });
 try {
   await page.goto(`${origin}/demo-assets/gateway/index.html`);

@@ -36,13 +36,15 @@ function render(fetch = vi.fn().mockResolvedValue(Response.json(snapshot()))) {
 describe("Community Pulse browser display", () => {
   it("shows loading until the one same-origin request completes", async () => {
     let finish!: (response: Response) => void;
-    const fetch = vi.fn(() => new Promise<Response>((resolve) => { finish = resolve; }));
+    const fetch = vi.fn<(url: string, init: RequestInit) => Promise<Response>>(() => new Promise<Response>((resolve) => { finish = resolve; }));
     const view = render(fetch);
     expect(view.list.attributes["aria-busy"]).toBe("true");
     expect(view.status.text).toContain("取得中");
     finish(Response.json(snapshot()));
     await view.done;
-    expect(fetch).toHaveBeenCalledWith("/api/community-pulse", expect.objectContaining({ cache: "no-store", credentials: "omit" }));
+    expect(fetch).toHaveBeenCalledWith("/api/community-pulse", expect.objectContaining({ credentials: "omit" }));
+    // no-store/no-cache requests bypass the Next Data Cache during development.
+    expect(fetch.mock.calls[0][1].cache ?? "default").toBe("default");
     expect(view.list.attributes["aria-busy"]).toBe("false");
     expect(view.addEventListener).not.toHaveBeenCalled();
     expect(view.setInterval).not.toHaveBeenCalled();

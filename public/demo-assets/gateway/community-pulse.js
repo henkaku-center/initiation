@@ -40,7 +40,7 @@
   status.textContent = "注目のIssueを取得中…";
   try {
     const response = await fetch("/api/community-pulse", {
-      cache: "no-store", credentials: "omit", signal: AbortSignal.timeout(10000),
+      credentials: "omit", signal: AbortSignal.timeout(10000),
     });
     if (!response.ok) throw new Error("Feed unavailable");
     const data = await response.json();

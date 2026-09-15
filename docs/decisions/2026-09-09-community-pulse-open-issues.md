@@ -1,5 +1,7 @@
 # 2026-09-09 Community Pulseに本家の重要な未解決Issueを載せる
 
+> 追記: 固定4件を手動で掲載する方針は[公開Issueを1時間キャッシュして表示する決定](./2026-09-14-community-pulse-live-issues.md)で置き換えました。以下の選定と確認日時は、その決定前の記録です。
+
 ユーザーの依頼により、Community Pulseを本家リポジトリ `henkaku-center/initiation` の未解決Issue4件へ差し替える。現在の開発計画と [MVP-1の優先方針 #74](https://github.com/henkaku-center/initiation/issues/74) に沿い、参加から申請・手動運用までの一巡に必要な事項を選ぶ。
 
 2026-09-09 21:36 JSTにGitHubで個別に `state: open`、`closed_at: null` を確認した。
