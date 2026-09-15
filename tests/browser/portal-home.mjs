@@ -25,6 +25,7 @@ await context.route("**/*", (route) => {
   const url = new URL(route.request().url());
   if (url.href === musicApi) return route.fulfill({ json: musicChart });
   if (url.origin !== origin) return route.abort();
+  if (url.pathname === "/api/community-pulse") return route.fulfill({ json: { status: "fresh", issues: [], lastSuccessAt: "2026-09-14T03:00:00Z" } });
   // This suite exercises public UI; authenticated flows use portal.mjs and the local DB.
   if (url.pathname === "/api/auth/me") return route.fulfill({ status: 401, contentType: "application/json", body: '{"error":"Unauthorized"}' });
   return route.continue();

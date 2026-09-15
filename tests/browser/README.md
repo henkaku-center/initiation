@@ -4,6 +4,8 @@
 
 Node 22以上、Ruby、Supabase CLI、Docker、PlaywrightとChromiumが必要です。Playwrightはブラウザ検証用ツールとして別に用意し、このリポジトリの依存には追加していません。
 
+`portal.mjs`、`portal-home.mjs`、`frequency.mjs` は `/api/community-pulse` も固定のテスト応答へ置き換え、アプリのサーバー経由でGitHubへ通信することを防ぎます。
+
 ## 専用サービスの準備
 
 実行先は `http://127.0.0.1:3102` と `http://127.0.0.1:65421` に固定しています。本番・ステージングの認証情報や既存開発DBは使いません。アプリ側も `.env.local` などを含まない隔離コピーを用意し、正しいlockfileで `npm ci` と `npm run build` を先に実行します。
@@ -68,3 +70,19 @@ node tests/browser/portal-home.mjs "$PORTAL_PLAYWRIGHT_DIR" "$PORTAL_ARTIFACT_DI
 `node tests/browser/frequency.mjs <Playwrightディレクトリ> <成果物ディレクトリ> <Chromium実行ファイル>` は、3102番の生成Homeで取得中・429・再試行・204・4曲表示、出典、UTC期間、キーボードと360/768/1440pxのライト・ダークを検証します。音楽データは `music-fixture.mjs` で置換し、外部通信は遮断します。
 
 末尾に `--live` を付ける場合だけ、ListenBrainzの固定の公開APIへGETを1回許可します。認証情報・Cookie・Refererを送らないことも確認します。実際の集計結果は変わるため、通常の自動テストとライブ接続確認は分けて記録してください。
+
+## COMMUNITY PULSE
+
+通常buildを3102番で起動した状態で、次を実行します。
+
+```bash
+node tests/browser/community-pulse.mjs "$PORTAL_PLAYWRIGHT_DIR" "$PORTAL_ARTIFACT_DIR" "$PORTAL_CHROMIUM_PATH"
+```
+
+ブラウザの `/api/community-pulse` 応答をテストデータへ置き換え、GitHubへはアクセスしません。取得中、6件表示、古いデータ、0件、503、長いタイトルとHTMLを含むタイトル、最終取得時刻とIssue更新時刻、キーボード、360/768/1440pxのライト・ダーク、非同期カード追加後の演出、通常Homeのiframe内での表示を検証します。スクリーンショットは指定ディレクトリに保存します。
+
+取得・キャッシュは `npm test -- tests/unit/lib/communityPulse` で検証します。GitHub通信は置き換え、Next.jsの実際の `unstable_cache` をメモリ上の保存アダプターで動かし、1時間の再利用・バックグラウンド更新・失敗時の前回成功分保持・成功時刻・Retry-Afterを確認します。
+
+`npm run dev` でも通常のHome表示はData Cacheを再利用します。開発者ツールでキャッシュを無効にした場合や強制再読み込みで `Cache-Control: no-cache` が付いた場合は、Next.jsの開発時の仕様でData Cacheが無効になるため、再利用の確認はその設定を解除して行います。
+
+実接続はブラウザの置き換えを使わずHomeまたは `/api/community-pulse` を開いて確認できます。本家の `community-pulse` ラベル付きopen Issueが0件なら「掲載対象なし」が正常です。ラベル付与・Issue更新・クローズは運営の操作で行い、1時間経過後のアクセスが更新を開始すること、更新が完了した後のアクセスで新しい一覧と取得時刻になることを確認します。バックグラウンド更新が完了しても、開いたままの画面は自動更新しません。

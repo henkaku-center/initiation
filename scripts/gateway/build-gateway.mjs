@@ -34,7 +34,13 @@ sections = sections.replace('aria-label="Podcast placeholder"', 'aria-label="Joi
 sections = sections.replace('<div class="placeholder-list" data-podcast-card></div>', '<div class="placeholder-list" data-podcast-card></div><p class="podcast-source"><a href="https://joi.ito.com/podcast/" target="_blank" rel="noopener noreferrer">公式サイトで番組を聴く ↗</a><span>紹介文：公式情報をもとに編集</span></p>');
 sections = sections.replace('<div class="placeholder-grid" aria-label="最近のプロジェクト、投稿、クエスト、Check-in">\n            <div class="media-block" aria-hidden="true"></div>', '<div class="placeholder-grid pulse-grid" aria-label="最近のプロジェクト、投稿、クエスト、Check-in">');
 sections = sections.replace('aria-label="最近のプロジェクト、投稿、クエスト、Check-in"', 'aria-label="本家リポジトリの重要な未解決Issue"');
-sections = sections.replace('<div class="placeholder-grid pulse-grid"', '<p class="pulse-development-note">開発中のため、本家リポジトリの未解決Issueから4件を紹介しています。<small>2026年9月9日確認 · 検討・検証中の内容を含みます。</small></p><div class="placeholder-grid pulse-grid"');
+sections = sections.replace('<div class="placeholder-grid pulse-grid"', `<p class="pulse-development-note">コミュニティの注目Issueを紹介しています。<small>検討・検証中の内容を含みます。</small></p>
+          <p class="pulse-status" data-pulse-status role="status">注目のIssueを取得中…</p>
+          <p class="pulse-time" data-pulse-time></p>
+          <p class="pulse-source"><a href="https://github.com/henkaku-center/initiation/issues?q=is%3Aissue+is%3Aopen+label%3Acommunity-pulse" target="_blank" rel="noopener noreferrer">本家GitHubで一覧を見る ↗</a></p>
+          <noscript>Issueの表示にはJavaScriptが必要です。GitHubの一覧から確認できます。</noscript>
+          <div class="placeholder-grid pulse-grid"`);
+sections = sections.replace('<div class="placeholder-list" data-pulse-list>', '<div class="placeholder-list" data-pulse-list aria-busy="true">');
 
 const inlineScroll = gateway.match(/<script>\s*const root = document.documentElement;([\s\S]*?)<\/script>/)[1];
 let scrollCode = 'const root = document.documentElement;' + inlineScroll;
@@ -43,16 +49,18 @@ scrollCode = scrollCode.replace('const item = document.createElement("div");', '
 scrollCode = scrollCode.replace(/    const trackList = document.querySelector\("\[data-track-list\]"\);[\s\S]*?\n  }/, '  }');
 scrollCode = scrollCode.replace('title: window.gatewayMock.podcast.title,', 'title: window.gatewayMock.podcast.title,\n      href: window.gatewayMock.podcast.href,');
 scrollCode = scrollCode.replaceAll("window.gatewayMock", "window.gatewayContent");
+scrollCode = scrollCode.replace(/    const pulseList = document.querySelector\("\[data-pulse-list\]"\);\s*window.gatewayContent.pulse.forEach\(\(item\) => pulseList.append\(card\(item\)\)\);/, '');
 // Each Pulse card enters separately while its section is pinned.
 scrollCode += `\n
 const pulseSection = document.querySelector('[data-gateway-section="01-community-pulse"]');
-const pulseCards = [...document.querySelectorAll('[data-pulse-list] .placeholder-card')];
 function updatePulseCards() {
+  const pulseCards = [...document.querySelectorAll('[data-pulse-list] .placeholder-card')];
   const progress = reduceMotion.matches ? 1 : Math.min(1, 0.35 + progressFor(pulseSection) * 0.8);
   pulseCards.forEach((item, index) => item.style.setProperty('--card-progress', String(Math.min(1, Math.max(0, (progress - index * 0.12) / 0.28)))));
 }
 window.addEventListener('scroll', updatePulseCards, { passive:true });
 window.addEventListener('resize', updatePulseCards);
+window.addEventListener('henkaku:pulse-rendered', updatePulseCards);
 reduceMotion.addEventListener('change', updatePulseCards);
 updatePulseCards();
 
@@ -112,7 +120,8 @@ const html = `<!doctype html>
 <script type="module" src="./gateway-v1-claude-decrypt.js"></script>
 <script src="./gateway-data.js"></script><script>${scrollCode}
 document.querySelector('.home-replay').addEventListener('click', () => window.parent.postMessage({ type:'henkaku:intro:replay' }, location.origin));
-</script><script src="./frequency.js"></script></body></html>`;
+</script><script src="./community-pulse.js"></script><script src="./frequency.js"></script></body></html>`;
+fs.writeFileSync(path.join(root,"public/demo-assets/gateway/community-pulse.js"), read("assets/reference/gateway/community-pulse.js"));
 fs.writeFileSync(path.join(root,"public/demo-assets/gateway/frequency.js"), read("assets/reference/gateway/frequency.js"));
 fs.writeFileSync(path.join(root,"public/demo-assets/gateway/gateway-data.js"), read("assets/reference/gateway/gateway-data.js"));
 // Adapt the source artwork to directly addressable application routes.

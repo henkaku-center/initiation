@@ -15,6 +15,7 @@
 | `SUPABASE_URL` | Supabaseの接続先 | 環境による |
 | `SUPABASE_SERVICE_ROLE_KEY` | サーバー側Repositoryの接続 | 非公開 |
 | `ADMIN_ADDRESSES` | 管理画面を使えるウォレット（カンマ区切り） | アドレス自体は公開情報だが環境変数で管理 |
+| `COMMUNITY_PULSE_GITHUB_TOKEN` | Community PulseのGitHub取得用トークン（任意・未設定でも公開取得可） | 非公開・サーバー専用 |
 | `NEXT_PUBLIC_HENKAKU_TOKEN_ADDRESS` | Polygon上のHENKAKUコントラクト | 公開可・既定値あり |
 | `NEXT_PUBLIC_HENKAKU_TOKEN_SYMBOL` | トークン表示名 | 公開可・既定値あり |
 | `NEXT_PUBLIC_HENKAKU_TOKEN_DECIMALS` | トークン小数桁 | 公開可・既定値あり |
@@ -93,6 +94,10 @@ Polygon上のHENKAKUトークンの情報です。4つとも公開情報のた�
 `/setup` はこれらを `wallet_watchAsset` でウォレットへ渡します。**誤ったアドレスを設定すると、利用者が意図しないトークンを自分のウォレットへ追加してしまいます。** 値を変える場合は根拠を[決定事項ログ](/decisions)へ記録してください。
 
 `SYMBOL` と `DECIMALS` は未設定でも `HENKAKU` / `18` が既定値として使われます（`lib/henkakuToken.ts`）。`LOGO_URL` は任意で、未設定ならウォレット側の既定表示になります。
+
+### COMMUNITY_PULSE_GITHUB_TOKEN
+
+Community Pulseが公開Issueを取得する際の任意のGitHubトークンです。未設定でも動作します。未認証のAPI利用枠では不足する場合に設定してください。サーバー専用で、ブラウザには送りません。
 
 ### SAKURA_AI_API_KEY / SAKURA_AI_BASE_URL
 

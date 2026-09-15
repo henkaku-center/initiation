@@ -26,7 +26,13 @@ page.setDefaultTimeout(12000);
 const errors = [];
 page.on("pageerror", (error) => errors.push(error.message));
 // Public previews can be inspected without requesting videos, analytics, fonts or chain RPC.
-await context.route("**/*", (route) => route.request().url() === musicApi ? route.fulfill({ json: musicChart }) : new URL(route.request().url()).origin === origin ? route.continue() : route.abort());
+await context.route("**/*", (route) => {
+  const url = new URL(route.request().url());
+  if (url.href === musicApi) return route.fulfill({ json: musicChart });
+  if (url.origin !== origin) return route.abort();
+  if (url.pathname === "/api/community-pulse") return route.fulfill({ json: { status: "fresh", issues: [], lastSuccessAt: "2026-09-14T03:00:00Z" } });
+  return route.continue();
+});
 await context.exposeFunction("portalTestSign", (index, message) => accounts[index].signMessage({ message: { raw: message } }));
 await context.addInitScript(({ addresses }) => {
   const events = new Map();
