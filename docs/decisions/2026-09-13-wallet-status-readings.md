@@ -38,7 +38,8 @@
 ### 3. Allowlist の判定元と読み方
 
 - **正本はオンチェーン**(コントラクトの `whitelist`)。アプリ内の `applications.allowlist_status` は「運営が実行を記録したか」を表す業務記録であり、登録の証明ではない。
-- 読み取りは `isAllowed(address)` を `from = owner()` で `eth_call` する。`owner()` は固定値にせず、同じバッチで読む(`useReadContracts` で `owner` → `isAllowed` の2段、または `owner` を長めにキャッシュ)。
+- 読み取りは `isAllowed(address)` を `from = owner()` で `eth_call` する。`owner()` は固定値にせず先に読み(実質固定値なので長めにキャッシュしてよい)、その値を `isAllowed` の `account`(`from`)に指定する。
+- **`isAllowed` は Multicall3 を経由しない直接呼び出しにする。** Multicall3 の `aggregate3` に乗ると、トークン契約から見た `msg.sender` は Multicall3 になり、`onlyOwner` の `isAllowed` は revert する。外側の `from` に owner を指定しても解消せず、`allowFailure: true` でも個別失敗として返るだけで直接読み取りへは戻らない。そのため wagmi の `useReadContracts`(viem の `multicall`)は使わず、関数ごとの `useReadContract`(viem `readContract`)に `account = owner` を渡す。viem 2.56 の `call` は `from` が付いた要求を Multicall3 にまとめない(`shouldPerformMulticall`)ため、この指定で直接の `eth_call` になる。`balanceOf` / `owner` は `from` を持たないので、既定の Multicall3 集約に乗ってよい。
 - storage 直読み(slot 7)は、`isAllowed` が読めなくなった場合の代替として決定記録に残すが、初版では実装しない。
 
 理由: 転送可否を決めているのはコントラクトのストレージだけで、アプリ記録が「追加済み」でも実際に未登録なら送付は失敗する。`from` 指定の `eth_call` は署名不要・読み取り専用で、秘密情報を扱わない。
@@ -64,7 +65,7 @@
 ### 5. 取得タイミングと失敗時の見せ方
 
 - 取得は接続中のアドレスに対して行い、**サインインは要求しない**(公開情報のため)。未接続なら「ウォレットを接続すると表示します」。
-- wagmi の `useReadContracts` を使い、クエリキーにアドレスを含める。アカウント切替時は新しいアドレスの取得中表示に切り替わり、前のアドレスの値を残さない。チェーン切替では再取得しない(読み取りは常に Polygon の transport で行うため。表示に「Polygon上の状態」と明記)。
+- wagmi の `useReadContract` を関数ごとに使い、クエリキーにアドレスを含める(`isAllowed` の直接呼び出しは 3. を参照)。アカウント切替時は新しいアドレスの取得中表示に切り替わり、前のアドレスの値を残さない。チェーン切替では再取得しない(読み取りは常に Polygon の transport で行うため。表示に「Polygon上の状態」と明記)。
 - `staleTime` 30秒、ウィンドウフォーカスでの自動再取得は無効、手動の「再取得」ボタンを置く。配布直後の確認に使えれば十分で、公開RPCへの呼び出しを増やさない。
 - 状態は **取得中 / 取得できませんでした / 保有していない・未追加 / 保有している・追加済み** の4つを別の表示にし、`—` や空欄を「未保有・未追加」の意味で使わない。
 - RPC は任意の環境変数 `NEXT_PUBLIC_POLYGON_RPC_URL` で差し替え可能にし、未設定なら viem の既定を使う。`.env.example` に「未設定でも動く」と明記する。
@@ -76,7 +77,7 @@
 ## 実装Issueへの分割案
 
 1. `lib/domain/walletStatus.ts`: 読み取り結果(残高・Allowlist)と申請記録(`allowlistStatus` / `reviewStatus`)から表示状態(4状態 + 残高表示 + 補足文)を返す純粋関数と、その単体テスト(DB・ネットワーク不要)
-2. `lib/henkakuToken.ts` に ABI(`balanceOf` / `owner` / `isAllowed`)を追加し、`PortalWalletStatus` を `useReadContracts` で接続。wagmi をモックした単体テストで4状態と、アドレス切替時に前の値が残らないことを検証
+2. `lib/henkakuToken.ts` に ABI(`balanceOf` / `owner` / `isAllowed`)を追加し、`PortalWalletStatus` を関数ごとの `useReadContract` で接続(`isAllowed` は `account = owner` の直接呼び出し)。wagmi をモックした単体テストで4状態と、アドレス切替時に前の値が残らないことを検証する。加えて、**実際の読み取り経路でトークン契約への呼び出し元が owner になり、Multicall3 を経由しないこと**を、wagmi の返り値ではなく transport に届く JSON-RPC(`eth_call` の `to` / `from`)で検証する。wagmi の返り値だけをモックしたテストでは、この取り違えを検出できない
 3. `/passport` の申請記録との並列表示と補足文
 4. `.env.example`・`docs/guide/portal-app.md` の「準備中の範囲」・`docs/privacy-policy.md` の更新
 
