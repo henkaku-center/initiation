@@ -4,6 +4,13 @@ import { SiweMessage } from "siwe";
 
 export type SignInPhase = "nonce" | "signing" | "verifying";
 
+/**
+ * 429 はホスティング側のレート制限で、関数まで届かずに返る場合がある(Issue #50)。
+ * 「もう一度お試しください」「もう一度署名してください」と促すと、待つべき相手に
+ * 再試行させて上限を消費し続けることになるので、待つよう伝える。
+ */
+const RATE_LIMITED = "アクセスが集中しています。しばらく待ってから、もう一度お試しください。";
+
 function refused(cause: unknown): boolean {
   if (!cause || typeof cause !== "object") return false;
   const error = cause as { code?: number; name?: string; cause?: unknown };
@@ -25,6 +32,7 @@ export async function signInWithWallet({ address, origin, isCurrent, signMessage
   checkWallet();
   onPhase("nonce");
   const nonceResponse = await fetch("/api/auth/nonce", { cache: "no-store" });
+  if (nonceResponse.status === 429) throw new Error(RATE_LIMITED);
   if (!nonceResponse.ok) throw new Error("認証の準備に失敗しました。もう一度お試しください。");
   const { nonce } = await nonceResponse.json();
   checkWallet();
@@ -49,6 +57,7 @@ export async function signInWithWallet({ address, origin, isCurrent, signMessage
       body: JSON.stringify({ message, signature }),
     });
     checkWallet();
+    if (response.status === 429) throw new Error(RATE_LIMITED);
     if (!response.ok) throw new Error("認証に失敗しました。もう一度署名してください。");
     const session = await refreshSession();
     checkWallet();
