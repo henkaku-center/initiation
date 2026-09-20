@@ -2,13 +2,13 @@
 // ABOUTME: Same-origin frame messages navigate to the application's five screens.
 "use client";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { INTRO_SEEN_KEY } from "@/lib/intro";
 import { useTheme } from "@/lib/useTheme";
 import { portalRoutes, type PortalScreen } from "@/lib/portal/navigation";
 
-const seenKey = "henkaku.intro.seen.bubble-multi.v1";
 let seenInMemory = false;
 function getSeen() {
-  try { return seenInMemory || sessionStorage.getItem(seenKey) === "1"; }
+  try { return seenInMemory || sessionStorage.getItem(INTRO_SEEN_KEY) === "1"; }
   catch { return seenInMemory; }
 }
 function subscribe(listener: () => void) {
@@ -17,7 +17,7 @@ function subscribe(listener: () => void) {
 }
 function markSeen() {
   seenInMemory = true;
-  try { sessionStorage.setItem(seenKey, "1"); } catch { /* memory is enough */ }
+  try { sessionStorage.setItem(INTRO_SEEN_KEY, "1"); } catch { /* memory is enough */ }
   window.dispatchEvent(new Event("henkaku:intro-change"));
 }
 

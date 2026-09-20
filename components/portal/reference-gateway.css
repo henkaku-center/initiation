@@ -8,6 +8,13 @@
 .pd-gateway-shell[data-intro="visible"] .pd-homepage-frame { opacity:0; }
 .pd-intro-overlay { position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;z-index:60;background:#f4f4f4;opacity:1;transition:opacity .44s ease; }
 .pd-intro-overlay.is-leaving { opacity:0;pointer-events:none; }
+/* showModal() は hydration 後に走るので、それまでダイアログには [open] が付かず
+   display:none のままになる。初回訪問はここでイントロを先に見せ、待ち時間が
+   空白にならないようにする。[open] が付いた時点でこの規則は外れ、モーダルとしての
+   挙動は変わらない(Issue #123)。 */
+:root:not([data-intro-seen]) .pd-intro-overlay:not([open]) { display:block; }
+/* 既読のセッションでは逆に、イントロを待たずに裏のHomeを見せる。 */
+:root[data-intro-seen] .pd-gateway-shell[data-intro="visible"] .pd-homepage-frame { opacity:1; }
 .pd-intro-frame { display:block;width:100%;height:100%;border:0; }
 .pd-intro-access { position:absolute;z-index:2;left:clamp(18px,4vw,60px);bottom:14px;display:flex;gap:10px;align-items:center;max-width:calc(100vw - 36px); }
 .pd-intro-enter { display:flex;align-items:center;gap:22px;min-height:44px;padding:10px 14px;color:#172030;background:#f4f4f4ef;border:1px solid #bbb;font-size:12px;backdrop-filter:blur(8px); }
