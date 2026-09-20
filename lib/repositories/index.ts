@@ -16,6 +16,7 @@ export interface MemberRepository {
   findByAddress(address: Address): Promise<Member | null>;
   upsertByAddress(address: Address): Promise<Member>;
   updateDisplayName(memberId: string, displayName: string): Promise<void>;
+  updateDiscordUsername(memberId: string, discordUsername: string): Promise<void>;
 }
 
 export interface ProgressRepository {

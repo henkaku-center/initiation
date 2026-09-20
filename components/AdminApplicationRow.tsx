@@ -65,6 +65,10 @@ export function AdminApplicationRow({
           {application.walletAddress}
         </span>
         {application.displayName && <small className="mt-1 block text-muted">（{application.displayName}）</small>}
+        {/* 承認後の連絡先。Runbookが外部に置いていた連絡手段をここに出す(Issue #117)。 */}
+        <small className="mt-1 block text-muted">
+          {application.discordUsername ? `Discord: ${application.discordUsername}` : "Discord 未登録"}
+        </small>
       </td>
       <td className="px-4 py-4 font-semibold text-foreground">{review}</td>
       <td className="px-4 py-4 font-semibold text-foreground">{application.allowlistStatus}</td>

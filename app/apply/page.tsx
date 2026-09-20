@@ -13,6 +13,7 @@ export default async function ApplyPage() {
   let address: string;
   let complete: boolean;
   let displayName: string | null;
+  let discordUsername: string | null;
   let reviewReason: string | null = null;
   let allowlistTxId: string | null = null;
   try {
@@ -20,6 +21,7 @@ export default async function ApplyPage() {
     const repositories = getRepositories();
     address = member.walletAddress;
     displayName = member.displayName;
+    discordUsername = member.discordUsername;
     complete = isInitiationComplete(await repositories.progress.listByMember(member.id));
     // 却下済みも取得する。除外すると申請フォームが再表示されるだけで、
     // 見送りになったことも理由も申請者へ伝わらない(Issue #19)。
@@ -38,5 +40,5 @@ export default async function ApplyPage() {
     throw error;
   }
 
-  return <MemberBoundary address={address}><PortalPassport application={application} complete={complete} reviewReason={reviewReason} displayName={displayName} allowlistTxId={allowlistTxId} /></MemberBoundary>;
+  return <MemberBoundary address={address}><PortalPassport application={application} complete={complete} reviewReason={reviewReason} displayName={displayName} discordUsername={discordUsername} allowlistTxId={allowlistTxId} /></MemberBoundary>;
 }

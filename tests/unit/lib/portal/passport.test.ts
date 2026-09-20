@@ -15,6 +15,28 @@ const application: Application = { id: "a1", memberId: "m1", reviewStatus: "appr
 const render = (app: Application | null, complete = true, reason: string | null = null, allowlistTxId: string | null = null) => renderToStaticMarkup(createElement(PortalPassport, { application: app, complete, reviewReason: reason, allowlistTxId }));
 
 describe("portal passport", () => {
+  const renderWith = (props: Partial<Parameters<typeof PortalPassport>[0]>) =>
+    renderToStaticMarkup(createElement(PortalPassport, { application: null, complete: true, reviewReason: null, allowlistTxId: null, ...props }));
+
+  it("asks for the Discord name where the application is made, not among the journey questions", () => {
+    // 問いへの回答ではなく参加の前提なので、申請が止まる場所で受け取る(Issue #117)。
+    const html = renderWith({ discordUsername: null });
+    expect(html).toContain("Discord");
+    expect(html).toContain("portal-discord-username");
+  });
+
+  it("prefills the registered Discord name so it can be corrected", () => {
+    expect(renderWith({ discordUsername: "traveler" })).toContain("traveler");
+  });
+
+  it("does not ask for the Discord name before the journey is finished", () => {
+    expect(renderWith({ complete: false, discordUsername: null })).not.toContain("portal-discord-username");
+  });
+
+  it("does not ask signed-out visitors for a Discord name", () => {
+    expect(renderWith({ signedIn: false, discordUsername: null })).not.toContain("portal-discord-username");
+  });
+
   it("keeps the four illustrated doors and wallet details from the reference", () => {
     const html = render(null, false);
     expect(html).toContain("pd-reward-grid");
