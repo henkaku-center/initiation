@@ -56,5 +56,7 @@ export type Checkin = {
   id: string;
   memberId: string;
   checkinDate: string;
+  /** その日のSignal。書いていなければ null(Issue #119)。 */
+  note: string | null;
   createdAt: string;
 };
