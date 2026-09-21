@@ -21,9 +21,10 @@ export async function checkin(note?: string): Promise<{ ok: boolean; alreadyChec
     const member = await requireMember();
     // 1日1回はDBの一意制約が担保しているが、2回目以降の呼び出し自体は
     // 無制限に通っていた。ここで数えるのはその繰り返しのほう。
-    // 一言の書き換えも同じ枠で数える。止めたいのは繰り返しの書き込みで、
-    // 押す操作と書く操作を分けても、止めたい相手は変わらない。
-    await consumeRateLimit(rateLimitRules.checkin, member.walletAddress);
+    // 一言を伴う呼び出しは別の枠で数える。同じ枠だと、押した直後に書き足して
+    // 弾かれることがあり、「押してから書ける」が成立しない(#46 / Issue #119)。
+    const rule = parsed ? rateLimitRules.checkinNote : rateLimitRules.checkin;
+    await consumeRateLimit(rule, member.walletAddress);
 
     const repositories = getRepositories();
     const result = await repositories.checkins.checkinToday(member.id);

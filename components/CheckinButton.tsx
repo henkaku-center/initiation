@@ -23,7 +23,9 @@ export function CheckinButton({ checked = false, note = null }: { checked?: bool
     setFailed(false);
     startTransition(async () => {
       try {
-        const result = await checkin(text);
+        // 押すだけの操作では一言を送らない。送ると「一言の保存」として数えられ、
+        // 空欄のときは書いてある一言を消してしまう(#46 / Issue #119)。
+        const result = source === "note" ? await checkin(text) : await checkin();
         if (!result.ok) {
           setFailed(true);
           setMessage(result.error ?? "チェックインに失敗しました");
@@ -51,6 +53,8 @@ export function CheckinButton({ checked = false, note = null }: { checked?: bool
         <textarea className="portal-field" id="portal-checkin-note" name="note" value={text} rows={2}
           maxLength={CHECKIN_NOTE_MAX_LENGTH} disabled={pending} placeholder="いま、何が動いている？"
           onChange={(event) => setText(event.target.value)} />
+        {/* 入力欄で打ち切られる前に、残りが見えるようにする(#46)。 */}
+        <small className="pd-fineprint">{text.length} / {CHECKIN_NOTE_MAX_LENGTH}</small>
         <button className={buttonStyles.secondary} type="submit" disabled={pending}>
           {checked ? "一言を保存" : "一言を添えてチェックイン"}
         </button>

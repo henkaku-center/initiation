@@ -4,6 +4,11 @@ import { describe, expect, it } from "vitest";
 import { CHECKIN_NOTE_MAX_LENGTH, readCheckinNote } from "@/lib/domain/checkinNote";
 
 describe("readCheckinNote", () => {
+  it("keeps the agreed length", () => {
+    // Fieldのカードに省略せず出せる長さとして140文字で合意した(#46 / Issue #119)。
+    expect(CHECKIN_NOTE_MAX_LENGTH).toBe(140);
+  });
+
   it("removes surrounding whitespace", () => {
     expect(readCheckinNote("  Tone.jsで音を鳴らした  ")).toEqual({ ok: true, note: "Tone.jsで音を鳴らした" });
   });

@@ -116,10 +116,25 @@ describe("checkin", () => {
     expect(updateNoteMock).not.toHaveBeenCalled();
   });
 
-  it("counts a note-only update against the same limit before writing", async () => {
+  it("counts writing a note in its own bucket, not the one for pressing", async () => {
+    // 押した直後に書き足して弾かれると「押してから書ける」が成立しない(#46 / Issue #119)。
+    checkinTodayMock.mockResolvedValue({ created: false, checkin: { id: "c1" } });
+
+    await checkin("昼に動いた");
+
+    expect(consumeMock).toHaveBeenCalledTimes(1);
+    expect(consumeMock).toHaveBeenCalledWith(
+      expect.objectContaining({ bucket: "checkin_note", subject: MEMBER, limit: 60 }),
+    );
+  });
+
+  it("stops a note before writing when the note limit is reached", async () => {
     consumeMock.mockResolvedValue(false);
+
     const result = await checkin("昼に動いた");
+
     expect(result.ok).toBe(false);
+    expect(result.error).toContain("一言の保存が多すぎます");
     expect(checkinTodayMock).not.toHaveBeenCalled();
     expect(updateNoteMock).not.toHaveBeenCalled();
   });

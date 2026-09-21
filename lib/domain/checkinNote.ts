@@ -2,10 +2,11 @@
 // ABOUTME: 空は「一言なし」として扱い、消す操作もこの経路で表す(Issue #119)。
 
 /**
- * 一言は本人の履歴に並ぶものなので、Initiationの自由記述(2000文字)より短くする。
- * 「いま何が動いているか」を1つ書ける長さを目安にしている。
+ * 一言は本人の履歴やFieldのカードに並ぶものなので、Initiationの自由記述(2000文字)より短くする。
+ * 140文字は「カードに省略せず出せる長さ」として決めたもので、
+ * 長い話はSignalではなく別の場所に置く、という切り分けでもある(#46)。
  */
-export const CHECKIN_NOTE_MAX_LENGTH = 200;
+export const CHECKIN_NOTE_MAX_LENGTH = 140;
 
 export type CheckinNoteResult =
   | { ok: true; note: string | null }
