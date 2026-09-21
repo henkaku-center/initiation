@@ -40,6 +40,7 @@ export function DiscordUsernameForm({ discordUsername }: { discordUsername: stri
       maxLength={DISCORD_USERNAME_MAX_LENGTH} placeholder="Discordのユーザー名"
       onChange={(event) => { setName(event.target.value); setSaved(false); }} />
     <p className="portal-muted">承認のあと、運営がDiscordで連絡します。質問への回答ではありません。アプリはDiscordを確認しないので、運営が見つけられる表記で書いてください。</p>
+    <p className="portal-muted">入力したDiscord名は、申請の審査を担当する運営メンバーが申請一覧で見ます。他のメンバーには表示しません。</p>
     <button className="pd-primary pd-full" type="submit" disabled={pending}>
       {pending ? "保存中…" : discordUsername ? "Discord名を更新する" : "Discord名を登録する"}
     </button>

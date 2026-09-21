@@ -25,6 +25,14 @@ describe("portal passport", () => {
     expect(html).toContain("portal-discord-username");
   });
 
+  it("says at the input who will see the Discord name", () => {
+    // ポリシーを開く人は多くないので、入力する場面で閲覧範囲が分かるようにする(Issue #117 / #46)。
+    const html = renderWith({ discordUsername: null });
+    expect(html).toContain("審査");
+    expect(html).toContain("申請一覧");
+    expect(html).toContain("他のメンバーには表示しません");
+  });
+
   it("prefills the registered Discord name so it can be corrected", () => {
     expect(renderWith({ discordUsername: "traveler" })).toContain("traveler");
   });
