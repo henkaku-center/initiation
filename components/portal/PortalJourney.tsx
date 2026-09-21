@@ -8,7 +8,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { saveStep } from "@/app/initiation/actions";
 import { saveDisplayName } from "@/app/members/actions";
-import { readJourneyAnswer, type JourneyStep, type JourneyAnswer } from "@/lib/initiation/journey";
+import { needsOpeningRecord, OPENED_RECORD_ID, readJourneyAnswer, type JourneyStep, type JourneyAnswer } from "@/lib/initiation/journey";
 import type { ProgressEntry } from "@/lib/domain/types";
 import { journeyScenes } from "@/lib/portal/journeyScenes";
 import "./explorer-scene.css";
@@ -38,6 +38,14 @@ export function PortalJourney({ steps, entries, displayName, complete, signedIn 
   const scene = journeyScenes[stage];
   const step = steps[position];
   useEffect(() => { card.current?.focus({ preventScroll: true }); }, [position, showComplete]);
+  // 開いたこと自体を1行残す。1問も書かずに帰った人を数えるための分母(Issue #120)。
+  // 完走には数えないので、失敗しても旅の進行は止めない。
+  useEffect(() => {
+    if (!signedIn || !needsOpeningRecord(entries)) return;
+    void saveStep(OPENED_RECORD_ID, { status: "seen" }).catch(() => undefined);
+    // entriesは開いた時点の記録。保存後の再取得で走り直さないよう、依存を絞る。
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [signedIn]);
   function goTo(next: number) { setPosition(next); setLook(0); }
 
   async function toggleSound() {

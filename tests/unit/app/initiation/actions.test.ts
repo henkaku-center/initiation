@@ -57,6 +57,19 @@ describe("saveStep", () => {
     expect(saveMock).toHaveBeenCalledWith("m1", "v2-interests", '{"status":"skipped"}');
   });
 
+  it("saves the opening record, which is not one of the questions", async () => {
+    // 開いたが1つも書かなかった人を数えるための1行(Issue #120)。
+    const result = await saveStep("v2-opened", { status: "seen" });
+    expect(result.ok).toBe(true);
+    expect(saveMock).toHaveBeenCalledWith("m1", "v2-opened", '{"status":"seen"}');
+  });
+
+  it("rejects a seen record sent for a question", async () => {
+    const result = await saveStep("v2-curiosity", { status: "seen" });
+    expect(result.ok).toBe(false);
+    expect(saveMock).not.toHaveBeenCalled();
+  });
+
   it.each(["q-introduction", "q-how-found", "quest-wallet-setup", "quest-discord-hello"])("does not accept fresh completion writes to retired ID %s", async (id) => {
     expect((await saveStep(id, "legacy answer")).ok).toBe(false);
     expect(saveMock).not.toHaveBeenCalled();
