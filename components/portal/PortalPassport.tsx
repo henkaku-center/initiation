@@ -3,11 +3,12 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ApplyForm } from "@/components/ApplyForm";
+import { DiscordUsernameForm } from "@/components/DiscordUsernameForm";
 import { allowlistLabel, distributionLabel, reviewLabel } from "@/lib/applicationLabels";
 import type { Application } from "@/lib/domain/types";
 import { PortalWalletStatus } from "./PortalWalletStatus";
 
-export function PortalPassport({ application, reviewReason, complete, displayName = null, signedIn = true, allowlistTxId = null }: { application: Application | null; reviewReason: string | null; complete: boolean; displayName?: string | null; signedIn?: boolean; /** Allowlist 登録操作の tx hash(監査イベント由来)。WALLET STATUS の食い違い表示で使う。 */ allowlistTxId?: string | null }) {
+export function PortalPassport({ application, reviewReason, complete, displayName = null, discordUsername = null, signedIn = true, allowlistTxId = null }: { application: Application | null; reviewReason: string | null; complete: boolean; displayName?: string | null; /** 申請の前提となる連絡先。未登録は null(Issue #117)。 */ discordUsername?: string | null; signedIn?: boolean; /** Allowlist 登録操作の tx hash(監査イベント由来)。WALLET STATUS の食い違い表示で使う。 */ allowlistTxId?: string | null }) {
   const canApply = signedIn && complete && (!application || application.reviewStatus === "rejected");
   return <main className="pd-page pd-passport-page">
     <header className="pd-page-heading"><p className="pd-eyebrow">YOUR PLACE IN HENKAKU</p><h1>あなたの、はじまりのしるし。</h1><p>{complete ? `${displayName || "旅人"}さん、おかえりなさい。次の入口が開いています。` : "旅を終えた先に、あなたのパスポートが待っています。"}</p></header>
@@ -30,6 +31,8 @@ export function PortalPassport({ application, reviewReason, complete, displayNam
           {application.reviewStatus !== "rejected" && <div><dt>Allowlist</dt><dd>{allowlistLabel(application.allowlistStatus)}</dd></div>}
         </dl> : signedIn ? <p className="portal-muted">まだ申請していません。</p> : <Link className="pd-primary pd-full" href="/setup">サインインして申請状況を確認 ↗</Link>}
         {application?.reviewStatus === "needs_info" && <p className="portal-muted">追加確認の理由をご確認ください。この画面からの追加情報送信は準備中です。運営からの案内に沿ってご対応ください。</p>}
+        {/* 申請が止まる場所で受け取る。旅の問いの並びには置かない(Issue #117)。 */}
+        {signedIn && complete && <DiscordUsernameForm discordUsername={discordUsername} />}
         {canApply && <ApplyForm key={application?.id ?? "unsubmitted"} reapply={application?.reviewStatus === "rejected"} />}
       </section>
       <section className="pd-reward-card">

@@ -39,6 +39,25 @@ describe("repositories (local supabase)", () => {
     expect(found?.displayName).toBe("さくら(改名)");
   });
 
+  it("stores and overwrites a member Discord name", async () => {
+    // 承認後に運営が申請者へ連絡するための参加の前提(Issue #117)。
+    const { members } = getRepositories();
+    const m = await members.upsertByAddress(ADDR);
+    expect(m.discordUsername).toBeNull();
+    await members.updateDiscordUsername(m.id, "traveler");
+    await members.updateDiscordUsername(m.id, "traveler2");
+    const found = await members.findByAddress(ADDR);
+    expect(found?.discordUsername).toBe("traveler2");
+  });
+
+  it("keeps the Discord name when the member is upserted again", async () => {
+    const { members } = getRepositories();
+    const m = await members.upsertByAddress(ADDR);
+    await members.updateDiscordUsername(m.id, "traveler");
+    await members.upsertByAddress(ADDR);
+    expect((await members.findByAddress(ADDR))?.discordUsername).toBe("traveler");
+  });
+
   it("keeps the display name when the member is upserted again", async () => {
     // サインインのたびに upsertByAddress が走る。ここで表示名が消えると、
     // 保存しても次のサインインで失われる。
@@ -48,6 +67,15 @@ describe("repositories (local supabase)", () => {
     await members.upsertByAddress(ADDR);
     const found = await members.findByAddress(ADDR);
     expect(found?.displayName).toBe("さくら");
+  });
+
+  it("lists the Discord name with each application so operators can reach the applicant", async () => {
+    const { members, applications } = getRepositories();
+    const m = await members.upsertByAddress(ADDR);
+    await members.updateDiscordUsername(m.id, "traveler");
+    await applications.create(m.id);
+    const listed = await applications.listAll();
+    expect(listed[0].discordUsername).toBe("traveler");
   });
 
   it("saves and overwrites progress per step", async () => {

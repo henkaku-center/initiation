@@ -10,12 +10,12 @@
   ],
   "toneTimeSignature": 4,
   "ppq": 480,
-  "lengthBars": 28,
-  "loopBars": 28,
-  "durationSeconds": 50.149254,
+  "lengthBars": 33,
+  "loopBars": 33,
+  "durationSeconds": 59.104478,
   "loop": {
     "start": "0:0:0",
-    "end": "28:0:0"
+    "end": "33:0:0"
   },
   "quantize": null,
   "trimClipOverlap": true,
@@ -23,7 +23,7 @@
     {
       "name": "bass",
       "sourceName": "bass",
-      "noteCount": 126,
+      "noteCount": 169,
       "isPercussion": false,
       "events": [
         {
@@ -406,380 +406,638 @@
         },
         {
           "time": "16:0:0",
+          "note": "C2",
+          "duration": "0:0:2",
+          "velocity": 0.929
+        },
+        {
+          "time": "16:0:2",
           "note": "D2",
-          "duration": "0:0:2.441667",
-          "velocity": 1
+          "duration": "0:0:0.75",
+          "velocity": 0.835
         },
         {
           "time": "16:1:0",
           "note": "D2",
-          "duration": "0:0:2.158333",
+          "duration": "0:0:0.975",
+          "velocity": 0.866
+        },
+        {
+          "time": "16:1:2",
+          "note": "C2",
+          "duration": "0:0:0.858333",
           "velocity": 1
         },
         {
           "time": "16:2:0",
           "note": "D2",
-          "duration": "0:0:1.816667",
-          "velocity": 1
+          "duration": "0:0:0.825",
+          "velocity": 0.78
         },
         {
           "time": "16:2:2",
-          "note": "A1",
-          "duration": "0:0:2.475",
-          "velocity": 1
+          "note": "D2",
+          "duration": "0:0:1.2",
+          "velocity": 0.866
         },
         {
           "time": "16:3:0",
-          "note": "D2",
-          "duration": "0:0:1.291667",
+          "note": "C2",
+          "duration": "0:0:1.075",
           "velocity": 1
         },
         {
           "time": "16:3:2",
+          "note": "D2",
+          "duration": "0:0:1.625",
+          "velocity": 0.835
+        },
+        {
+          "time": "17:0:0",
+          "note": "C2",
+          "duration": "0:0:1.666667",
+          "velocity": 0.929
+        },
+        {
+          "time": "17:0:2",
           "note": "F2",
-          "duration": "0:1:1.241667",
-          "velocity": 1
+          "duration": "0:0:1.025",
+          "velocity": 0.748
         },
         {
           "time": "17:1:0",
           "note": "F2",
-          "duration": "0:0:2.233333",
-          "velocity": 1
+          "duration": "0:0:1.383333",
+          "velocity": 0.866
+        },
+        {
+          "time": "17:1:2",
+          "note": "C2",
+          "duration": "0:0:1.05",
+          "velocity": 0.866
         },
         {
           "time": "17:2:0",
           "note": "F2",
-          "duration": "0:0:1.441667",
-          "velocity": 1
+          "duration": "0:0:0.958333",
+          "velocity": 0.929
         },
         {
           "time": "17:2:2",
-          "note": "D2",
-          "duration": "0:0:1.575",
-          "velocity": 1
+          "note": "F2",
+          "duration": "0:0:1.608333",
+          "velocity": 0.866
         },
         {
           "time": "17:3:0",
-          "note": "F2",
-          "duration": "0:0:1.158333",
+          "note": "C2",
+          "duration": "0:0:1.208333",
           "velocity": 1
         },
         {
           "time": "17:3:2",
+          "note": "F2",
+          "duration": "0:0:1.825",
+          "velocity": 0.929
+        },
+        {
+          "time": "18:0:0",
+          "note": "D2",
+          "duration": "0:0:1.666667",
+          "velocity": 0.929
+        },
+        {
+          "time": "18:0:2",
           "note": "G2",
-          "duration": "0:1:1.6",
-          "velocity": 1
+          "duration": "0:0:0.9",
+          "velocity": 0.866
         },
         {
           "time": "18:1:0",
           "note": "G2",
-          "duration": "0:0:2.45",
-          "velocity": 1
+          "duration": "0:0:1.216667",
+          "velocity": 0.866
+        },
+        {
+          "time": "18:1:2",
+          "note": "D2",
+          "duration": "0:0:1.2",
+          "velocity": 0.866
         },
         {
           "time": "18:2:0",
           "note": "G2",
-          "duration": "0:0:1.683333",
-          "velocity": 1
+          "duration": "0:0:0.75",
+          "velocity": 0.866
         },
         {
           "time": "18:2:2",
-          "note": "F2",
-          "duration": "0:0:1.508333",
-          "velocity": 1
+          "note": "G2",
+          "duration": "0:0:1.875",
+          "velocity": 0.803
         },
         {
           "time": "18:3:0",
-          "note": "G2",
-          "duration": "0:0:1.525",
-          "velocity": 1
+          "note": "D2",
+          "duration": "0:0:1.666667",
+          "velocity": 0.835
         },
         {
           "time": "18:3:2",
-          "note": "D3",
-          "duration": "0:1:0.55",
-          "velocity": 1
+          "note": "G2",
+          "duration": "0:0:2.008333",
+          "velocity": 0.929
+        },
+        {
+          "time": "19:0:0",
+          "note": "D2",
+          "duration": "0:0:2",
+          "velocity": 0.866
+        },
+        {
+          "time": "19:0:2",
+          "note": "F2",
+          "duration": "0:0:1.1",
+          "velocity": 0.929
         },
         {
           "time": "19:1:0",
-          "note": "D3",
-          "duration": "0:0:3.275",
-          "velocity": 1
+          "note": "F2",
+          "duration": "0:0:1.625",
+          "velocity": 0.929
+        },
+        {
+          "time": "19:1:2",
+          "note": "D2",
+          "duration": "0:0:1.725",
+          "velocity": 0.929
         },
         {
           "time": "19:2:0",
-          "note": "B2",
-          "duration": "0:0:1.183333",
+          "note": "F2",
+          "duration": "0:0:1.108333",
           "velocity": 1
         },
         {
           "time": "19:2:2",
-          "note": "G2",
-          "duration": "0:0:1.133333",
-          "velocity": 1
+          "note": "E2",
+          "duration": "0:0:1.108333",
+          "velocity": 0.732
         },
         {
           "time": "19:3:0",
-          "note": "F2",
-          "duration": "0:0:1.583333",
-          "velocity": 1
+          "note": "D2",
+          "duration": "0:0:1.041667",
+          "velocity": 0.929
         },
         {
           "time": "19:3:2",
-          "note": "D2",
-          "duration": "0:0:1.675",
-          "velocity": 1
+          "note": "C2",
+          "duration": "0:0:1.008333",
+          "velocity": 0.835
         },
         {
           "time": "20:0:0",
+          "note": "C2",
+          "duration": "0:0:1.666667",
+          "velocity": 0.866
+        },
+        {
+          "time": "20:0:2",
           "note": "D2",
-          "duration": "0:0:2.441667",
-          "velocity": 1
+          "duration": "0:0:1.108333",
+          "velocity": 0.835
         },
         {
           "time": "20:1:0",
           "note": "D2",
-          "duration": "0:0:2.158333",
-          "velocity": 1
+          "duration": "0:0:1.291667",
+          "velocity": 0.835
+        },
+        {
+          "time": "20:1:2",
+          "note": "C2",
+          "duration": "0:0:0.883333",
+          "velocity": 0.929
         },
         {
           "time": "20:2:0",
           "note": "D2",
-          "duration": "0:0:1.816667",
-          "velocity": 1
+          "duration": "0:0:0.85",
+          "velocity": 0.866
         },
         {
           "time": "20:2:2",
-          "note": "A1",
-          "duration": "0:0:2.475",
-          "velocity": 1
+          "note": "D2",
+          "duration": "0:0:1.266667",
+          "velocity": 0.835
         },
         {
           "time": "20:3:0",
-          "note": "D2",
-          "duration": "0:0:1.291667",
-          "velocity": 1
+          "note": "C2",
+          "duration": "0:0:0.95",
+          "velocity": 0.929
         },
         {
           "time": "20:3:2",
+          "note": "D2",
+          "duration": "0:0:1.541667",
+          "velocity": 0.835
+        },
+        {
+          "time": "21:0:0",
+          "note": "C2",
+          "duration": "0:0:2",
+          "velocity": 0.929
+        },
+        {
+          "time": "21:0:2",
           "note": "F2",
-          "duration": "0:1:1.241667",
-          "velocity": 1
+          "duration": "0:0:1.016667",
+          "velocity": 0.866
         },
         {
           "time": "21:1:0",
           "note": "F2",
-          "duration": "0:0:2.233333",
-          "velocity": 1
+          "duration": "0:0:1.225",
+          "velocity": 0.866
+        },
+        {
+          "time": "21:1:2",
+          "note": "C2",
+          "duration": "0:0:1.191667",
+          "velocity": 0.866
         },
         {
           "time": "21:2:0",
           "note": "F2",
-          "duration": "0:0:1.441667",
-          "velocity": 1
+          "duration": "0:0:0.983333",
+          "velocity": 0.929
         },
         {
           "time": "21:2:2",
-          "note": "D2",
-          "duration": "0:0:1.575",
-          "velocity": 1
+          "note": "F2",
+          "duration": "0:0:1.475",
+          "velocity": 0.866
         },
         {
           "time": "21:3:0",
-          "note": "F2",
-          "duration": "0:0:1.158333",
+          "note": "C2",
+          "duration": "0:0:1.366667",
           "velocity": 1
         },
         {
           "time": "21:3:2",
+          "note": "F2",
+          "duration": "0:0:1.758333",
+          "velocity": 0.929
+        },
+        {
+          "time": "22:0:0",
+          "note": "D2",
+          "duration": "0:0:1.508333",
+          "velocity": 0.929
+        },
+        {
+          "time": "22:0:2",
           "note": "G2",
-          "duration": "0:1:1.6",
-          "velocity": 1
+          "duration": "0:0:0.975",
+          "velocity": 0.866
         },
         {
           "time": "22:1:0",
           "note": "G2",
-          "duration": "0:0:2.45",
-          "velocity": 1
+          "duration": "0:0:1.475",
+          "velocity": 0.835
+        },
+        {
+          "time": "22:1:2",
+          "note": "D2",
+          "duration": "0:0:1.216667",
+          "velocity": 0.929
         },
         {
           "time": "22:2:0",
           "note": "G2",
-          "duration": "0:0:1.683333",
-          "velocity": 1
+          "duration": "0:0:0.883333",
+          "velocity": 0.929
         },
         {
           "time": "22:2:2",
-          "note": "F2",
-          "duration": "0:0:1.508333",
-          "velocity": 1
+          "note": "G2",
+          "duration": "0:0:1.675",
+          "velocity": 0.803
         },
         {
           "time": "22:3:0",
-          "note": "G2",
-          "duration": "0:0:1.525",
+          "note": "D2",
+          "duration": "0:0:1.833333",
           "velocity": 1
         },
         {
           "time": "22:3:2",
-          "note": "D3",
-          "duration": "0:1:0.55",
-          "velocity": 1
+          "note": "F2",
+          "duration": "0:0:1.733333",
+          "velocity": 0.929
+        },
+        {
+          "time": "23:0:0",
+          "note": "D2",
+          "duration": "0:0:1.9",
+          "velocity": 0.929
+        },
+        {
+          "time": "23:0:2",
+          "note": "F2",
+          "duration": "0:0:1.3",
+          "velocity": 0.866
         },
         {
           "time": "23:1:0",
-          "note": "D3",
-          "duration": "0:0:3.275",
-          "velocity": 1
+          "note": "F2",
+          "duration": "0:0:1.516667",
+          "velocity": 0.929
+        },
+        {
+          "time": "23:1:2",
+          "note": "D2",
+          "duration": "0:0:1.916667",
+          "velocity": 0.929
         },
         {
           "time": "23:2:0",
-          "note": "B2",
-          "duration": "0:0:1.183333",
+          "note": "F2",
+          "duration": "0:0:1.308333",
           "velocity": 1
         },
         {
           "time": "23:2:2",
-          "note": "G2",
-          "duration": "0:0:1.133333",
-          "velocity": 1
+          "note": "E2",
+          "duration": "0:0:1.325",
+          "velocity": 0.874
         },
         {
           "time": "23:3:0",
-          "note": "F2",
-          "duration": "0:0:1.583333",
-          "velocity": 1
+          "note": "D2",
+          "duration": "0:0:1.208333",
+          "velocity": 0.929
         },
         {
           "time": "23:3:2",
-          "note": "D2",
-          "duration": "0:0:1.675",
-          "velocity": 1
+          "note": "C2",
+          "duration": "0:0:1.191667",
+          "velocity": 0.929
         },
         {
           "time": "24:0:0",
           "note": "D2",
-          "duration": "0:0:2.441667",
-          "velocity": 1
+          "duration": "0:0:2.45",
+          "velocity": 0.929
         },
         {
           "time": "24:1:0",
           "note": "D2",
-          "duration": "0:0:2.158333",
+          "duration": "0:0:1.808333",
           "velocity": 1
         },
         {
           "time": "24:2:0",
           "note": "D2",
-          "duration": "0:0:1.816667",
-          "velocity": 1
-        },
-        {
-          "time": "24:2:2",
-          "note": "A1",
-          "duration": "0:0:2.475",
-          "velocity": 1
-        },
-        {
-          "time": "24:3:0",
-          "note": "D2",
-          "duration": "0:0:1.291667",
-          "velocity": 1
-        },
-        {
-          "time": "24:3:2",
-          "note": "F2",
-          "duration": "0:1:1.241667",
-          "velocity": 1
-        },
-        {
-          "time": "25:1:0",
-          "note": "F2",
-          "duration": "0:0:2.233333",
-          "velocity": 1
-        },
-        {
-          "time": "25:2:0",
-          "note": "F2",
-          "duration": "0:0:1.441667",
-          "velocity": 1
-        },
-        {
-          "time": "25:2:2",
-          "note": "D2",
-          "duration": "0:0:1.575",
-          "velocity": 1
-        },
-        {
-          "time": "25:3:0",
-          "note": "F2",
-          "duration": "0:0:1.158333",
-          "velocity": 1
-        },
-        {
-          "time": "25:3:2",
-          "note": "G2",
-          "duration": "0:1:1.6",
-          "velocity": 1
-        },
-        {
-          "time": "26:1:0",
-          "note": "G2",
-          "duration": "0:0:2.45",
-          "velocity": 1
-        },
-        {
-          "time": "26:2:0",
-          "note": "G2",
-          "duration": "0:0:1.683333",
-          "velocity": 1
-        },
-        {
-          "time": "26:2:2",
-          "note": "F2",
-          "duration": "0:0:1.508333",
-          "velocity": 1
-        },
-        {
-          "time": "26:3:0",
-          "note": "G2",
           "duration": "0:0:1.525",
           "velocity": 1
         },
         {
+          "time": "24:2:2",
+          "note": "G1",
+          "duration": "0:0:1.291667",
+          "velocity": 0.835
+        },
+        {
+          "time": "24:3:0",
+          "note": "D2",
+          "duration": "0:0:1.491667",
+          "velocity": 0.929
+        },
+        {
+          "time": "24:3:2",
+          "note": "F2",
+          "duration": "0:1:0.35",
+          "velocity": 0.866
+        },
+        {
+          "time": "25:1:0",
+          "note": "F2",
+          "duration": "0:0:2.383333",
+          "velocity": 0.929
+        },
+        {
+          "time": "25:2:0",
+          "note": "F2",
+          "duration": "0:0:1.766667",
+          "velocity": 0.929
+        },
+        {
+          "time": "25:2:2",
+          "note": "D2",
+          "duration": "0:0:1.658333",
+          "velocity": 0.756
+        },
+        {
+          "time": "25:3:0",
+          "note": "F2",
+          "duration": "0:0:1.291667",
+          "velocity": 0.929
+        },
+        {
+          "time": "25:3:2",
+          "note": "G2",
+          "duration": "0:0:3.825",
+          "velocity": 0.803
+        },
+        {
+          "time": "26:1:0",
+          "note": "G2",
+          "duration": "0:0:2.258333",
+          "velocity": 0.803
+        },
+        {
+          "time": "26:2:0",
+          "note": "G2",
+          "duration": "0:0:1.366667",
+          "velocity": 0.866
+        },
+        {
+          "time": "26:2:2",
+          "note": "F2",
+          "duration": "0:0:0.991667",
+          "velocity": 0.866
+        },
+        {
+          "time": "26:3:0",
+          "note": "G2",
+          "duration": "0:0:1.566667",
+          "velocity": 0.929
+        },
+        {
           "time": "26:3:2",
-          "note": "D3",
-          "duration": "0:1:0.55",
-          "velocity": 1
+          "note": "B2",
+          "duration": "0:0:3.591667",
+          "velocity": 0.803
         },
         {
           "time": "27:1:0",
-          "note": "D3",
-          "duration": "0:0:3.275",
+          "note": "B2",
+          "duration": "0:0:2.691667",
           "velocity": 1
         },
         {
           "time": "27:2:0",
           "note": "B2",
-          "duration": "0:0:1.183333",
-          "velocity": 1
+          "duration": "0:0:1.466667",
+          "velocity": 0.866
         },
         {
           "time": "27:2:2",
-          "note": "G2",
-          "duration": "0:0:1.133333",
-          "velocity": 1
+          "note": "A2",
+          "duration": "0:0:1.183333",
+          "velocity": 0.866
         },
         {
           "time": "27:3:0",
-          "note": "F2",
-          "duration": "0:0:1.583333",
+          "note": "A2",
+          "duration": "0:0:2.316667",
+          "velocity": 0.866
+        },
+        {
+          "time": "28:0:0",
+          "note": "C2",
+          "duration": "0:0:1.091667",
+          "velocity": 0.929
+        },
+        {
+          "time": "28:0:2",
+          "note": "D2",
+          "duration": "0:0:0.783333",
+          "velocity": 0.866
+        },
+        {
+          "time": "28:1:0",
+          "note": "D2",
+          "duration": "0:0:1.075",
+          "velocity": 0.929
+        },
+        {
+          "time": "28:1:2",
+          "note": "D2",
+          "duration": "0:0:3.241667",
+          "velocity": 0.929
+        },
+        {
+          "time": "28:2:2",
+          "note": "E2",
+          "duration": "0:0:1.225",
+          "velocity": 0.929
+        },
+        {
+          "time": "28:3:0",
+          "note": "E2",
+          "duration": "0:0:3.3",
+          "velocity": 0.929
+        },
+        {
+          "time": "29:0:0",
+          "note": "D2",
+          "duration": "0:0:1.125",
           "velocity": 1
         },
         {
-          "time": "27:3:2",
+          "time": "29:0:2",
+          "note": "E2",
+          "duration": "0:0:1.008333",
+          "velocity": 0.835
+        },
+        {
+          "time": "29:1:0",
+          "note": "E2",
+          "duration": "0:0:1.008333",
+          "velocity": 0.866
+        },
+        {
+          "time": "29:1:2",
+          "note": "E2",
+          "duration": "0:0:3.033333",
+          "velocity": 0.929
+        },
+        {
+          "time": "29:2:2",
+          "note": "F2",
+          "duration": "0:0:1.141667",
+          "velocity": 1
+        },
+        {
+          "time": "29:3:0",
+          "note": "F2",
+          "duration": "0:0:3.158333",
+          "velocity": 1
+        },
+        {
+          "time": "30:0:0",
+          "note": "C2",
+          "duration": "0:0:1.075",
+          "velocity": 0.866
+        },
+        {
+          "time": "30:0:2",
           "note": "D2",
-          "duration": "0:0:1.675",
+          "duration": "0:0:1",
+          "velocity": 0.866
+        },
+        {
+          "time": "30:1:0",
+          "note": "D2",
+          "duration": "0:0:1.183333",
+          "velocity": 0.929
+        },
+        {
+          "time": "30:1:2",
+          "note": "D2",
+          "duration": "0:0:2.958333",
+          "velocity": 1
+        },
+        {
+          "time": "30:2:2",
+          "note": "E2",
+          "duration": "0:0:1.058333",
+          "velocity": 1
+        },
+        {
+          "time": "30:3:0",
+          "note": "E2",
+          "duration": "0:0:3.841667",
+          "velocity": 0.929
+        },
+        {
+          "time": "31:0:2",
+          "note": "F2",
+          "duration": "0:0:2.208333",
+          "velocity": 0.929
+        },
+        {
+          "time": "31:1:2",
+          "note": "F2",
+          "duration": "0:0:2.683333",
+          "velocity": 0.929
+        },
+        {
+          "time": "31:2:2",
+          "note": "D2",
+          "duration": "0:0:0.95",
+          "velocity": 0.929
+        },
+        {
+          "time": "31:3:0",
+          "note": "D2",
+          "duration": "0:2:0.208333",
           "velocity": 1
         }
       ]
@@ -787,7 +1045,7 @@
     {
       "name": "drums",
       "sourceName": "808",
-      "noteCount": 301,
+      "noteCount": 371,
       "isPercussion": true,
       "drumMap": {
         "A#2": "openHiHat",
@@ -1769,7 +2027,13 @@
         {
           "time": "15:0:2",
           "note": "F#2",
-          "duration": "0:0:1.766667",
+          "duration": "0:0:1",
+          "velocity": 1
+        },
+        {
+          "time": "15:0:3",
+          "note": "F#2",
+          "duration": "0:0:1",
           "velocity": 1
         },
         {
@@ -1803,15 +2067,15 @@
           "velocity": 1
         },
         {
-          "time": "15:2:2.841667",
-          "note": "A2",
-          "duration": "0:0:0.733333",
+          "time": "15:2:2",
+          "note": "F#2",
+          "duration": "0:0:1.666667",
           "velocity": 1
         },
         {
-          "time": "15:2:3.666667",
-          "note": "F2",
-          "duration": "0:0:0.908333",
+          "time": "15:2:2.841667",
+          "note": "A2",
+          "duration": "0:0:0.733333",
           "velocity": 1
         },
         {
@@ -1821,15 +2085,21 @@
           "velocity": 1
         },
         {
-          "time": "15:3:1.625",
-          "note": "F2",
-          "duration": "0:0:2.241667",
+          "time": "15:3:1.941667",
+          "note": "A2",
+          "duration": "0:0:1.15",
           "velocity": 1
         },
         {
-          "time": "15:3:2.333333",
-          "note": "A#2",
-          "duration": "0:0:1.641667",
+          "time": "15:3:2",
+          "note": "F#2",
+          "duration": "0:0:1",
+          "velocity": 1
+        },
+        {
+          "time": "15:3:3",
+          "note": "F#2",
+          "duration": "0:0:1",
           "velocity": 1
         },
         {
@@ -1847,7 +2117,13 @@
         {
           "time": "16:0:2",
           "note": "F#2",
-          "duration": "0:0:1.15",
+          "duration": "0:0:1",
+          "velocity": 1
+        },
+        {
+          "time": "16:0:3",
+          "note": "F#2",
+          "duration": "0:0:1",
           "velocity": 1
         },
         {
@@ -1859,7 +2135,13 @@
         {
           "time": "16:1:2",
           "note": "F#2",
-          "duration": "0:0:1.441667",
+          "duration": "0:0:1",
+          "velocity": 1
+        },
+        {
+          "time": "16:1:3",
+          "note": "F#2",
+          "duration": "0:0:1",
           "velocity": 1
         },
         {
@@ -1877,7 +2159,13 @@
         {
           "time": "16:2:2",
           "note": "F#2",
-          "duration": "0:0:1.45",
+          "duration": "0:0:1",
+          "velocity": 1
+        },
+        {
+          "time": "16:2:3",
+          "note": "F#2",
+          "duration": "0:0:1",
           "velocity": 1
         },
         {
@@ -1907,7 +2195,13 @@
         {
           "time": "17:0:2",
           "note": "F#2",
-          "duration": "0:0:1.583333",
+          "duration": "0:0:1",
+          "velocity": 1
+        },
+        {
+          "time": "17:0:3",
+          "note": "F#2",
+          "duration": "0:0:1",
           "velocity": 1
         },
         {
@@ -1919,7 +2213,13 @@
         {
           "time": "17:1:2",
           "note": "F#2",
-          "duration": "0:0:1.358333",
+          "duration": "0:0:1",
+          "velocity": 1
+        },
+        {
+          "time": "17:1:3",
+          "note": "F#2",
+          "duration": "0:0:1",
           "velocity": 1
         },
         {
@@ -1937,7 +2237,13 @@
         {
           "time": "17:2:2",
           "note": "F#2",
-          "duration": "0:0:1.383333",
+          "duration": "0:0:1",
+          "velocity": 1
+        },
+        {
+          "time": "17:2:3",
+          "note": "F#2",
+          "duration": "0:0:1",
           "velocity": 1
         },
         {
@@ -1949,7 +2255,7 @@
         {
           "time": "17:3:2",
           "note": "F#2",
-          "duration": "0:0:1.358333",
+          "duration": "0:0:1.316667",
           "velocity": 1
         },
         {
@@ -1967,7 +2273,13 @@
         {
           "time": "18:0:2",
           "note": "F#2",
-          "duration": "0:0:1.558333",
+          "duration": "0:0:1",
+          "velocity": 1
+        },
+        {
+          "time": "18:0:3",
+          "note": "F#2",
+          "duration": "0:0:1",
           "velocity": 1
         },
         {
@@ -1979,7 +2291,13 @@
         {
           "time": "18:1:2",
           "note": "F#2",
-          "duration": "0:0:1.391667",
+          "duration": "0:0:1",
+          "velocity": 1
+        },
+        {
+          "time": "18:1:3",
+          "note": "F#2",
+          "duration": "0:0:1",
           "velocity": 1
         },
         {
@@ -1997,7 +2315,13 @@
         {
           "time": "18:2:2",
           "note": "F#2",
-          "duration": "0:0:1.733333",
+          "duration": "0:0:1",
+          "velocity": 1
+        },
+        {
+          "time": "18:2:3",
+          "note": "F#2",
+          "duration": "0:0:1",
           "velocity": 1
         },
         {
@@ -2009,7 +2333,7 @@
         {
           "time": "18:3:2",
           "note": "F#2",
-          "duration": "0:0:1.475",
+          "duration": "0:0:1.316667",
           "velocity": 1
         },
         {
@@ -2027,7 +2351,13 @@
         {
           "time": "19:0:2",
           "note": "F#2",
-          "duration": "0:0:1.766667",
+          "duration": "0:0:1",
+          "velocity": 1
+        },
+        {
+          "time": "19:0:3",
+          "note": "F#2",
+          "duration": "0:0:1",
           "velocity": 1
         },
         {
@@ -2039,7 +2369,13 @@
         {
           "time": "19:1:2",
           "note": "F#2",
-          "duration": "0:0:1.675",
+          "duration": "0:0:1",
+          "velocity": 1
+        },
+        {
+          "time": "19:1:3",
+          "note": "F#2",
+          "duration": "0:0:1",
           "velocity": 1
         },
         {
@@ -2085,9 +2421,9 @@
           "velocity": 1
         },
         {
-          "time": "19:3:2.333333",
-          "note": "A#2",
-          "duration": "0:0:1.641667",
+          "time": "19:3:2",
+          "note": "F#2",
+          "duration": "0:0:1.316667",
           "velocity": 1
         },
         {
@@ -2105,7 +2441,13 @@
         {
           "time": "20:0:2",
           "note": "F#2",
-          "duration": "0:0:1.15",
+          "duration": "0:0:1",
+          "velocity": 1
+        },
+        {
+          "time": "20:0:3",
+          "note": "F#2",
+          "duration": "0:0:1",
           "velocity": 1
         },
         {
@@ -2117,7 +2459,13 @@
         {
           "time": "20:1:2",
           "note": "F#2",
-          "duration": "0:0:1.441667",
+          "duration": "0:0:1",
+          "velocity": 1
+        },
+        {
+          "time": "20:1:3",
+          "note": "F#2",
+          "duration": "0:0:1",
           "velocity": 1
         },
         {
@@ -2135,7 +2483,13 @@
         {
           "time": "20:2:2",
           "note": "F#2",
-          "duration": "0:0:1.45",
+          "duration": "0:0:1",
+          "velocity": 1
+        },
+        {
+          "time": "20:2:3",
+          "note": "F#2",
+          "duration": "0:0:1",
           "velocity": 1
         },
         {
@@ -2165,7 +2519,13 @@
         {
           "time": "21:0:2",
           "note": "F#2",
-          "duration": "0:0:1.583333",
+          "duration": "0:0:1",
+          "velocity": 1
+        },
+        {
+          "time": "21:0:3",
+          "note": "F#2",
+          "duration": "0:0:1",
           "velocity": 1
         },
         {
@@ -2177,7 +2537,13 @@
         {
           "time": "21:1:2",
           "note": "F#2",
-          "duration": "0:0:1.358333",
+          "duration": "0:0:1",
+          "velocity": 1
+        },
+        {
+          "time": "21:1:3",
+          "note": "F#2",
+          "duration": "0:0:1",
           "velocity": 1
         },
         {
@@ -2195,7 +2561,13 @@
         {
           "time": "21:2:2",
           "note": "F#2",
-          "duration": "0:0:1.383333",
+          "duration": "0:0:1",
+          "velocity": 1
+        },
+        {
+          "time": "21:2:3",
+          "note": "F#2",
+          "duration": "0:0:1",
           "velocity": 1
         },
         {
@@ -2207,7 +2579,7 @@
         {
           "time": "21:3:2",
           "note": "F#2",
-          "duration": "0:0:1.358333",
+          "duration": "0:0:1.316667",
           "velocity": 1
         },
         {
@@ -2225,7 +2597,13 @@
         {
           "time": "22:0:2",
           "note": "F#2",
-          "duration": "0:0:1.558333",
+          "duration": "0:0:1",
+          "velocity": 1
+        },
+        {
+          "time": "22:0:3",
+          "note": "F#2",
+          "duration": "0:0:1",
           "velocity": 1
         },
         {
@@ -2237,7 +2615,13 @@
         {
           "time": "22:1:2",
           "note": "F#2",
-          "duration": "0:0:1.391667",
+          "duration": "0:0:1",
+          "velocity": 1
+        },
+        {
+          "time": "22:1:3",
+          "note": "F#2",
+          "duration": "0:0:1",
           "velocity": 1
         },
         {
@@ -2255,7 +2639,13 @@
         {
           "time": "22:2:2",
           "note": "F#2",
-          "duration": "0:0:1.733333",
+          "duration": "0:0:1",
+          "velocity": 1
+        },
+        {
+          "time": "22:2:3",
+          "note": "F#2",
+          "duration": "0:0:1",
           "velocity": 1
         },
         {
@@ -2267,7 +2657,7 @@
         {
           "time": "22:3:2",
           "note": "F#2",
-          "duration": "0:0:1.475",
+          "duration": "0:0:1.316667",
           "velocity": 1
         },
         {
@@ -2285,7 +2675,13 @@
         {
           "time": "23:0:2",
           "note": "F#2",
-          "duration": "0:0:1.766667",
+          "duration": "0:0:1",
+          "velocity": 1
+        },
+        {
+          "time": "23:0:3",
+          "note": "F#2",
+          "duration": "0:0:1",
           "velocity": 1
         },
         {
@@ -2297,7 +2693,13 @@
         {
           "time": "23:1:2",
           "note": "F#2",
-          "duration": "0:0:1.675",
+          "duration": "0:0:1",
+          "velocity": 1
+        },
+        {
+          "time": "23:1:3",
+          "note": "F#2",
+          "duration": "0:0:1",
           "velocity": 1
         },
         {
@@ -2343,9 +2745,9 @@
           "velocity": 1
         },
         {
-          "time": "23:3:2.333333",
-          "note": "A#2",
-          "duration": "0:0:1.641667",
+          "time": "23:3:2",
+          "note": "F#2",
+          "duration": "0:0:1.316667",
           "velocity": 1
         },
         {
@@ -2605,13 +3007,289 @@
           "note": "A#2",
           "duration": "0:0:1.641667",
           "velocity": 1
+        },
+        {
+          "time": "28:0:0",
+          "note": "C2",
+          "duration": "0:0:2.066667",
+          "velocity": 1
+        },
+        {
+          "time": "28:0:0",
+          "note": "D#3",
+          "duration": "0:3:0.525",
+          "velocity": 1
+        },
+        {
+          "time": "28:0:2",
+          "note": "F#2",
+          "duration": "0:0:1.15",
+          "velocity": 1
+        },
+        {
+          "time": "28:1:0",
+          "note": "E2",
+          "duration": "0:0:2.091667",
+          "velocity": 1
+        },
+        {
+          "time": "28:1:2",
+          "note": "F#2",
+          "duration": "0:0:1.441667",
+          "velocity": 1
+        },
+        {
+          "time": "28:2:0",
+          "note": "C2",
+          "duration": "0:0:1.666667",
+          "velocity": 1
+        },
+        {
+          "time": "28:2:2",
+          "note": "C2",
+          "duration": "0:0:1.666667",
+          "velocity": 1
+        },
+        {
+          "time": "28:2:2",
+          "note": "F#2",
+          "duration": "0:0:1.45",
+          "velocity": 1
+        },
+        {
+          "time": "28:3:0",
+          "note": "E2",
+          "duration": "0:0:1.625",
+          "velocity": 1
+        },
+        {
+          "time": "28:3:2",
+          "note": "F#2",
+          "duration": "0:0:1.316667",
+          "velocity": 1
+        },
+        {
+          "time": "29:0:0",
+          "note": "C2",
+          "duration": "0:0:2.041667",
+          "velocity": 1
+        },
+        {
+          "time": "29:0:0",
+          "note": "C#3",
+          "duration": "0:2:0",
+          "velocity": 1
+        },
+        {
+          "time": "29:0:2",
+          "note": "F#2",
+          "duration": "0:0:1.583333",
+          "velocity": 1
+        },
+        {
+          "time": "29:1:0",
+          "note": "E2",
+          "duration": "0:0:1.558333",
+          "velocity": 1
+        },
+        {
+          "time": "29:1:2",
+          "note": "F#2",
+          "duration": "0:0:1.358333",
+          "velocity": 1
+        },
+        {
+          "time": "29:2:0",
+          "note": "C2",
+          "duration": "0:0:1.666667",
+          "velocity": 1
+        },
+        {
+          "time": "29:2:2",
+          "note": "C2",
+          "duration": "0:0:1.666667",
+          "velocity": 1
+        },
+        {
+          "time": "29:2:2",
+          "note": "F#2",
+          "duration": "0:0:1.383333",
+          "velocity": 1
+        },
+        {
+          "time": "29:3:0",
+          "note": "E2",
+          "duration": "0:0:1.566667",
+          "velocity": 1
+        },
+        {
+          "time": "29:3:2",
+          "note": "F#2",
+          "duration": "0:0:1.358333",
+          "velocity": 1
+        },
+        {
+          "time": "30:0:0",
+          "note": "C2",
+          "duration": "0:0:1.941667",
+          "velocity": 1
+        },
+        {
+          "time": "30:0:0",
+          "note": "D#3",
+          "duration": "0:2:2.291667",
+          "velocity": 1
+        },
+        {
+          "time": "30:0:2",
+          "note": "F#2",
+          "duration": "0:0:1.558333",
+          "velocity": 1
+        },
+        {
+          "time": "30:1:0",
+          "note": "E2",
+          "duration": "0:0:1.45",
+          "velocity": 1
+        },
+        {
+          "time": "30:1:2",
+          "note": "F#2",
+          "duration": "0:0:1.391667",
+          "velocity": 1
+        },
+        {
+          "time": "30:2:0",
+          "note": "C2",
+          "duration": "0:0:1.666667",
+          "velocity": 1
+        },
+        {
+          "time": "30:2:2",
+          "note": "C2",
+          "duration": "0:0:1.666667",
+          "velocity": 1
+        },
+        {
+          "time": "30:2:2",
+          "note": "F#2",
+          "duration": "0:0:1.733333",
+          "velocity": 1
+        },
+        {
+          "time": "30:3:0",
+          "note": "E2",
+          "duration": "0:0:1.608333",
+          "velocity": 1
+        },
+        {
+          "time": "30:3:2",
+          "note": "F#2",
+          "duration": "0:0:1.475",
+          "velocity": 1
+        },
+        {
+          "time": "31:0:0",
+          "note": "C2",
+          "duration": "0:0:2.191667",
+          "velocity": 1
+        },
+        {
+          "time": "31:0:0",
+          "note": "C#3",
+          "duration": "0:2:3.516667",
+          "velocity": 1
+        },
+        {
+          "time": "31:0:2",
+          "note": "F#2",
+          "duration": "0:0:1.766667",
+          "velocity": 1
+        },
+        {
+          "time": "31:1:0",
+          "note": "E2",
+          "duration": "0:0:1.6",
+          "velocity": 1
+        },
+        {
+          "time": "31:1:2",
+          "note": "F#2",
+          "duration": "0:0:1.675",
+          "velocity": 1
+        },
+        {
+          "time": "31:1:3.941667",
+          "note": "A2",
+          "duration": "0:0:1.15",
+          "velocity": 1
+        },
+        {
+          "time": "31:2:0",
+          "note": "C2",
+          "duration": "0:0:1.666667",
+          "velocity": 1
+        },
+        {
+          "time": "31:2:2",
+          "note": "C2",
+          "duration": "0:0:1.666667",
+          "velocity": 1
+        },
+        {
+          "time": "31:2:2.841667",
+          "note": "A2",
+          "duration": "0:0:0.733333",
+          "velocity": 1
+        },
+        {
+          "time": "31:2:3.666667",
+          "note": "F2",
+          "duration": "0:0:0.908333",
+          "velocity": 1
+        },
+        {
+          "time": "31:3:0",
+          "note": "E2",
+          "duration": "0:0:1.941667",
+          "velocity": 1
+        },
+        {
+          "time": "31:3:1.625",
+          "note": "F2",
+          "duration": "0:0:2.241667",
+          "velocity": 1
+        },
+        {
+          "time": "31:3:2.333333",
+          "note": "A#2",
+          "duration": "0:0:1.641667",
+          "velocity": 1
+        },
+        {
+          "time": "32:0:0",
+          "note": "C2",
+          "duration": "0:0:2.066667",
+          "velocity": 1
+        },
+        {
+          "time": "32:0:0",
+          "note": "D#3",
+          "duration": "0:3:0.525",
+          "velocity": 1
+        },
+        {
+          "time": "32:0:2",
+          "note": "F#2",
+          "duration": "0:0:1.15",
+          "velocity": 1
         }
       ]
     },
     {
       "name": "ePiano",
       "sourceName": "e piano",
-      "noteCount": 672,
+      "noteCount": 761,
       "isPercussion": false,
       "events": [
         {
@@ -6073,879 +6751,2211 @@
         {
           "time": "24:0:0",
           "note": "D4",
-          "duration": "0:0:0.941667",
-          "velocity": 1
+          "duration": "0:0:0.908333",
+          "velocity": 0.866
         },
         {
           "time": "24:0:0",
           "note": "F4",
-          "duration": "0:0:0.791667",
-          "velocity": 1
+          "duration": "0:0:0.7",
+          "velocity": 0.929
         },
         {
           "time": "24:0:0",
           "note": "A4",
-          "duration": "0:0:0.766667",
-          "velocity": 1
+          "duration": "0:0:0.658333",
+          "velocity": 0.866
         },
         {
           "time": "24:0:2",
-          "note": "D4",
-          "duration": "0:0:0.958333",
-          "velocity": 1
-        },
-        {
-          "time": "24:0:2",
-          "note": "F4",
-          "duration": "0:0:0.85",
-          "velocity": 1
-        },
-        {
-          "time": "24:0:2",
-          "note": "A4",
-          "duration": "0:0:0.708333",
-          "velocity": 1
-        },
-        {
-          "time": "24:1:0",
-          "note": "D4",
-          "duration": "0:0:0.941667",
-          "velocity": 1
-        },
-        {
-          "time": "24:1:0",
-          "note": "F4",
-          "duration": "0:0:0.866667",
-          "velocity": 1
-        },
-        {
-          "time": "24:1:0",
-          "note": "A4",
-          "duration": "0:0:0.85",
-          "velocity": 1
-        },
-        {
-          "time": "24:1:2",
-          "note": "D4",
-          "duration": "0:0:0.85",
-          "velocity": 1
-        },
-        {
-          "time": "24:1:2",
-          "note": "F4",
-          "duration": "0:0:0.808333",
-          "velocity": 1
-        },
-        {
-          "time": "24:1:2",
-          "note": "A4",
-          "duration": "0:0:0.791667",
-          "velocity": 1
-        },
-        {
-          "time": "24:2:0",
           "note": "D4",
           "duration": "0:0:0.933333",
-          "velocity": 1
+          "velocity": 0.803
         },
         {
-          "time": "24:2:0",
+          "time": "24:0:2",
           "note": "F4",
+          "duration": "0:0:0.8",
+          "velocity": 0.835
+        },
+        {
+          "time": "24:0:2",
+          "note": "A4",
+          "duration": "0:0:0.75",
+          "velocity": 0.835
+        },
+        {
+          "time": "24:1:0",
+          "note": "D4",
+          "duration": "0:0:0.925",
+          "velocity": 0.835
+        },
+        {
+          "time": "24:1:0",
+          "note": "F4",
+          "duration": "0:0:0.8",
+          "velocity": 0.835
+        },
+        {
+          "time": "24:1:0",
+          "note": "A4",
+          "duration": "0:0:0.783333",
+          "velocity": 0.835
+        },
+        {
+          "time": "24:1:2",
+          "note": "D4",
+          "duration": "0:0:0.966667",
+          "velocity": 0.866
+        },
+        {
+          "time": "24:1:2",
+          "note": "F4",
+          "duration": "0:0:0.858333",
+          "velocity": 0.835
+        },
+        {
+          "time": "24:1:2",
+          "note": "A4",
           "duration": "0:0:0.85",
-          "velocity": 1
+          "velocity": 0.835
         },
         {
           "time": "24:2:0",
-          "note": "A4",
+          "note": "D4",
           "duration": "0:0:0.825",
-          "velocity": 1
+          "velocity": 0.835
+        },
+        {
+          "time": "24:2:0",
+          "note": "F4",
+          "duration": "0:0:0.825",
+          "velocity": 0.929
+        },
+        {
+          "time": "24:2:0",
+          "note": "A4",
+          "duration": "0:0:0.841667",
+          "velocity": 0.835
         },
         {
           "time": "24:2:2",
           "note": "D4",
-          "duration": "0:0:1.033333",
-          "velocity": 1
+          "duration": "0:0:0.866667",
+          "velocity": 0.835
         },
         {
           "time": "24:2:2",
           "note": "F4",
-          "duration": "0:0:0.933333",
-          "velocity": 1
-        },
-        {
-          "time": "24:2:2",
-          "note": "A4",
-          "duration": "0:0:0.883333",
-          "velocity": 1
-        },
-        {
-          "time": "24:3:0",
-          "note": "D4",
-          "duration": "0:0:1.05",
-          "velocity": 1
-        },
-        {
-          "time": "24:3:0",
-          "note": "F4",
-          "duration": "0:0:0.958333",
-          "velocity": 1
-        },
-        {
-          "time": "24:3:0",
-          "note": "A4",
-          "duration": "0:0:0.95",
-          "velocity": 1
-        },
-        {
-          "time": "24:3:2",
-          "note": "D4",
-          "duration": "0:0:1",
-          "velocity": 1
-        },
-        {
-          "time": "24:3:2",
-          "note": "F4",
-          "duration": "0:0:1",
-          "velocity": 1
-        },
-        {
-          "time": "24:3:2",
-          "note": "A4",
-          "duration": "0:0:1.033333",
-          "velocity": 1
-        },
-        {
-          "time": "25:0:0",
-          "note": "F4",
-          "duration": "0:0:0.95",
-          "velocity": 1
-        },
-        {
-          "time": "25:0:0",
-          "note": "A4",
-          "duration": "0:0:0.908333",
-          "velocity": 1
-        },
-        {
-          "time": "25:0:0",
-          "note": "C5",
           "duration": "0:0:0.808333",
-          "velocity": 1
+          "velocity": 0.866
         },
         {
-          "time": "25:0:2",
-          "note": "F4",
-          "duration": "0:0:0.933333",
-          "velocity": 1
-        },
-        {
-          "time": "25:0:2",
+          "time": "24:2:2",
           "note": "A4",
-          "duration": "0:0:0.916667",
-          "velocity": 1
-        },
-        {
-          "time": "25:0:2",
-          "note": "C5",
-          "duration": "0:0:0.925",
-          "velocity": 1
-        },
-        {
-          "time": "25:1:0",
-          "note": "F4",
           "duration": "0:0:0.833333",
-          "velocity": 1
+          "velocity": 0.835
+        },
+        {
+          "time": "24:3:0",
+          "note": "D4",
+          "duration": "0:0:0.891667",
+          "velocity": 0.835
+        },
+        {
+          "time": "24:3:0",
+          "note": "F4",
+          "duration": "0:0:0.841667",
+          "velocity": 0.866
+        },
+        {
+          "time": "24:3:0",
+          "note": "A4",
+          "duration": "0:0:0.841667",
+          "velocity": 0.835
+        },
+        {
+          "time": "24:3:2",
+          "note": "D4",
+          "duration": "0:0:1.066667",
+          "velocity": 0.866
+        },
+        {
+          "time": "24:3:2",
+          "note": "F4",
+          "duration": "0:0:0.941667",
+          "velocity": 0.866
+        },
+        {
+          "time": "24:3:2",
+          "note": "A4",
+          "duration": "0:0:0.875",
+          "velocity": 0.866
+        },
+        {
+          "time": "25:0:0",
+          "note": "D4",
+          "duration": "0:0:0.8",
+          "velocity": 0.866
+        },
+        {
+          "time": "25:0:0",
+          "note": "G4",
+          "duration": "0:0:0.741667",
+          "velocity": 0.866
+        },
+        {
+          "time": "25:0:0",
+          "note": "B4",
+          "duration": "0:0:0.766667",
+          "velocity": 0.866
+        },
+        {
+          "time": "25:0:2",
+          "note": "D4",
+          "duration": "0:0:0.858333",
+          "velocity": 0.803
+        },
+        {
+          "time": "25:0:2",
+          "note": "G4",
+          "duration": "0:0:0.766667",
+          "velocity": 0.78
+        },
+        {
+          "time": "25:0:2",
+          "note": "B4",
+          "duration": "0:0:0.775",
+          "velocity": 0.835
         },
         {
           "time": "25:1:0",
-          "note": "A4",
-          "duration": "0:0:0.891667",
-          "velocity": 1
+          "note": "D4",
+          "duration": "0:0:0.816667",
+          "velocity": 0.866
         },
         {
           "time": "25:1:0",
-          "note": "C5",
-          "duration": "0:0:0.95",
-          "velocity": 1
-        },
-        {
-          "time": "25:1:2",
-          "note": "F4",
-          "duration": "0:0:0.875",
-          "velocity": 1
-        },
-        {
-          "time": "25:1:2",
-          "note": "A4",
-          "duration": "0:0:0.941667",
-          "velocity": 1
-        },
-        {
-          "time": "25:1:2",
-          "note": "C5",
-          "duration": "0:0:1.033333",
-          "velocity": 1
-        },
-        {
-          "time": "25:2:0",
-          "note": "F4",
-          "duration": "0:0:0.933333",
-          "velocity": 1
-        },
-        {
-          "time": "25:2:0",
-          "note": "A4",
-          "duration": "0:0:0.975",
-          "velocity": 1
-        },
-        {
-          "time": "25:2:0",
-          "note": "C5",
-          "duration": "0:0:1.075",
-          "velocity": 1
-        },
-        {
-          "time": "25:2:2",
-          "note": "F4",
-          "duration": "0:0:0.925",
-          "velocity": 1
-        },
-        {
-          "time": "25:2:2",
-          "note": "A4",
-          "duration": "0:0:0.941667",
-          "velocity": 1
-        },
-        {
-          "time": "25:2:2",
-          "note": "C5",
-          "duration": "0:0:1.033333",
-          "velocity": 1
-        },
-        {
-          "time": "25:3:0",
-          "note": "F4",
-          "duration": "0:0:0.975",
-          "velocity": 1
-        },
-        {
-          "time": "25:3:0",
-          "note": "A4",
-          "duration": "0:0:1",
-          "velocity": 1
-        },
-        {
-          "time": "25:3:0",
-          "note": "C5",
-          "duration": "0:0:1.05",
-          "velocity": 1
-        },
-        {
-          "time": "25:3:2",
-          "note": "F4",
-          "duration": "0:0:1",
-          "velocity": 1
-        },
-        {
-          "time": "25:3:2",
-          "note": "A4",
-          "duration": "0:0:1.016667",
-          "velocity": 1
-        },
-        {
-          "time": "25:3:2",
-          "note": "C5",
-          "duration": "0:0:1.058333",
-          "velocity": 1
-        },
-        {
-          "time": "26:0:0",
-          "note": "E4",
-          "duration": "0:0:0.933333",
-          "velocity": 1
-        },
-        {
-          "time": "26:0:0",
           "note": "G4",
-          "duration": "0:0:0.908333",
-          "velocity": 1
+          "duration": "0:0:0.816667",
+          "velocity": 0.866
         },
         {
-          "time": "26:0:0",
-          "note": "B4",
-          "duration": "0:0:0.85",
-          "velocity": 1
-        },
-        {
-          "time": "26:0:2",
-          "note": "E4",
-          "duration": "0:0:0.975",
-          "velocity": 1
-        },
-        {
-          "time": "26:0:2",
-          "note": "G4",
-          "duration": "0:0:0.975",
-          "velocity": 1
-        },
-        {
-          "time": "26:0:2",
-          "note": "B4",
-          "duration": "0:0:0.991667",
-          "velocity": 1
-        },
-        {
-          "time": "26:1:0",
-          "note": "E4",
-          "duration": "0:0:0.933333",
-          "velocity": 1
-        },
-        {
-          "time": "26:1:0",
-          "note": "G4",
-          "duration": "0:0:0.916667",
-          "velocity": 1
-        },
-        {
-          "time": "26:1:0",
-          "note": "B4",
-          "duration": "0:0:0.933333",
-          "velocity": 1
-        },
-        {
-          "time": "26:1:2",
-          "note": "E4",
-          "duration": "0:0:0.975",
-          "velocity": 1
-        },
-        {
-          "time": "26:1:2",
-          "note": "G4",
-          "duration": "0:0:0.991667",
-          "velocity": 1
-        },
-        {
-          "time": "26:1:2",
-          "note": "B4",
-          "duration": "0:0:1.05",
-          "velocity": 1
-        },
-        {
-          "time": "26:2:0",
-          "note": "E4",
-          "duration": "0:0:1",
-          "velocity": 1
-        },
-        {
-          "time": "26:2:0",
-          "note": "G4",
-          "duration": "0:0:0.975",
-          "velocity": 1
-        },
-        {
-          "time": "26:2:0",
-          "note": "B4",
-          "duration": "0:0:1.075",
-          "velocity": 1
-        },
-        {
-          "time": "26:2:2",
-          "note": "E4",
-          "duration": "0:0:0.975",
-          "velocity": 1
-        },
-        {
-          "time": "26:2:2",
-          "note": "G4",
-          "duration": "0:0:0.941667",
-          "velocity": 1
-        },
-        {
-          "time": "26:2:2",
-          "note": "B4",
-          "duration": "0:0:0.991667",
-          "velocity": 1
-        },
-        {
-          "time": "26:3:0",
-          "note": "E4",
-          "duration": "0:0:1.066667",
-          "velocity": 1
-        },
-        {
-          "time": "26:3:0",
-          "note": "G4",
-          "duration": "0:0:1.008333",
-          "velocity": 1
-        },
-        {
-          "time": "26:3:0",
-          "note": "B4",
-          "duration": "0:0:1.066667",
-          "velocity": 1
-        },
-        {
-          "time": "26:3:2",
-          "note": "E4",
-          "duration": "0:0:1.041667",
-          "velocity": 1
-        },
-        {
-          "time": "26:3:2",
-          "note": "G4",
-          "duration": "0:0:1.041667",
-          "velocity": 1
-        },
-        {
-          "time": "26:3:2",
-          "note": "B4",
-          "duration": "0:0:1.108333",
-          "velocity": 1
-        },
-        {
-          "time": "27:0:0",
-          "note": "G4",
-          "duration": "0:0:0.958333",
-          "velocity": 1
-        },
-        {
-          "time": "27:0:0",
-          "note": "B4",
-          "duration": "0:0:0.891667",
-          "velocity": 1
-        },
-        {
-          "time": "27:0:0",
-          "note": "D5",
-          "duration": "0:0:0.891667",
-          "velocity": 1
-        },
-        {
-          "time": "27:0:2",
-          "note": "G4",
-          "duration": "0:0:0.875",
-          "velocity": 1
-        },
-        {
-          "time": "27:0:2",
+          "time": "25:1:0",
           "note": "B4",
           "duration": "0:0:0.858333",
-          "velocity": 1
+          "velocity": 0.835
+        },
+        {
+          "time": "25:1:2",
+          "note": "D4",
+          "duration": "0:0:0.833333",
+          "velocity": 0.866
+        },
+        {
+          "time": "25:1:2",
+          "note": "G4",
+          "duration": "0:0:0.791667",
+          "velocity": 0.866
+        },
+        {
+          "time": "25:1:2",
+          "note": "B4",
+          "duration": "0:0:0.791667",
+          "velocity": 0.835
+        },
+        {
+          "time": "25:2:0",
+          "note": "D4",
+          "duration": "0:0:0.858333",
+          "velocity": 0.835
+        },
+        {
+          "time": "25:2:0",
+          "note": "G4",
+          "duration": "0:0:0.775",
+          "velocity": 0.866
+        },
+        {
+          "time": "25:2:0",
+          "note": "B4",
+          "duration": "0:0:0.9",
+          "velocity": 0.866
+        },
+        {
+          "time": "25:2:2",
+          "note": "D4",
+          "duration": "0:0:0.841667",
+          "velocity": 0.866
+        },
+        {
+          "time": "25:2:2",
+          "note": "G4",
+          "duration": "0:0:0.8",
+          "velocity": 0.866
+        },
+        {
+          "time": "25:2:2",
+          "note": "B4",
+          "duration": "0:0:0.883333",
+          "velocity": 0.866
+        },
+        {
+          "time": "25:3:0",
+          "note": "D4",
+          "duration": "0:0:0.791667",
+          "velocity": 0.835
+        },
+        {
+          "time": "25:3:0",
+          "note": "G4",
+          "duration": "0:0:0.758333",
+          "velocity": 0.835
+        },
+        {
+          "time": "25:3:0",
+          "note": "B4",
+          "duration": "0:0:0.825",
+          "velocity": 0.803
+        },
+        {
+          "time": "25:3:2",
+          "note": "D4",
+          "duration": "0:0:0.875",
+          "velocity": 0.866
+        },
+        {
+          "time": "25:3:2",
+          "note": "G4",
+          "duration": "0:0:0.883333",
+          "velocity": 0.866
+        },
+        {
+          "time": "25:3:2",
+          "note": "B4",
+          "duration": "0:0:0.95",
+          "velocity": 0.835
+        },
+        {
+          "time": "26:0:0",
+          "note": "E4",
+          "duration": "0:0:0.833333",
+          "velocity": 0.929
+        },
+        {
+          "time": "26:0:0",
+          "note": "G4",
+          "duration": "0:0:0.858333",
+          "velocity": 0.866
+        },
+        {
+          "time": "26:0:0",
+          "note": "B4",
+          "duration": "0:0:0.916667",
+          "velocity": 0.866
+        },
+        {
+          "time": "26:0:2",
+          "note": "E4",
+          "duration": "0:0:0.9",
+          "velocity": 0.866
+        },
+        {
+          "time": "26:0:2",
+          "note": "G4",
+          "duration": "0:0:0.891667",
+          "velocity": 0.866
+        },
+        {
+          "time": "26:0:2",
+          "note": "B4",
+          "duration": "0:0:0.925",
+          "velocity": 0.835
+        },
+        {
+          "time": "26:1:0",
+          "note": "E4",
+          "duration": "0:0:0.825",
+          "velocity": 0.866
+        },
+        {
+          "time": "26:1:0",
+          "note": "G4",
+          "duration": "0:0:0.808333",
+          "velocity": 0.929
+        },
+        {
+          "time": "26:1:0",
+          "note": "B4",
+          "duration": "0:0:0.866667",
+          "velocity": 0.866
+        },
+        {
+          "time": "26:1:2",
+          "note": "E4",
+          "duration": "0:0:0.808333",
+          "velocity": 0.929
+        },
+        {
+          "time": "26:1:2",
+          "note": "G4",
+          "duration": "0:0:0.791667",
+          "velocity": 0.866
+        },
+        {
+          "time": "26:1:2",
+          "note": "B4",
+          "duration": "0:0:0.841667",
+          "velocity": 0.866
+        },
+        {
+          "time": "26:2:0",
+          "note": "E4",
+          "duration": "0:0:0.808333",
+          "velocity": 0.929
+        },
+        {
+          "time": "26:2:0",
+          "note": "G4",
+          "duration": "0:0:0.8",
+          "velocity": 0.929
+        },
+        {
+          "time": "26:2:0",
+          "note": "B4",
+          "duration": "0:0:0.858333",
+          "velocity": 0.866
+        },
+        {
+          "time": "26:2:2",
+          "note": "E4",
+          "duration": "0:0:0.841667",
+          "velocity": 0.866
+        },
+        {
+          "time": "26:2:2",
+          "note": "G4",
+          "duration": "0:0:0.85",
+          "velocity": 0.929
+        },
+        {
+          "time": "26:2:2",
+          "note": "B4",
+          "duration": "0:0:0.875",
+          "velocity": 0.866
+        },
+        {
+          "time": "26:3:0",
+          "note": "E4",
+          "duration": "0:0:0.816667",
+          "velocity": 0.866
+        },
+        {
+          "time": "26:3:0",
+          "note": "G4",
+          "duration": "0:0:0.783333",
+          "velocity": 0.866
+        },
+        {
+          "time": "26:3:0",
+          "note": "B4",
+          "duration": "0:0:0.85",
+          "velocity": 0.835
+        },
+        {
+          "time": "26:3:2",
+          "note": "E4",
+          "duration": "0:0:0.95",
+          "velocity": 0.866
+        },
+        {
+          "time": "26:3:2",
+          "note": "G4",
+          "duration": "0:0:0.891667",
+          "velocity": 0.866
+        },
+        {
+          "time": "26:3:2",
+          "note": "B4",
+          "duration": "0:0:0.866667",
+          "velocity": 0.866
+        },
+        {
+          "time": "27:0:0",
+          "note": "E4",
+          "duration": "0:0:0.8",
+          "velocity": 0.835
+        },
+        {
+          "time": "27:0:0",
+          "note": "A4",
+          "duration": "0:0:0.733333",
+          "velocity": 0.835
+        },
+        {
+          "time": "27:0:0",
+          "note": "C5",
+          "duration": "0:0:0.758333",
+          "velocity": 0.929
         },
         {
           "time": "27:0:2",
-          "note": "D5",
+          "note": "E4",
+          "duration": "0:0:0.866667",
+          "velocity": 0.866
+        },
+        {
+          "time": "27:0:2",
+          "note": "A4",
+          "duration": "0:0:0.808333",
+          "velocity": 0.709
+        },
+        {
+          "time": "27:0:2",
+          "note": "C5",
+          "duration": "0:0:0.858333",
+          "velocity": 0.866
+        },
+        {
+          "time": "27:1:0",
+          "note": "E4",
+          "duration": "0:0:0.775",
+          "velocity": 0.866
+        },
+        {
+          "time": "27:1:0",
+          "note": "A4",
           "duration": "0:0:0.766667",
-          "velocity": 1
+          "velocity": 0.835
         },
         {
           "time": "27:1:0",
-          "note": "G4",
-          "duration": "0:0:0.925",
-          "velocity": 1
-        },
-        {
-          "time": "27:1:0",
-          "note": "B4",
-          "duration": "0:0:0.933333",
-          "velocity": 1
-        },
-        {
-          "time": "27:1:0",
-          "note": "D5",
-          "duration": "0:0:1.016667",
-          "velocity": 1
+          "note": "C5",
+          "duration": "0:0:0.825",
+          "velocity": 0.866
         },
         {
           "time": "27:1:2",
-          "note": "G4",
-          "duration": "0:0:0.95",
-          "velocity": 1
+          "note": "E4",
+          "duration": "0:0:0.775",
+          "velocity": 0.866
         },
         {
           "time": "27:1:2",
-          "note": "B4",
-          "duration": "0:0:0.95",
-          "velocity": 1
+          "note": "A4",
+          "duration": "0:0:0.741667",
+          "velocity": 0.803
         },
         {
           "time": "27:1:2",
-          "note": "D5",
-          "duration": "0:0:1.05",
-          "velocity": 1
+          "note": "C5",
+          "duration": "0:0:0.816667",
+          "velocity": 0.866
         },
         {
           "time": "27:2:0",
-          "note": "G4",
+          "note": "E4",
+          "duration": "0:0:0.733333",
+          "velocity": 0.866
+        },
+        {
+          "time": "27:2:0",
+          "note": "A4",
+          "duration": "0:0:0.733333",
+          "velocity": 0.866
+        },
+        {
+          "time": "27:2:0",
+          "note": "C5",
+          "duration": "0:0:0.825",
+          "velocity": 0.866
+        },
+        {
+          "time": "27:2:2",
+          "note": "E4",
+          "duration": "0:0:1.241667",
+          "velocity": 0.803
+        },
+        {
+          "time": "27:2:2",
+          "note": "A4",
           "duration": "0:0:0.916667",
-          "velocity": 1
-        },
-        {
-          "time": "27:2:0",
-          "note": "B4",
-          "duration": "0:0:0.9",
-          "velocity": 1
-        },
-        {
-          "time": "27:2:0",
-          "note": "D5",
-          "duration": "0:0:0.991667",
-          "velocity": 1
+          "velocity": 0.803
         },
         {
           "time": "27:2:2",
-          "note": "G4",
-          "duration": "0:0:0.9",
-          "velocity": 1
+          "note": "C5",
+          "duration": "0:0:0.95",
+          "velocity": 0.866
         },
         {
-          "time": "27:2:2",
-          "note": "B4",
-          "duration": "0:0:0.891667",
-          "velocity": 1
-        },
-        {
-          "time": "27:2:2",
-          "note": "D5",
-          "duration": "0:0:1.066667",
-          "velocity": 1
+          "time": "27:3:0",
+          "note": "E4",
+          "duration": "0:0:1.166667",
+          "velocity": 0.78
         },
         {
           "time": "27:3:0",
           "note": "G4",
-          "duration": "0:0:0.966667",
-          "velocity": 1
+          "duration": "0:0:0.9",
+          "velocity": 0.835
         },
         {
           "time": "27:3:0",
           "note": "B4",
-          "duration": "0:0:0.966667",
-          "velocity": 1
+          "duration": "0:0:0.95",
+          "velocity": 0.835
         },
         {
-          "time": "27:3:0",
-          "note": "D5",
-          "duration": "0:0:1.108333",
-          "velocity": 1
+          "time": "27:3:2",
+          "note": "E4",
+          "duration": "0:0:1.191667",
+          "velocity": 0.803
         },
         {
           "time": "27:3:2",
           "note": "G4",
+          "duration": "0:0:1.216667",
+          "velocity": 0.835
+        },
+        {
+          "time": "27:3:2",
+          "note": "B4",
+          "duration": "0:0:1.283333",
+          "velocity": 0.803
+        },
+        {
+          "time": "28:0:0",
+          "note": "D4",
+          "duration": "0:0:0.725",
+          "velocity": 0.835
+        },
+        {
+          "time": "28:0:0",
+          "note": "F4",
+          "duration": "0:0:0.475",
+          "velocity": 0.929
+        },
+        {
+          "time": "28:0:0",
+          "note": "A4",
+          "duration": "0:0:0.375",
+          "velocity": 0.835
+        },
+        {
+          "time": "28:0:2",
+          "note": "D4",
+          "duration": "0:0:0.908333",
+          "velocity": 0.835
+        },
+        {
+          "time": "28:0:2",
+          "note": "F4",
+          "duration": "0:0:0.608333",
+          "velocity": 0.803
+        },
+        {
+          "time": "28:0:2",
+          "note": "A4",
+          "duration": "0:0:0.541667",
+          "velocity": 0.78
+        },
+        {
+          "time": "28:1:0",
+          "note": "D4",
+          "duration": "0:0:0.791667",
+          "velocity": 0.835
+        },
+        {
+          "time": "28:1:0",
+          "note": "F4",
+          "duration": "0:0:0.583333",
+          "velocity": 0.835
+        },
+        {
+          "time": "28:1:0",
+          "note": "A4",
+          "duration": "0:0:0.6",
+          "velocity": 0.803
+        },
+        {
+          "time": "28:1:2",
+          "note": "D4",
+          "duration": "0:0:0.908333",
+          "velocity": 0.835
+        },
+        {
+          "time": "28:1:2",
+          "note": "F4",
+          "duration": "0:0:0.716667",
+          "velocity": 0.866
+        },
+        {
+          "time": "28:1:2",
+          "note": "A4",
+          "duration": "0:0:0.741667",
+          "velocity": 0.835
+        },
+        {
+          "time": "28:2:0",
+          "note": "D4",
           "duration": "0:0:0.983333",
-          "velocity": 1
+          "velocity": 0.835
         },
         {
-          "time": "27:3:2",
+          "time": "28:2:0",
+          "note": "F4",
+          "duration": "0:0:0.908333",
+          "velocity": 0.866
+        },
+        {
+          "time": "28:2:0",
+          "note": "A4",
+          "duration": "0:0:0.891667",
+          "velocity": 0.835
+        },
+        {
+          "time": "28:2:2",
+          "note": "D4",
+          "duration": "0:0:0.841667",
+          "velocity": 0.835
+        },
+        {
+          "time": "28:2:2",
+          "note": "G4",
+          "duration": "0:0:0.691667",
+          "velocity": 0.929
+        },
+        {
+          "time": "28:2:2",
           "note": "B4",
-          "duration": "0:0:1",
-          "velocity": 1
+          "duration": "0:0:0.65",
+          "velocity": 0.866
         },
         {
-          "time": "27:3:2",
-          "note": "D5",
-          "duration": "0:0:1.133333",
-          "velocity": 1
+          "time": "28:3:0",
+          "note": "D4",
+          "duration": "0:0:0.833333",
+          "velocity": 0.803
+        },
+        {
+          "time": "28:3:0",
+          "note": "G4",
+          "duration": "0:0:0.775",
+          "velocity": 0.866
+        },
+        {
+          "time": "28:3:0",
+          "note": "B4",
+          "duration": "0:0:0.8",
+          "velocity": 0.866
+        },
+        {
+          "time": "28:3:2",
+          "note": "D4",
+          "duration": "0:0:0.766667",
+          "velocity": 0.835
+        },
+        {
+          "time": "28:3:2",
+          "note": "G4",
+          "duration": "0:0:0.808333",
+          "velocity": 0.866
+        },
+        {
+          "time": "28:3:2",
+          "note": "B4",
+          "duration": "0:0:0.85",
+          "velocity": 0.866
+        },
+        {
+          "time": "29:0:0",
+          "note": "D4",
+          "duration": "0:0:0.85",
+          "velocity": 0.78
+        },
+        {
+          "time": "29:0:0",
+          "note": "G4",
+          "duration": "0:0:0.858333",
+          "velocity": 0.835
+        },
+        {
+          "time": "29:0:0",
+          "note": "B4",
+          "duration": "0:0:0.833333",
+          "velocity": 0.803
+        },
+        {
+          "time": "29:0:2",
+          "note": "D4",
+          "duration": "0:0:0.85",
+          "velocity": 0.803
+        },
+        {
+          "time": "29:0:2",
+          "note": "G4",
+          "duration": "0:0:0.816667",
+          "velocity": 0.835
+        },
+        {
+          "time": "29:0:2",
+          "note": "B4",
+          "duration": "0:0:0.825",
+          "velocity": 0.835
+        },
+        {
+          "time": "29:1:0",
+          "note": "D4",
+          "duration": "0:0:0.9",
+          "velocity": 0.78
+        },
+        {
+          "time": "29:1:0",
+          "note": "G4",
+          "duration": "0:0:0.875",
+          "velocity": 0.866
+        },
+        {
+          "time": "29:1:0",
+          "note": "B4",
+          "duration": "0:0:0.858333",
+          "velocity": 0.803
+        },
+        {
+          "time": "29:1:2",
+          "note": "D4",
+          "duration": "0:0:0.8",
+          "velocity": 0.803
+        },
+        {
+          "time": "29:1:2",
+          "note": "G4",
+          "duration": "0:0:0.691667",
+          "velocity": 0.866
+        },
+        {
+          "time": "29:1:2",
+          "note": "B4",
+          "duration": "0:0:0.733333",
+          "velocity": 0.835
+        },
+        {
+          "time": "29:2:0",
+          "note": "D4",
+          "duration": "0:0:0.908333",
+          "velocity": 0.598
+        },
+        {
+          "time": "29:2:0",
+          "note": "G4",
+          "duration": "0:0:0.958333",
+          "velocity": 0.835
+        },
+        {
+          "time": "29:2:0",
+          "note": "B4",
+          "duration": "0:0:0.808333",
+          "velocity": 0.803
+        },
+        {
+          "time": "29:2:2",
+          "note": "E4",
+          "duration": "0:0:0.725",
+          "velocity": 0.803
+        },
+        {
+          "time": "29:2:2",
+          "note": "A4",
+          "duration": "0:0:0.75",
+          "velocity": 0.835
+        },
+        {
+          "time": "29:2:2",
+          "note": "C5",
+          "duration": "0:0:0.716667",
+          "velocity": 0.866
+        },
+        {
+          "time": "29:3:0",
+          "note": "E4",
+          "duration": "0:0:0.725",
+          "velocity": 0.835
+        },
+        {
+          "time": "29:3:0",
+          "note": "A4",
+          "duration": "0:0:0.8",
+          "velocity": 0.803
+        },
+        {
+          "time": "29:3:0",
+          "note": "C5",
+          "duration": "0:0:0.825",
+          "velocity": 0.866
+        },
+        {
+          "time": "29:3:2",
+          "note": "E4",
+          "duration": "0:0:0.741667",
+          "velocity": 0.835
+        },
+        {
+          "time": "29:3:2",
+          "note": "A4",
+          "duration": "0:0:0.816667",
+          "velocity": 0.835
+        },
+        {
+          "time": "29:3:2",
+          "note": "C5",
+          "duration": "0:0:0.866667",
+          "velocity": 0.835
+        },
+        {
+          "time": "30:0:0",
+          "note": "E4",
+          "duration": "0:0:0.716667",
+          "velocity": 0.803
+        },
+        {
+          "time": "30:0:0",
+          "note": "A4",
+          "duration": "0:0:0.783333",
+          "velocity": 0.835
+        },
+        {
+          "time": "30:0:0",
+          "note": "C5",
+          "duration": "0:0:0.858333",
+          "velocity": 0.835
+        },
+        {
+          "time": "30:0:2",
+          "note": "E4",
+          "duration": "0:0:0.658333",
+          "velocity": 0.835
+        },
+        {
+          "time": "30:0:2",
+          "note": "A4",
+          "duration": "0:0:0.825",
+          "velocity": 0.866
+        },
+        {
+          "time": "30:0:2",
+          "note": "C5",
+          "duration": "0:0:0.775",
+          "velocity": 0.835
+        },
+        {
+          "time": "30:1:0",
+          "note": "D4",
+          "duration": "0:0:1",
+          "velocity": 0.835
+        },
+        {
+          "time": "30:1:0",
+          "note": "F4",
+          "duration": "0:0:0.925",
+          "velocity": 0.866
+        },
+        {
+          "time": "30:1:0",
+          "note": "A4",
+          "duration": "0:0:0.9",
+          "velocity": 0.803
+        },
+        {
+          "time": "30:1:2",
+          "note": "D4",
+          "duration": "0:0:0.958333",
+          "velocity": 0.803
+        },
+        {
+          "time": "30:1:2",
+          "note": "F4",
+          "duration": "0:0:0.916667",
+          "velocity": 0.78
+        },
+        {
+          "time": "30:1:2",
+          "note": "A4",
+          "duration": "0:0:0.933333",
+          "velocity": 0.78
+        },
+        {
+          "time": "30:2:0",
+          "note": "D4",
+          "duration": "0:0:1",
+          "velocity": 0.835
+        },
+        {
+          "time": "30:2:0",
+          "note": "F4",
+          "duration": "0:0:0.883333",
+          "velocity": 0.803
+        },
+        {
+          "time": "30:2:0",
+          "note": "A4",
+          "duration": "0:0:0.833333",
+          "velocity": 0.803
+        },
+        {
+          "time": "30:2:2",
+          "note": "D4",
+          "duration": "0:0:0.833333",
+          "velocity": 0.835
+        },
+        {
+          "time": "30:2:2",
+          "note": "G4",
+          "duration": "0:0:0.708333",
+          "velocity": 0.866
+        },
+        {
+          "time": "30:2:2",
+          "note": "B4",
+          "duration": "0:0:0.716667",
+          "velocity": 0.929
+        },
+        {
+          "time": "30:3:0",
+          "note": "D4",
+          "duration": "0:0:0.816667",
+          "velocity": 0.835
+        },
+        {
+          "time": "30:3:0",
+          "note": "G4",
+          "duration": "0:0:0.816667",
+          "velocity": 0.866
+        },
+        {
+          "time": "30:3:0",
+          "note": "B4",
+          "duration": "0:0:0.883333",
+          "velocity": 0.866
+        },
+        {
+          "time": "30:3:2",
+          "note": "D4",
+          "duration": "0:0:0.833333",
+          "velocity": 0.835
+        },
+        {
+          "time": "30:3:2",
+          "note": "G4",
+          "duration": "0:0:0.791667",
+          "velocity": 0.866
+        },
+        {
+          "time": "30:3:2",
+          "note": "B4",
+          "duration": "0:0:0.883333",
+          "velocity": 0.866
+        },
+        {
+          "time": "31:0:0",
+          "note": "D4",
+          "duration": "0:0:0.816667",
+          "velocity": 0.866
+        },
+        {
+          "time": "31:0:0",
+          "note": "G4",
+          "duration": "0:0:0.85",
+          "velocity": 0.866
+        },
+        {
+          "time": "31:0:0",
+          "note": "B4",
+          "duration": "0:0:0.966667",
+          "velocity": 0.835
+        },
+        {
+          "time": "31:0:2",
+          "note": "D4",
+          "duration": "0:0:0.783333",
+          "velocity": 0.803
+        },
+        {
+          "time": "31:0:2",
+          "note": "G4",
+          "duration": "0:0:0.783333",
+          "velocity": 0.866
+        },
+        {
+          "time": "31:0:2",
+          "note": "B4",
+          "duration": "0:0:0.825",
+          "velocity": 0.835
+        },
+        {
+          "time": "31:1:0",
+          "note": "D4",
+          "duration": "0:0:0.875",
+          "velocity": 0.835
+        },
+        {
+          "time": "31:1:0",
+          "note": "G4",
+          "duration": "0:0:0.85",
+          "velocity": 0.929
+        },
+        {
+          "time": "31:1:0",
+          "note": "B4",
+          "duration": "0:0:0.9",
+          "velocity": 0.929
+        },
+        {
+          "time": "31:1:2",
+          "note": "D4",
+          "duration": "0:0:0.966667",
+          "velocity": 0.803
+        },
+        {
+          "time": "31:1:2",
+          "note": "G4",
+          "duration": "0:0:1.008333",
+          "velocity": 0.866
+        },
+        {
+          "time": "31:1:2",
+          "note": "B4",
+          "duration": "0:0:0.85",
+          "velocity": 0.835
+        },
+        {
+          "time": "31:2:0",
+          "note": "D4",
+          "duration": "0:0:0.833333",
+          "velocity": 0.835
+        },
+        {
+          "time": "31:2:0",
+          "note": "G4",
+          "duration": "0:0:0.708333",
+          "velocity": 0.866
+        },
+        {
+          "time": "31:2:0",
+          "note": "B4",
+          "duration": "0:0:0.716667",
+          "velocity": 0.929
+        },
+        {
+          "time": "31:2:2",
+          "note": "D4",
+          "duration": "0:2:1.875",
+          "velocity": 0.929
+        },
+        {
+          "time": "31:2:2",
+          "note": "A4",
+          "duration": "0:2:2",
+          "velocity": 0.929
         }
       ]
     },
     {
       "name": "lead",
       "sourceName": "lead",
-      "noteCount": 49,
+      "noteCount": 182,
       "isPercussion": false,
       "events": [
         {
           "time": "7:2:0",
           "note": "D5",
-          "duration": "0:0:1.5",
-          "velocity": 1
+          "duration": "0:0:1.2",
+          "velocity": 0.929
         },
         {
           "time": "7:2:2",
           "note": "C5",
-          "duration": "0:0:1.633333",
+          "duration": "0:0:1.8",
           "velocity": 1
         },
         {
           "time": "7:3:2",
           "note": "A4",
-          "duration": "0:0:1.216667",
-          "velocity": 1
+          "duration": "0:0:0.883333",
+          "velocity": 0.929
         },
         {
           "time": "7:3:3",
           "note": "G4",
-          "duration": "0:0:1.066667",
-          "velocity": 1
+          "duration": "0:0:0.875",
+          "velocity": 0.835
         },
         {
           "time": "8:0:0",
           "note": "A4",
-          "duration": "0:2:1.191667",
-          "velocity": 1
+          "duration": "0:2:2.483333",
+          "velocity": 0.835
         },
         {
           "time": "8:2:2",
-          "note": "C5",
-          "duration": "0:0:3.125",
-          "velocity": 1
+          "note": "B4",
+          "duration": "0:0:3.383333",
+          "velocity": 0.929
         },
         {
           "time": "8:3:2",
           "note": "D5",
-          "duration": "0:0:1.333333",
-          "velocity": 1
+          "duration": "0:0:2.141667",
+          "velocity": 0.866
         },
         {
           "time": "9:0:0",
           "note": "C5",
-          "duration": "0:1:3.516667",
-          "velocity": 1
+          "duration": "0:1:1.058333",
+          "velocity": 0.929
         },
         {
-          "time": "9:2:0",
+          "time": "9:1:2",
           "note": "B4",
-          "duration": "0:0:3.016667",
-          "velocity": 1
+          "duration": "0:1:1.616667",
+          "velocity": 0.929
         },
         {
           "time": "9:3:0",
           "note": "G4",
-          "duration": "0:0:2.4",
-          "velocity": 1
+          "duration": "0:0:3.666667",
+          "velocity": 0.835
         },
         {
           "time": "10:0:0",
           "note": "A4",
-          "duration": "1:1:3.816667",
+          "duration": "0:1:0",
           "velocity": 1
+        },
+        {
+          "time": "10:1:0",
+          "note": "C5",
+          "duration": "0:0:1.908333",
+          "velocity": 0.866
+        },
+        {
+          "time": "10:1:2",
+          "note": "A4",
+          "duration": "0:1:1.55",
+          "velocity": 0.929
+        },
+        {
+          "time": "10:3:0",
+          "note": "F4",
+          "duration": "0:0:2.283333",
+          "velocity": 0.803
+        },
+        {
+          "time": "10:3:2",
+          "note": "G4",
+          "duration": "0:2:1.75",
+          "velocity": 0.929
         },
         {
           "time": "11:2:0",
           "note": "D5",
-          "duration": "0:0:1.5",
+          "duration": "0:0:2.116667",
           "velocity": 1
         },
         {
           "time": "11:2:2",
           "note": "C5",
-          "duration": "0:0:1.633333",
-          "velocity": 1
+          "duration": "0:0:2.208333",
+          "velocity": 0.929
         },
         {
           "time": "11:3:2",
           "note": "A4",
-          "duration": "0:0:1.216667",
-          "velocity": 1
+          "duration": "0:0:0.775",
+          "velocity": 0.866
         },
         {
           "time": "11:3:3",
           "note": "G4",
-          "duration": "0:0:1.066667",
-          "velocity": 1
+          "duration": "0:0:0.991667",
+          "velocity": 0.866
         },
         {
           "time": "12:0:0",
           "note": "A4",
-          "duration": "0:2:1.841667",
-          "velocity": 1
+          "duration": "0:2:1.708333",
+          "velocity": 0.866
         },
         {
           "time": "12:2:2",
           "note": "B4",
-          "duration": "0:0:2.375",
-          "velocity": 1
+          "duration": "0:0:3.858333",
+          "velocity": 0.866
         },
         {
           "time": "12:3:2",
           "note": "C5",
-          "duration": "0:0:1.066667",
-          "velocity": 1
+          "duration": "0:0:1.541667",
+          "velocity": 0.835
         },
         {
           "time": "13:0:0",
           "note": "D5",
-          "duration": "0:1:3.116667",
-          "velocity": 1
+          "duration": "0:1:3.158333",
+          "velocity": 0.756
         },
         {
           "time": "13:2:0",
           "note": "E5",
-          "duration": "0:0:2.841667",
-          "velocity": 1
+          "duration": "0:0:3",
+          "velocity": 0.929
         },
         {
           "time": "13:3:0",
           "note": "G5",
-          "duration": "0:0:2.233333",
-          "velocity": 1
+          "duration": "0:0:2.45",
+          "velocity": 0.866
         },
         {
           "time": "14:0:0",
           "note": "A5",
-          "duration": "1:1:3.608333",
+          "duration": "0:0:3.441667",
+          "velocity": 0.835
+        },
+        {
+          "time": "14:1:0",
+          "note": "C6",
+          "duration": "0:0:2.391667",
+          "velocity": 0.866
+        },
+        {
+          "time": "14:1:2",
+          "note": "A5",
+          "duration": "0:1:2",
           "velocity": 1
+        },
+        {
+          "time": "14:3:0",
+          "note": "F5",
+          "duration": "0:0:1.633333",
+          "velocity": 0.669
+        },
+        {
+          "time": "14:3:2",
+          "note": "G5",
+          "duration": "0:1:2.75",
+          "velocity": 0.929
         },
         {
           "time": "15:2:0",
           "note": "D5",
-          "duration": "0:0:1.5",
-          "velocity": 1
+          "duration": "0:0:1.458333",
+          "velocity": 0.866
         },
         {
           "time": "15:2:2",
           "note": "C5",
-          "duration": "0:0:1.633333",
-          "velocity": 1
+          "duration": "0:0:2.091667",
+          "velocity": 0.929
         },
         {
           "time": "15:3:2",
           "note": "A4",
-          "duration": "0:0:1.216667",
-          "velocity": 1
+          "duration": "0:0:0.8",
+          "velocity": 0.866
         },
         {
           "time": "15:3:3",
           "note": "G4",
-          "duration": "0:0:1.066667",
-          "velocity": 1
+          "duration": "0:0:1.058333",
+          "velocity": 0.835
         },
         {
           "time": "16:0:0",
+          "note": "C5",
+          "duration": "0:0:1.725",
+          "velocity": 0.929
+        },
+        {
+          "time": "16:0:2",
+          "note": "B4",
+          "duration": "0:0:1.133333",
+          "velocity": 1
+        },
+        {
+          "time": "16:0:3",
           "note": "A4",
-          "duration": "0:2:1.191667",
+          "duration": "0:0:0.825",
+          "velocity": 0.929
+        },
+        {
+          "time": "16:1:0",
+          "note": "C5",
+          "duration": "0:0:1.933333",
+          "velocity": 1
+        },
+        {
+          "time": "16:1:2",
+          "note": "B4",
+          "duration": "0:0:1.225",
+          "velocity": 0.669
+        },
+        {
+          "time": "16:1:3",
+          "note": "A4",
+          "duration": "0:0:0.791667",
+          "velocity": 1
+        },
+        {
+          "time": "16:2:0",
+          "note": "C5",
+          "duration": "0:0:2",
           "velocity": 1
         },
         {
           "time": "16:2:2",
+          "note": "B4",
+          "duration": "0:0:1.066667",
+          "velocity": 0.835
+        },
+        {
+          "time": "16:2:3",
+          "note": "A4",
+          "duration": "0:0:0.783333",
+          "velocity": 0.929
+        },
+        {
+          "time": "16:3:0",
           "note": "C5",
-          "duration": "0:0:3.125",
+          "duration": "0:0:1.525",
           "velocity": 1
         },
         {
           "time": "16:3:2",
-          "note": "D5",
-          "duration": "0:0:1.333333",
+          "note": "B4",
+          "duration": "0:0:1.358333",
+          "velocity": 0.929
+        },
+        {
+          "time": "16:3:3",
+          "note": "A4",
+          "duration": "0:0:0.491667",
           "velocity": 1
         },
         {
           "time": "17:0:0",
+          "note": "D5",
+          "duration": "0:0:2.175",
+          "velocity": 1
+        },
+        {
+          "time": "17:0:2",
           "note": "C5",
-          "duration": "0:1:3.516667",
+          "duration": "0:0:1",
+          "velocity": 0.929
+        },
+        {
+          "time": "17:0:3",
+          "note": "B4",
+          "duration": "0:0:0.858333",
+          "velocity": 0.929
+        },
+        {
+          "time": "17:1:0",
+          "note": "D5",
+          "duration": "0:0:1.766667",
+          "velocity": 1
+        },
+        {
+          "time": "17:1:2",
+          "note": "C5",
+          "duration": "0:0:1.133333",
+          "velocity": 1
+        },
+        {
+          "time": "17:1:3",
+          "note": "B4",
+          "duration": "0:0:0.666667",
           "velocity": 1
         },
         {
           "time": "17:2:0",
+          "note": "D5",
+          "duration": "0:0:1.85",
+          "velocity": 0.929
+        },
+        {
+          "time": "17:2:2",
+          "note": "C5",
+          "duration": "0:0:1.175",
+          "velocity": 0.929
+        },
+        {
+          "time": "17:2:3",
           "note": "B4",
-          "duration": "0:0:3.016667",
+          "duration": "0:0:0.716667",
           "velocity": 1
         },
         {
           "time": "17:3:0",
-          "note": "G4",
-          "duration": "0:0:2.4",
-          "velocity": 1
+          "note": "D5",
+          "duration": "0:0:2",
+          "velocity": 0.866
+        },
+        {
+          "time": "17:3:2",
+          "note": "C5",
+          "duration": "0:0:1.5",
+          "velocity": 0.835
+        },
+        {
+          "time": "17:3:3",
+          "note": "A4",
+          "duration": "0:0:0.858333",
+          "velocity": 0.929
         },
         {
           "time": "18:0:0",
+          "note": "B4",
+          "duration": "0:0:1.791667",
+          "velocity": 0.929
+        },
+        {
+          "time": "18:0:2",
           "note": "A4",
-          "duration": "1:1:3.816667",
+          "duration": "0:0:1.366667",
+          "velocity": 0.945
+        },
+        {
+          "time": "18:0:3",
+          "note": "G4",
+          "duration": "0:0:1.025",
+          "velocity": 0.929
+        },
+        {
+          "time": "18:1:0",
+          "note": "B4",
+          "duration": "0:0:2",
+          "velocity": 1
+        },
+        {
+          "time": "18:1:2",
+          "note": "A4",
+          "duration": "0:0:1.333333",
+          "velocity": 0.929
+        },
+        {
+          "time": "18:1:3",
+          "note": "G4",
+          "duration": "0:0:0.891667",
+          "velocity": 0.929
+        },
+        {
+          "time": "18:2:0",
+          "note": "B4",
+          "duration": "0:0:2",
+          "velocity": 0.929
+        },
+        {
+          "time": "18:2:2",
+          "note": "A4",
+          "duration": "0:0:1.391667",
+          "velocity": 0.866
+        },
+        {
+          "time": "18:2:3",
+          "note": "G4",
+          "duration": "0:0:0.883333",
+          "velocity": 0.929
+        },
+        {
+          "time": "18:3:0",
+          "note": "B4",
+          "duration": "0:0:2",
+          "velocity": 0.866
+        },
+        {
+          "time": "18:3:2",
+          "note": "A4",
+          "duration": "0:0:1",
+          "velocity": 0.929
+        },
+        {
+          "time": "18:3:3",
+          "note": "G4",
+          "duration": "0:0:0.866667",
+          "velocity": 0.929
+        },
+        {
+          "time": "19:0:0",
+          "note": "C5",
+          "duration": "0:0:2",
+          "velocity": 1
+        },
+        {
+          "time": "19:0:2",
+          "note": "B4",
+          "duration": "0:0:1.475",
+          "velocity": 0.929
+        },
+        {
+          "time": "19:0:3",
+          "note": "A4",
+          "duration": "0:0:0.933333",
+          "velocity": 0.929
+        },
+        {
+          "time": "19:1:0",
+          "note": "C5",
+          "duration": "0:0:2.491667",
+          "velocity": 1
+        },
+        {
+          "time": "19:1:2",
+          "note": "B4",
+          "duration": "0:0:1.441667",
+          "velocity": 0.835
+        },
+        {
+          "time": "19:1:3",
+          "note": "A4",
+          "duration": "0:0:0.866667",
           "velocity": 1
         },
         {
           "time": "19:2:0",
-          "note": "D5",
-          "duration": "0:0:1.5",
+          "note": "C5",
+          "duration": "0:0:2",
           "velocity": 1
         },
         {
           "time": "19:2:2",
-          "note": "C5",
-          "duration": "0:0:1.633333",
-          "velocity": 1
+          "note": "B4",
+          "duration": "0:0:1",
+          "velocity": 0.866
+        },
+        {
+          "time": "19:2:3",
+          "note": "A4",
+          "duration": "0:0:0.841667",
+          "velocity": 0.929
+        },
+        {
+          "time": "19:3:0",
+          "note": "D5",
+          "duration": "0:0:0.766667",
+          "velocity": 0.929
         },
         {
           "time": "19:3:2",
-          "note": "A4",
-          "duration": "0:0:1.216667",
-          "velocity": 1
-        },
-        {
-          "time": "19:3:3",
-          "note": "G4",
-          "duration": "0:0:1.066667",
-          "velocity": 1
+          "note": "D5",
+          "duration": "0:0:1.683333",
+          "velocity": 0.929
         },
         {
           "time": "20:0:0",
+          "note": "C5",
+          "duration": "0:0:1.725",
+          "velocity": 0.929
+        },
+        {
+          "time": "20:0:2",
+          "note": "B4",
+          "duration": "0:0:1.133333",
+          "velocity": 1
+        },
+        {
+          "time": "20:0:3",
           "note": "A4",
-          "duration": "0:2:1.841667",
+          "duration": "0:0:0.825",
+          "velocity": 0.929
+        },
+        {
+          "time": "20:1:0",
+          "note": "C5",
+          "duration": "0:0:1.933333",
+          "velocity": 1
+        },
+        {
+          "time": "20:1:2",
+          "note": "B4",
+          "duration": "0:0:1.225",
+          "velocity": 0.669
+        },
+        {
+          "time": "20:1:3",
+          "note": "A4",
+          "duration": "0:0:0.791667",
+          "velocity": 1
+        },
+        {
+          "time": "20:2:0",
+          "note": "C5",
+          "duration": "0:0:2",
           "velocity": 1
         },
         {
           "time": "20:2:2",
           "note": "B4",
-          "duration": "0:0:2.375",
+          "duration": "0:0:1.066667",
+          "velocity": 0.835
+        },
+        {
+          "time": "20:2:3",
+          "note": "A4",
+          "duration": "0:0:0.783333",
+          "velocity": 0.929
+        },
+        {
+          "time": "20:3:0",
+          "note": "C5",
+          "duration": "0:0:1.525",
           "velocity": 1
         },
         {
           "time": "20:3:2",
-          "note": "C5",
-          "duration": "0:0:1.066667",
+          "note": "B4",
+          "duration": "0:0:1.358333",
+          "velocity": 0.929
+        },
+        {
+          "time": "20:3:3",
+          "note": "A4",
+          "duration": "0:0:0.491667",
           "velocity": 1
         },
         {
           "time": "21:0:0",
           "note": "D5",
-          "duration": "0:1:3.116667",
+          "duration": "0:0:2.175",
+          "velocity": 1
+        },
+        {
+          "time": "21:0:2",
+          "note": "C5",
+          "duration": "0:0:1",
+          "velocity": 0.929
+        },
+        {
+          "time": "21:0:3",
+          "note": "B4",
+          "duration": "0:0:0.858333",
+          "velocity": 0.929
+        },
+        {
+          "time": "21:1:0",
+          "note": "D5",
+          "duration": "0:0:1.766667",
+          "velocity": 1
+        },
+        {
+          "time": "21:1:2",
+          "note": "C5",
+          "duration": "0:0:1.133333",
+          "velocity": 1
+        },
+        {
+          "time": "21:1:3",
+          "note": "B4",
+          "duration": "0:0:0.666667",
           "velocity": 1
         },
         {
           "time": "21:2:0",
-          "note": "E5",
-          "duration": "0:0:2.841667",
+          "note": "D5",
+          "duration": "0:0:1.85",
+          "velocity": 0.929
+        },
+        {
+          "time": "21:2:2",
+          "note": "C5",
+          "duration": "0:0:1.175",
+          "velocity": 0.929
+        },
+        {
+          "time": "21:2:3",
+          "note": "B4",
+          "duration": "0:0:0.716667",
           "velocity": 1
         },
         {
           "time": "21:3:0",
-          "note": "G5",
-          "duration": "0:0:2.233333",
-          "velocity": 1
+          "note": "D5",
+          "duration": "0:0:2",
+          "velocity": 0.866
+        },
+        {
+          "time": "21:3:2",
+          "note": "C5",
+          "duration": "0:0:1.5",
+          "velocity": 0.835
+        },
+        {
+          "time": "21:3:3",
+          "note": "A4",
+          "duration": "0:0:0.858333",
+          "velocity": 0.929
         },
         {
           "time": "22:0:0",
-          "note": "A5",
-          "duration": "1:1:3.608333",
+          "note": "B4",
+          "duration": "0:0:1.791667",
+          "velocity": 0.929
+        },
+        {
+          "time": "22:0:2",
+          "note": "A4",
+          "duration": "0:0:1.366667",
+          "velocity": 0.945
+        },
+        {
+          "time": "22:0:3",
+          "note": "G4",
+          "duration": "0:0:1.025",
+          "velocity": 0.929
+        },
+        {
+          "time": "22:1:0",
+          "note": "B4",
+          "duration": "0:0:2",
+          "velocity": 1
+        },
+        {
+          "time": "22:1:2",
+          "note": "A4",
+          "duration": "0:0:1.333333",
+          "velocity": 0.929
+        },
+        {
+          "time": "22:1:3",
+          "note": "G4",
+          "duration": "0:0:0.891667",
+          "velocity": 0.929
+        },
+        {
+          "time": "22:2:0",
+          "note": "B4",
+          "duration": "0:0:2",
+          "velocity": 0.929
+        },
+        {
+          "time": "22:2:2",
+          "note": "A4",
+          "duration": "0:0:1.391667",
+          "velocity": 0.866
+        },
+        {
+          "time": "22:2:3",
+          "note": "G4",
+          "duration": "0:0:0.883333",
+          "velocity": 0.929
+        },
+        {
+          "time": "22:3:0",
+          "note": "B4",
+          "duration": "0:0:2",
+          "velocity": 0.866
+        },
+        {
+          "time": "22:3:2",
+          "note": "A4",
+          "duration": "0:0:1",
+          "velocity": 0.929
+        },
+        {
+          "time": "22:3:3",
+          "note": "G4",
+          "duration": "0:0:0.866667",
+          "velocity": 0.929
+        },
+        {
+          "time": "23:0:0",
+          "note": "C5",
+          "duration": "0:0:2",
+          "velocity": 1
+        },
+        {
+          "time": "23:0:2",
+          "note": "B4",
+          "duration": "0:0:1.475",
+          "velocity": 0.929
+        },
+        {
+          "time": "23:0:3",
+          "note": "A4",
+          "duration": "0:0:0.933333",
+          "velocity": 0.929
+        },
+        {
+          "time": "23:1:0",
+          "note": "C5",
+          "duration": "0:0:2.491667",
+          "velocity": 1
+        },
+        {
+          "time": "23:1:2",
+          "note": "B4",
+          "duration": "0:0:1.441667",
+          "velocity": 0.835
+        },
+        {
+          "time": "23:1:3",
+          "note": "A4",
+          "duration": "0:0:0.866667",
           "velocity": 1
         },
         {
           "time": "23:2:0",
-          "note": "D5",
-          "duration": "0:0:1.5",
+          "note": "C5",
+          "duration": "0:0:2",
           "velocity": 1
         },
         {
           "time": "23:2:2",
-          "note": "C5",
-          "duration": "0:0:1.633333",
+          "note": "B4",
+          "duration": "0:0:1",
+          "velocity": 0.866
+        },
+        {
+          "time": "23:2:3",
+          "note": "A4",
+          "duration": "0:0:0.841667",
+          "velocity": 0.929
+        },
+        {
+          "time": "23:3:0",
+          "note": "A4",
+          "duration": "0:0:0.766667",
           "velocity": 1
+        },
+        {
+          "time": "23:3:1",
+          "note": "G4",
+          "duration": "0:0:1",
+          "velocity": 0.929
         },
         {
           "time": "23:3:2",
           "note": "A4",
-          "duration": "0:0:1.216667",
+          "duration": "0:0:0.766667",
           "velocity": 1
         },
         {
           "time": "23:3:3",
           "note": "G4",
-          "duration": "0:0:1.066667",
-          "velocity": 1
+          "duration": "0:0:1",
+          "velocity": 0.929
         },
         {
           "time": "24:0:0",
+          "note": "F4",
+          "duration": "0:1:0.475",
+          "velocity": 0.866
+        },
+        {
+          "time": "24:1:2",
+          "note": "G4",
+          "duration": "0:0:1.383333",
+          "velocity": 0.929
+        },
+        {
+          "time": "24:1:3",
           "note": "A4",
-          "duration": "0:2:1.191667",
+          "duration": "0:0:1.116667",
+          "velocity": 0.984
+        },
+        {
+          "time": "24:2:0",
+          "note": "G4",
+          "duration": "0:0:2.583333",
+          "velocity": 0.913
+        },
+        {
+          "time": "24:2:3",
+          "note": "F4",
+          "duration": "0:0:2.375",
+          "velocity": 0.929
+        },
+        {
+          "time": "24:3:2",
+          "note": "E4",
+          "duration": "0:0:1.55",
+          "velocity": 0.937
+        },
+        {
+          "time": "25:0:0",
+          "note": "D4",
+          "duration": "0:0:3.291667",
+          "velocity": 0.835
+        },
+        {
+          "time": "25:1:0",
+          "note": "E4",
+          "duration": "0:0:2.341667",
+          "velocity": 0.929
+        },
+        {
+          "time": "25:1:2",
+          "note": "A4",
+          "duration": "0:1:3.266667",
+          "velocity": 0.803
+        },
+        {
+          "time": "26:0:0",
+          "note": "F4",
+          "duration": "0:1:1.675",
+          "velocity": 0.929
+        },
+        {
+          "time": "26:1:2",
+          "note": "G4",
+          "duration": "0:0:1.191667",
+          "velocity": 0.78
+        },
+        {
+          "time": "26:1:3",
+          "note": "A4",
+          "duration": "0:0:1.125",
+          "velocity": 0.709
+        },
+        {
+          "time": "26:2:0",
+          "note": "G4",
+          "duration": "0:0:2.691667",
+          "velocity": 0.866
+        },
+        {
+          "time": "26:2:3",
+          "note": "E4",
+          "duration": "0:0:3.358333",
+          "velocity": 0.78
+        },
+        {
+          "time": "26:3:2",
+          "note": "C5",
+          "duration": "0:0:2",
+          "velocity": 0.803
+        },
+        {
+          "time": "27:0:0",
+          "note": "B4",
+          "duration": "0:0:2.558333",
+          "velocity": 0.803
+        },
+        {
+          "time": "27:0:3",
+          "note": "A4",
+          "duration": "0:0:0.883333",
+          "velocity": 0.866
+        },
+        {
+          "time": "27:1:0",
+          "note": "A4",
+          "duration": "0:1:2.666667",
+          "velocity": 0.929
+        },
+        {
+          "time": "27:3:0",
+          "note": "A4",
+          "duration": "0:0:1.516667",
+          "velocity": 0.78
+        },
+        {
+          "time": "27:3:1",
+          "note": "G4",
+          "duration": "0:0:0.95",
+          "velocity": 1
+        },
+        {
+          "time": "27:3:2",
+          "note": "A4",
+          "duration": "0:0:1.1",
+          "velocity": 0.929
+        },
+        {
+          "time": "27:3:3",
+          "note": "G4",
+          "duration": "0:0:0.958333",
+          "velocity": 0.929
+        },
+        {
+          "time": "28:1:0",
+          "note": "F4",
+          "duration": "0:0:1.05",
+          "velocity": 0.929
+        },
+        {
+          "time": "28:1:0",
+          "note": "A4",
+          "duration": "0:0:1.141667",
+          "velocity": 0.929
+        },
+        {
+          "time": "28:1:2",
+          "note": "F4",
+          "duration": "0:0:1.725",
+          "velocity": 0.929
+        },
+        {
+          "time": "28:1:2",
+          "note": "A4",
+          "duration": "0:0:1.816667",
+          "velocity": 0.866
+        },
+        {
+          "time": "28:2:2",
+          "note": "G4",
+          "duration": "0:0:1.075",
+          "velocity": 1
+        },
+        {
+          "time": "28:2:2",
+          "note": "B4",
+          "duration": "0:0:1.158333",
+          "velocity": 1
+        },
+        {
+          "time": "28:3:0",
+          "note": "G4",
+          "duration": "0:0:2.3",
+          "velocity": 1
+        },
+        {
+          "time": "28:3:0",
+          "note": "B4",
+          "duration": "0:0:2.383333",
+          "velocity": 1
+        },
+        {
+          "time": "29:1:0",
+          "note": "G4",
+          "duration": "0:0:0.95",
+          "velocity": 0.929
+        },
+        {
+          "time": "29:1:0",
+          "note": "B4",
+          "duration": "0:0:1.008333",
+          "velocity": 1
+        },
+        {
+          "time": "29:1:2",
+          "note": "G4",
+          "duration": "0:0:1.816667",
+          "velocity": 0.929
+        },
+        {
+          "time": "29:1:2",
+          "note": "B4",
+          "duration": "0:0:1.916667",
+          "velocity": 0.929
+        },
+        {
+          "time": "29:2:2",
+          "note": "A4",
+          "duration": "0:0:0.891667",
+          "velocity": 1
+        },
+        {
+          "time": "29:2:2",
+          "note": "C5",
+          "duration": "0:0:1.008333",
+          "velocity": 0.929
+        },
+        {
+          "time": "29:3:0",
+          "note": "A4",
+          "duration": "0:0:2.075",
+          "velocity": 1
+        },
+        {
+          "time": "29:3:0",
+          "note": "C5",
+          "duration": "0:0:2.191667",
+          "velocity": 1
+        },
+        {
+          "time": "30:1:0",
+          "note": "F4",
+          "duration": "0:0:0.916667",
+          "velocity": 0.929
+        },
+        {
+          "time": "30:1:0",
+          "note": "A4",
+          "duration": "0:0:0.991667",
+          "velocity": 0.929
+        },
+        {
+          "time": "30:1:2",
+          "note": "F4",
+          "duration": "0:0:2.108333",
+          "velocity": 0.929
+        },
+        {
+          "time": "30:1:2",
+          "note": "A4",
+          "duration": "0:0:2.108333",
+          "velocity": 0.929
+        },
+        {
+          "time": "30:2:2",
+          "note": "G4",
+          "duration": "0:0:0.95",
+          "velocity": 0.929
+        },
+        {
+          "time": "30:2:2",
+          "note": "B4",
+          "duration": "0:0:1.008333",
+          "velocity": 0.929
+        },
+        {
+          "time": "30:3:0",
+          "note": "G4",
+          "duration": "0:0:3.233333",
+          "velocity": 1
+        },
+        {
+          "time": "30:3:0",
+          "note": "B4",
+          "duration": "0:0:3.191667",
+          "velocity": 0.929
+        },
+        {
+          "time": "31:1:0",
+          "note": "G4",
+          "duration": "0:0:1.033333",
+          "velocity": 0.929
+        },
+        {
+          "time": "31:1:0",
+          "note": "B4",
+          "duration": "0:0:1.033333",
+          "velocity": 0.929
+        },
+        {
+          "time": "31:1:2",
+          "note": "G4",
+          "duration": "0:0:1.525",
+          "velocity": 0.929
+        },
+        {
+          "time": "31:1:2",
+          "note": "B4",
+          "duration": "0:0:1.591667",
+          "velocity": 1
+        },
+        {
+          "time": "31:2:2",
+          "note": "E4",
+          "duration": "0:2:3",
+          "velocity": 0.929
+        },
+        {
+          "time": "31:2:2",
+          "note": "A4",
+          "duration": "0:2:3.025",
           "velocity": 1
         }
       ]
