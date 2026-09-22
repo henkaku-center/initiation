@@ -1600,12 +1600,18 @@ for (const button of document.querySelectorAll(".panel button")) {
 
 // The anchors work on their own; only ordinary iframe clicks use the parent
 // transition. Modified clicks keep the browser's normal link behavior.
+// The portal only listens once it has hydrated, and the intro is shown before
+// that (Issue #123). Ask the portal, and keep the anchors' own target="_top"
+// navigation until it answers: preventing the default earlier would leave the
+// links dead while the portal loads, or for good if its script never arrives.
+let portalListening = false;
+if (window.parent !== window) window.parent.postMessage({ type: "henkaku:intro:ready" }, location.origin);
 document.addEventListener("click", (event) => {
   if (stopped || event.defaultPrevented || event.button !== 0 ||
       event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
   const anchor = event.target instanceof Element
     ? event.target.closest("a[data-intro-screen]") : null;
-  if (!anchor || window.parent === window) return;
+  if (!anchor || window.parent === window || !portalListening) return;
   const url = new URL(anchor.href, location.href);
   const screen = anchor.dataset.introScreen;
   const appRoutes = { home: "/", setup: "/setup", journey: "/initiation", community: "/community", passport: "/passport" };
@@ -1620,6 +1626,7 @@ document.addEventListener("click", (event) => {
 
 window.addEventListener("message", (event) => {
   if (event.source !== window.parent || event.origin !== location.origin) return;
+  portalListening = true;
   if (event.data?.type === "henkaku:intro:stop") stopIntro();
 }, { signal: input.signal });
 window.addEventListener("pagehide", stopIntro, { once: true, signal: input.signal });
