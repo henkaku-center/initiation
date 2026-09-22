@@ -1,7 +1,7 @@
 // ABOUTME: Validate the adopted questionnaire and explicit optional-answer records.
 // ABOUTME: Legacy completion stays valid without importing or rewriting old answers.
 import { describe, expect, it } from "vitest";
-import { journeySteps, validateJourneyAnswer, readJourneyAnswer } from "@/lib/initiation/journey";
+import { journeyRecords, journeySteps, needsOpeningRecord, validateJourneyAnswer, readJourneyAnswer } from "@/lib/initiation/journey";
 import { isJourneyComplete, isInitiationComplete } from "@/lib/initiation/complete";
 import { initiationSteps } from "@/lib/initiation/content";
 
@@ -58,5 +58,48 @@ describe("versioned completion", () => {
     expect(isInitiationComplete(legacy.slice(1))).toBe(false);
     expect(isJourneyComplete([...legacy, ...all().slice(1)])).toBe(false);
     expect(isInitiationComplete([...legacy, ...all().slice(1)])).toBe(true);
+  });
+});
+
+describe("visit record", () => {
+  // 「開いたが1つも書かなかった人」を数えるための1行。完走には数えない(Issue #120)。
+  it("defines the opening record apart from the questions", () => {
+    expect(journeyRecords.map((step) => step.id)).toEqual(["v2-opened"]);
+    expect(journeySteps.some((step) => journeyRecords.some((record) => record.id === step.id))).toBe(false);
+  });
+
+  it("accepts only a seen record for it", () => {
+    expect(validateJourneyAnswer("v2-opened", { status: "seen" })).toEqual({ status: "seen" });
+    expect(validateJourneyAnswer("v2-opened", { status: "skipped" })).toBeNull();
+    expect(validateJourneyAnswer("v2-opened", { status: "answered", value: "見た" })).toBeNull();
+    expect(validateJourneyAnswer("v2-opened", { status: "seen", value: "extra" })).toBeNull();
+  });
+
+  it("never reads a seen record as an answer to a question", () => {
+    for (const step of journeySteps) expect(validateJourneyAnswer(step.id, { status: "seen" })).toBeNull();
+  });
+
+  it("does not count towards completion", () => {
+    const opened = [{ stepId: "v2-opened", answer: '{"status":"seen"}', completedAt: "2026-09-21T00:00:00Z" }];
+    // 記録があっても完走にはならず、記録が増えても完走の条件は変わらない。
+    expect(isJourneyComplete(opened)).toBe(false);
+    const answered = journeySteps.map((step) => ({ stepId: step.id, answer: '{"status":"skipped"}', completedAt: "t" }));
+    expect(isJourneyComplete([...opened, ...answered])).toBe(true);
+    expect(isJourneyComplete(answered)).toBe(true);
+  });
+});
+
+describe("needsOpeningRecord", () => {
+  it("asks for the record when the visitor has none", () => {
+    expect(needsOpeningRecord([])).toBe(true);
+  });
+
+  it("does not ask again once the opening is recorded", () => {
+    expect(needsOpeningRecord([{ stepId: "v2-opened", answer: '{"status":"seen"}', completedAt: "t" }])).toBe(false);
+  });
+
+  it("asks even when questions are already answered, so an old visitor is counted once", () => {
+    const answered = journeySteps.map((step) => ({ stepId: step.id, answer: '{"status":"skipped"}', completedAt: "t" }));
+    expect(needsOpeningRecord(answered)).toBe(true);
   });
 });
