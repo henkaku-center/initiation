@@ -52,10 +52,10 @@ describe("readRawTracks", () => {
 });
 
 describe("collectDiscardedEvents", () => {
-  it("この曲に Program Change がないことと、CC が変調のみであることを示す", () => {
+  it("この曲に Program Change も Control Change もないことを示す", () => {
     const discarded = collectDiscardedEvents(raw.tracks);
     expect(discarded.programChanges).toBe(0);
-    expect(discarded.controlChanges).toEqual([{ number: 1, count: 23 }]);
+    expect(discarded.controlChanges).toEqual([]);
   });
 });
 
@@ -114,7 +114,7 @@ describe("convertToToneSong", () => {
 
   it("クリップに分かれたトラックを楽器ごとに1本へまとめる", () => {
     expect(song.tracks.map((track) => track.name)).toEqual(["bass", "drums", "ePiano", "lead"]);
-    expect(song.tracks.map((track) => track.noteCount)).toEqual([126, 301, 735, 49]);
+    expect(song.tracks.map((track) => track.noteCount)).toEqual([169, 371, 815, 182]);
     const midiNoteCount = midi.tracks.reduce((total, track) => total + track.notes.length, 0);
     expect(song.tracks.reduce((total, track) => total + track.noteCount, 0)).toBe(midiNoteCount);
   });
@@ -136,7 +136,7 @@ describe("convertToToneSong", () => {
   });
 
   it("素材の長さとループの折り返し位置を分けて持つ", () => {
-    expect(song.lengthBars).toBe(29);
+    expect(song.lengthBars).toBe(33);
     expect(song.loopBars).toBe(28);
     expect(song.loop).toEqual({ start: "0:0:0", end: "28:0:0" });
   });
@@ -184,7 +184,7 @@ describe("verifyToneSong", () => {
 
   it("ループが素材より長ければ検出する", () => {
     expect(verifyToneSong({ ...song, loopBars: 99 }, midi, raw.tracks)).toContain(
-      "loopBars 99 が素材の長さ 29 を超えています",
+      "loopBars 99 が素材の長さ 33 を超えています",
     );
   });
 });
@@ -242,20 +242,20 @@ describe("クリップの重なりの処理", () => {
     const noteCounts = Object.fromEntries(
       trimmed.tracks.map((track) => [track.name, track.noteCount]),
     );
-    // ePiano は 4和音 x 8打 x 3音 = 96音/クリップ。はみ出しの9音が7クリップぶん消える。
-    expect(noteCounts).toEqual({ bass: 126, drums: 301, ePiano: 96 * 7, lead: 49 });
+    // ePiano は815音中、はみ出しの9音を含むクリップが6個ある(9 x 6 = 54音)。それ以外は変わらない。
+    expect(noteCounts).toEqual({ bass: 169, drums: 371, ePiano: 815 - 54, lead: 182 });
   });
 
-  it("最後のクリップのはみ出しも削り、素材をちょうど28小節にする", () => {
+  it("最後のクリップのはみ出しも削り、素材をちょうど33小節にする", () => {
     const trimmed = convertToToneSong(midi, raw.tracks, {
       ...OPTIONS,
       loopBars: null,
       trimClipOverlap: true,
     });
     const ePiano = trimmed.tracks.find((track) => track.name === "ePiano")!;
-    expect(notesAt(ePiano, "28:0:0")).toEqual([]);
-    expect(trimmed.lengthBars).toBe(28);
-    expect(trimmed.loop).toEqual({ start: "0:0:0", end: "28:0:0" });
+    expect(notesAt(ePiano, "33:0:0")).toEqual([]);
+    expect(trimmed.lengthBars).toBe(33);
+    expect(trimmed.loop).toEqual({ start: "0:0:0", end: "33:0:0" });
   });
 
   it("残ったノートは4和音を8打ずつ繰り返す形になる", () => {
@@ -279,13 +279,13 @@ describe("collectNotesBySource", () => {
   it("クリップに分かれたトラックを楽器ごとにまとめる", () => {
     const grouped = collectNotesBySource(midi, raw.tracks);
     expect([...grouped.keys()].sort()).toEqual(["808", "bass", "e piano", "lead"]);
-    expect(grouped.get("e piano")!.length).toBe(735);
+    expect(grouped.get("e piano")!.length).toBe(815);
   });
 
   it("重なりを削るのは、次のクリップが始まったあとに鳴り出す音だけ", () => {
     const grouped = collectNotesBySource(midi, raw.tracks, { trimClipOverlap: true });
-    expect(grouped.get("e piano")!.length).toBe(672);
-    expect(grouped.get("bass")!.length).toBe(126);
+    expect(grouped.get("e piano")!.length).toBe(761);
+    expect(grouped.get("bass")!.length).toBe(169);
   });
 });
 
