@@ -49,7 +49,7 @@ describe("submitApplication", () => {
     createMock.mockReset();
     listByMemberMock.mockReset();
     requireMemberMock.mockReset();
-    requireMemberMock.mockResolvedValue({ id: "m1", walletAddress: MEMBER });
+    requireMemberMock.mockResolvedValue({ id: "m1", walletAddress: MEMBER, discordUsername: "traveler" });
     consumeMock.mockReset();
     consumeMock.mockResolvedValue(true);
   });
@@ -63,6 +63,25 @@ describe("submitApplication", () => {
     expect(createMock).toHaveBeenCalledWith("m1");
   });
 
+
+  it("refuses to create an application until the Discord name is registered", async () => {
+    // Discord名は問いへの回答ではなく、承認後に運営が連絡するための参加の前提(Issue #117)。
+    requireMemberMock.mockResolvedValue({ id: "m1", walletAddress: MEMBER, discordUsername: null });
+    listByMemberMock.mockResolvedValue(allDone);
+
+    const result = await submitApplication();
+    expect(result.ok).toBe(false);
+    expect(result.error).toContain("Discord");
+    expect(createMock).not.toHaveBeenCalled();
+  });
+
+  it("asks to finish initiation first when neither the journey nor the Discord name is ready", async () => {
+    requireMemberMock.mockResolvedValue({ id: "m1", walletAddress: MEMBER, discordUsername: null });
+    listByMemberMock.mockResolvedValue([]);
+
+    expect(await submitApplication()).toEqual({ ok: false, error: "先に Initiation を完走してください" });
+    expect(createMock).not.toHaveBeenCalled();
+  });
   it("accepts the adopted questionnaire after all five answers or skips are saved", async () => {
     listByMemberMock.mockResolvedValue(journeySteps.map((step) => ({ stepId: step.id, answer: '{"status":"skipped"}', completedAt: "t" })));
     createMock.mockResolvedValue({ id: "a1" });

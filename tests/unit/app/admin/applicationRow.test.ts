@@ -22,6 +22,7 @@ function application(overrides: Partial<ApplicationWithMember> = {}): Applicatio
     updatedAt: "2026-09-15T00:00:00Z",
     walletAddress: `0x${"11".repeat(20)}` as Address,
     displayName: null,
+    discordUsername: null,
     ...overrides,
   };
 }
@@ -29,6 +30,17 @@ const render = (app: ApplicationWithMember) =>
   renderToStaticMarkup(createElement("table", null, createElement("tbody", null, createElement(AdminApplicationRow, { application: app }))));
 
 describe("AdminApplicationRow", () => {
+  it("shows the applicant's Discord name so operators can reach them", () => {
+    // 承認後の連絡手段。Runbookが外部に置いていた連絡先をアプリ側に出す(Issue #117)。
+    const html = render(application({ discordUsername: "traveler" }));
+    expect(html).toContain("traveler");
+  });
+
+  it("marks the Discord name as missing rather than leaving the cell blank", () => {
+    const html = render(application({ discordUsername: null }));
+    expect(html).toContain("Discord 未登録");
+  });
+
   it("shows only the allowlist controls right after approval", () => {
     const html = render(application());
     expect(html).toContain("Allowlist 追加済みにする");

@@ -10,6 +10,8 @@ export type Member = {
   id: string;
   walletAddress: Address;
   displayName: string | null;
+  /** 承認後に運営が連絡するための参加の前提。未登録は null(Issue #117)。 */
+  discordUsername: string | null;
   firstAuthenticatedAt: string;
 };
 
@@ -50,6 +52,7 @@ export type ApplicationEvent = {
 export type ApplicationWithMember = Application & {
   walletAddress: Address;
   displayName: string | null;
+  discordUsername: string | null;
 };
 
 export type Checkin = {
