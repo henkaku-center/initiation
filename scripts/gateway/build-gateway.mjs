@@ -64,10 +64,17 @@ window.addEventListener('henkaku:pulse-rendered', updatePulseCards);
 reduceMotion.addEventListener('change', updatePulseCards);
 updatePulseCards();
 
-// Let the portal route links from the embedded Gateway.
+// Let the portal route links from the embedded Gateway. The portal only listens once it
+// has hydrated, so wait for its answer and keep the anchors' own target="_top" navigation
+// until then. Preventing the default earlier would leave the links dead while it loads.
+let portalListening = false;
+window.addEventListener('message', (event) => {
+  if (event.source === window.parent && event.origin === location.origin) portalListening = true;
+});
+if (window.parent !== window) window.parent.postMessage({ type:'henkaku:podcast:ready' }, location.origin);
 document.addEventListener('click', (event) => {
   const link = event.target.closest?.('a[target="_top"]');
-  if (!link || window.parent === window) return;
+  if (!link || window.parent === window || !portalListening) return;
   const url = new URL(link.href, location.href);
   const routes = { home:'/', setup:'/setup', journey:'/initiation', community:'/community', passport:'/passport' };
   const destination = url.hash.slice(1) || Object.keys(routes).find((name) => routes[name] === url.pathname);
