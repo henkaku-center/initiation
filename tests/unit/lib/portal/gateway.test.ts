@@ -7,6 +7,40 @@ import { beforeAll, describe, expect, it } from "vitest";
 
 const read = (name: string) => readFileSync(`public/demo-assets/gateway/${name}`, "utf8");
 
+type StubEvent = { target: { closest: (selector: string) => { href: string } | null }; preventDefault: () => void; prevented: boolean };
+type Posted = { type?: string; screen?: string };
+
+// Run only the portal link handling of the generated home so the pre-hydration
+// contract can be exercised without a browser.
+function loadHomeLinkScript(html: string) {
+  const start = html.indexOf("let portalListening = false;");
+  const end = html.indexOf("document.querySelector('.home-replay')", start);
+  expect(start).toBeGreaterThan(0);
+  expect(end).toBeGreaterThan(start);
+  const posted: Posted[] = [];
+  const listeners: Record<string, (event: unknown) => void> = {};
+  const parent = { postMessage: (data: Posted) => { posted.push(data); } };
+  const origin = "http://localhost:3102";
+  const win = { parent, addEventListener: (type: string, fn: (event: unknown) => void) => { listeners[type] = fn; } };
+  runInNewContext(html.slice(start, end), {
+    URL, window: win, parent,
+    document: { addEventListener: (type: string, fn: (event: unknown) => void) => { listeners[`document:${type}`] = fn; } },
+    location: { origin, href: `${origin}/demo-assets/gateway/index.html` },
+  });
+  const click = (href: string): StubEvent => {
+    const event: StubEvent = {
+      target: { closest: (selector: string) => (selector === 'a[target="_top"]' ? { href } : null) },
+      preventDefault: () => { event.prevented = true; },
+      prevented: false,
+    };
+    listeners["document:click"](event);
+    return event;
+  };
+  const answerFromPortal = () => listeners.message({ source: parent, origin, data: { type: "henkaku:theme", theme: "light" } });
+  return { posted, click, answerFromPortal };
+}
+
+
 describe("application Gateway generation", () => {
   beforeAll(() => { execFileSync(process.execPath, ["scripts/gateway/build-gateway.mjs"]); });
   it("builds the shared Gateway from the application script directory", () => {
@@ -72,6 +106,23 @@ describe("application Gateway generation", () => {
     expect(read("gateway-data.js").includes("episodes:")).toBe(false);
     expect(existsSync("public/demo-assets/gateway/listening-history.js")).toBe(false);
     expect(existsSync("public/demo-assets/gateway/podcast-preview.js")).toBe(false);
+  });
+  it("asks the portal to answer as soon as the embedded home runs", () => {
+    const { posted } = loadHomeLinkScript(read("index.html"));
+    expect(posted).toContainEqual({ type: "henkaku:podcast:ready" });
+  });
+  it("keeps the anchor's own navigation until the portal answers", () => {
+    const { click, posted } = loadHomeLinkScript(read("index.html"));
+    const event = click("http://localhost:3102/setup");
+    expect(event.prevented).toBe(false);
+    expect(posted.some((message) => message.type === "henkaku:home:navigate")).toBe(false);
+  });
+  it("routes through the portal once it has answered", () => {
+    const { click, posted, answerFromPortal } = loadHomeLinkScript(read("index.html"));
+    answerFromPortal();
+    const event = click("http://localhost:3102/setup");
+    expect(event.prevented).toBe(true);
+    expect(posted).toContainEqual({ type: "henkaku:home:navigate", screen: "setup" });
   });
   it.each([["/", "home"], ["/setup", "setup"], ["/initiation", "journey"], ["/community", "community"], ["/passport", "passport"]])("the encrypted intro dispatches %s to its parent", (route, screen) => {
     const html = read("intro.html");
