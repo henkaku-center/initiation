@@ -6,7 +6,7 @@
 
 | 画面 | URL | 実処理 |
 | --- | --- | --- |
-| Home | `/` | 通常ページへの入口、公開Podcastの紹介、ListenBrainzの週間音楽ランキング |
+| Home | `/` | 通常ページへの入口、注目Issueの一覧(COMMUNITY PULSE)、公開Podcastの紹介、ListenBrainzの週間音楽ランキング |
 | Setup | `/setup` | ウォレット接続、Polygon確認、SIWE署名による認証、任意のトークン表示追加 |
 | Initiation | `/initiation` | 任意の呼び名、採用した5問の保存・再開・再編集・サーバー完走判定 |
 | Community | `/community`、従来の`/checkin` | 本人の日次チェックインと履歴 |
@@ -31,11 +31,19 @@
 - NFT発行、報酬claim、ロール付与は未実装です。NFT保有は申請条件ではありません。Allowlist追加とHENKAKU送付は既存の手動運用で、画面は運営が記録した状態を示します。
 - `needs_info` は理由を表示します。本人から追加入力する処理は未実装で、運営の案内に従います。再申請できるのは既存モデルの `rejected` です。
 - Communityの活動カードは元の構成を保ったサンプル表示です。架空の活動であることを明示します。Community Fieldの実データ・参加受付は未実装です。
-- HomeのPulseは確認日付きの固定のIssue紹介です。動的取得は[Issue #104](https://github.com/henkaku-center/initiation/issues/104)で扱います。PODCASTは[参照Gateway](https://henkaku-ui.vercel.app/gateway-v1-claude)の4つの抽象場面と横スクロールを採用し、公式サイトへのリンクを残します。YouTube埋め込み・プレーヤー読み込み・見出し下の追加紹介文は外しています。
+- PODCASTは[参照Gateway](https://henkaku-ui.vercel.app/gateway-v1-claude)の4つの抽象場面と横スクロールを採用し、公式サイトへのリンクを残します。YouTube埋め込み・プレーヤー読み込み・見出し下の追加紹介文は外しています。
 
-- Discord名、Field閲覧記録、メンバーの音楽共有は後続の仕様判断です。個人の視聴履歴は収集・公開していません。Issue #52・#91はこの接続だけで完了しません。
+- Discord名、Field閲覧記録、メンバーの音楽共有は後続の仕様判断です。個人の視聴履歴は収集・公開していません。
 
 フッターから[既存のプライバシーポリシー](../privacy-policy.md)と素材のクレジットを確認できます。通常版に必要な画像・音源は取り込み時の `public/demo-assets/` に保持しています。この素材URLは別の模擬アプリや保存経路を意味しません。
+
+## COMMUNITY PULSE
+
+HomeのCOMMUNITY PULSEは、本リポジトリの `community-pulse` ラベルが付いたopen Issueを、更新日時の新しい順に最大6件表示します。掲載対象の管理はラベルの付け外しで行い、アプリ側に固定の一覧は持ちません。カードにはIssue番号・タイトル・更新日時(日本時間)を出し、GitHubのIssueへ新しいタブで開くリンクにします。見出しの下に最終取得時刻を表示し、「本家GitHubで一覧を見る」からラベル付きの一覧へ移動できます。
+
+取得は `GET /api/community-pulse` がサーバー側で行い、成功した一覧を1時間キャッシュします。経過後のアクセスがバックグラウンドの再取得を始め、その間は前回成功分に「最新情報ではない可能性」を添えて表示します。再取得に失敗しても成功分は上書きせず、前回成功分がない場合は案内とGitHubの一覧へのリンクだけを残します。GitHubのトークンは任意で、`COMMUNITY_PULSE_GITHUB_TOKEN` を設定すると未認証の回数制限を避けられます。トークンと上流の応答はブラウザへ渡しません。
+
+仕様と選定理由は[Community Pulseの決定記録](../decisions/2026-09-14-community-pulse-live-issues.md)を参照してください。
 
 ## FREQUENCYの音楽
 
