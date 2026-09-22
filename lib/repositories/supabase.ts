@@ -39,6 +39,7 @@ function toMember(row: Row): Member {
     id: row.id as string,
     walletAddress: row.wallet_address as Address,
     displayName: (row.display_name as string) ?? null,
+    discordUsername: (row.discord_username as string) ?? null,
     firstAuthenticatedAt: row.first_authenticated_at as string,
   };
 }
@@ -70,6 +71,14 @@ const members: MemberRepository = {
     const { error } = await client()
       .from("members")
       .update({ display_name: displayName })
+      .eq("id", memberId);
+    if (error) throw error;
+  },
+
+  async updateDiscordUsername(memberId, discordUsername) {
+    const { error } = await client()
+      .from("members")
+      .update({ discord_username: discordUsername })
       .eq("id", memberId);
     if (error) throw error;
   },
@@ -178,7 +187,7 @@ const applications: ApplicationRepository = {
   async listAll() {
     const { data, error } = await client()
       .from("applications")
-      .select("*, members(wallet_address, display_name)")
+      .select("*, members(wallet_address, display_name, discord_username)")
       .order("created_at", { ascending: false });
     if (error) throw error;
 
@@ -193,6 +202,7 @@ const applications: ApplicationRepository = {
         ...toApplication(r),
         walletAddress: member.wallet_address as Address,
         displayName: (member.display_name as string) ?? null,
+        discordUsername: (member.discord_username as string) ?? null,
       } satisfies ApplicationWithMember;
     });
   },
