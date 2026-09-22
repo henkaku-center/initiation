@@ -23,6 +23,10 @@
 .portal-app .portal-setup-control button { border:1px solid var(--pd-line);border-radius:0;background:var(--pd-surface);color:var(--pd-ink);padding:10px 14px;font-size:12px;box-shadow:none; }
 .portal-app .portal-wallet-step { list-style:none;font-size:12px; }
 .portal-app .portal-checkin-action { display:grid;justify-items:center;gap:12px;max-width:280px; }
+.portal-app .portal-discord { margin-top:20px;padding-top:20px;border-top:1px solid var(--pd-line); }
+.portal-app .portal-discord label { display:block;font-size:11px;letter-spacing:.12em; }
+.portal-app .portal-discord p { font-size:12px; }
+.portal-app .portal-discord button { margin-top:12px; }
 .portal-app .pd-reward-card .portal-status-list > div { grid-template-columns:minmax(0,1fr);gap:4px; }
 .portal-app .pd-reward-card .portal-status-list { margin:0; }
 @media(max-width:620px) { .portal-app .pd-header nav { gap:12px; } .portal-app .pd-header nav a { font-size:12px; } .portal-app .portal-session { justify-content:flex-start; } }
