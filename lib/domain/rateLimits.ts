@@ -33,6 +33,16 @@ export const rateLimitRules = {
     windowSeconds: DAY,
     label: "チェックイン",
   },
+  /**
+   * 一言は「押す」とは別に数える。同じ枠だと、押した直後に書き足そうとして
+   * 弾かれることがあり、「押してから書ける」が成立しなくなる(#46 / Issue #119)。
+   */
+  checkinNote: {
+    bucket: "checkin_note",
+    limit: 60,
+    windowSeconds: DAY,
+    label: "一言の保存",
+  },
   applicationTransition: {
     bucket: "application_transition",
     limit: 120,

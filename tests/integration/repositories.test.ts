@@ -13,6 +13,7 @@ import { testClient, truncateAll } from "@/tests/support/repositories";
 
 const ADDR = normalizeAddress("0x1111111111111111111111111111111111111111");
 const ADMIN = normalizeAddress("0x2222222222222222222222222222222222222222");
+const OTHER_ADDR = normalizeAddress("0x3333333333333333333333333333333333333333");
 
 describe("repositories (local supabase)", () => {
   beforeEach(async () => {
@@ -361,5 +362,33 @@ describe("repositories (local supabase)", () => {
     expect(first.created).toBe(true);
     expect(second.created).toBe(false);
     expect(await checkins.listByMember(m.id)).toHaveLength(1);
+  });
+
+  it("writes, overwrites and clears the note on the day already checked in", async () => {
+    // 「押してから書く」を許し、その日のSignalは最新の一言で上書きする(Issue #119)。
+    const { members, checkins } = getRepositories();
+    const m = await members.upsertByAddress(ADDR);
+    const { checkin } = await checkins.checkinToday(m.id);
+    expect(checkin.note).toBeNull();
+
+    await checkins.updateNote(m.id, checkin.id, "朝に押した");
+    await checkins.updateNote(m.id, checkin.id, "昼に動いた");
+    expect((await checkins.listByMember(m.id))[0].note).toBe("昼に動いた");
+
+    await checkins.updateNote(m.id, checkin.id, null);
+    expect((await checkins.listByMember(m.id))[0].note).toBeNull();
+    // 上書きしても1日1件のまま。
+    expect(await checkins.listByMember(m.id)).toHaveLength(1);
+  });
+
+  it("does not let one member write a note onto another member's check-in", async () => {
+    const { members, checkins } = getRepositories();
+    const mine = await members.upsertByAddress(ADDR);
+    const theirs = await members.upsertByAddress(OTHER_ADDR);
+    const { checkin } = await checkins.checkinToday(mine.id);
+
+    await checkins.updateNote(theirs.id, checkin.id, "他人の一言");
+
+    expect((await checkins.listByMember(mine.id))[0].note).toBeNull();
   });
 });

@@ -244,6 +244,7 @@ function toCheckin(row: Row): Checkin {
     id: row.id as string,
     memberId: row.member_id as string,
     checkinDate: row.checkin_date as string,
+    note: (row.note as string) ?? null,
     createdAt: row.created_at as string,
   };
 }
@@ -268,6 +269,15 @@ const checkins: CheckinRepository = {
     }
     if (error) throw error;
     return { created: true, checkin: toCheckin(data as Row) };
+  },
+
+  async updateNote(memberId, checkinId, note) {
+    const { error } = await client()
+      .from("checkins")
+      .update({ note })
+      .eq("id", checkinId)
+      .eq("member_id", memberId);
+    if (error) throw error;
   },
 
   async listByMember(memberId) {

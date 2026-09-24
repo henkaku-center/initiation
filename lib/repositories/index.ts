@@ -53,6 +53,8 @@ export interface ApplicationRepository {
 
 export interface CheckinRepository {
   checkinToday(memberId: string): Promise<{ created: boolean; checkin: Checkin }>;
+  /** その日の行の一言を上書きする。本人の行だけを対象にするため memberId も絞り込む。 */
+  updateNote(memberId: string, checkinId: string, note: string | null): Promise<void>;
   listByMember(memberId: string): Promise<Checkin[]>;
 }
 
