@@ -44,6 +44,23 @@ describe("portal SIWE", () => {
     await expect(signInWithWallet(options)).rejects.toThrow("認証の準備に失敗");
     expect(options.signMessage).not.toHaveBeenCalled();
   });
+  it("tells the visitor to wait when the nonce request is rate limited", async () => {
+    // エッジで落とされた429は関数まで届かない。すぐ再試行するよう促すと、
+    // 上限を消費し続けるだけになる(Issue #50)。
+    const { request, options } = setup();
+    request.mockReset().mockResolvedValue(new Response(null, { status: 429 }));
+    await expect(signInWithWallet(options)).rejects.toThrow("しばらく待って");
+    expect(options.signMessage).not.toHaveBeenCalled();
+  });
+  it("does not ask for another signature when verification is rate limited", async () => {
+    const { request, options } = setup();
+    request.mockReset().mockResolvedValueOnce(Response.json({ nonce: "abcdefgh12345678" })).mockResolvedValueOnce(new Response(null, { status: 429 }));
+    const error = await signInWithWallet(options).catch((cause: Error) => cause);
+    expect((error as Error).message).toContain("しばらく待って");
+    // 「もう一度署名してください」は、上限に当たっている相手に再試行を促してしまう。
+    expect((error as Error).message).not.toContain("もう一度署名");
+    expect(options.refreshSession).not.toHaveBeenCalled();
+  });
   it("does not report a verification failure as authenticated", async () => {
     const { request, options } = setup();
     request.mockReset().mockResolvedValueOnce(Response.json({ nonce: "abcdefgh12345678" })).mockResolvedValueOnce(new Response(null, { status: 401 }));

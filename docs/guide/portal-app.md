@@ -75,7 +75,8 @@ APIキー・ユーザー名・ウォレットアドレス・Cookieは送信し�
 3. Node 22以上、Install Command `npm ci`、Build Command `npm run build`、Next.js標準出力を使います。リポジトリの `vercel.json` はこの通常buildを指定します。管理画面側に上書きがある場合は、実際のBuild Commandとビルドログを照合します。
 4. 以前の `build:demo` の上書きがある場合は `npm run build` へ変更し、不要になった `HENKAKU_DEMO_ONLY` を設定から除きます。このフラグはコードから削除されており、残っていても模擬モードへ切り替わりません。対象コミットを通常buildで再ビルドします。
 5. 許可された環境で認証→保存→再開→完走→申請→チェックインを確認します。実ウォレット署名、外部アカウント変更、Allowlist操作、送金、NFT発行はそれぞれ別途確認が必要です。
-6. HTMLのrobotsとVercelの `X-Robots-Tag: noindex, nofollow` を維持します。`noindex` はアクセス制限ではなく、解除には別の公開方針の判断が必要です。
+6. HTMLのrobotsとVercelの `X-Robots-Tag: noindex, nofollow` を維持します。`noindex` はアクセス制限ではなく、解除には別の公開方針の判断が必要です
+7. Firewallのレート制限ルールを2本作り、`/api/auth/` 以下と `/api/community-pulse` をそれぞれIP単位で60秒あたり100リクエストに制限します（Hobbyプランならルールは1本しか作れないため、`/api/` 以下の1本にまとめます）。最初は動作を Log にして観測し、分布を見てから **Default (429)** へ切り替えます。Deny は403を返すため選びません。切替時は上限を超える回数を送って応答が429であること、サインイン画面に待機メッセージが出ることを確認します（[未認証エンドポイントのレート制限](../decisions/2026-09-20-unauthenticated-rate-limits.md)）。
 
 ロールバックは記録した以前のデプロイへ戻します。現行コードには別のデモbuildはありません。戻すデプロイが模擬版なら実認証・保存・申請は利用できなくなるため、対象の動作を確認してください。DB記録は保持し、DB削除・逆migration・デモlocalStorageの移行は行いません。
 
