@@ -40,6 +40,40 @@ function loadHomeLinkScript(html: string) {
   return { posted, click, answerFromPortal };
 }
 
+type IntroClick = { prevented: boolean };
+
+// Run only the link handling of the generated intro. The intro is shown before the
+// portal hydrates (Issue #123), so its links must stay ordinary until the portal answers.
+function loadIntroLinkScript(html: string) {
+  const start = html.indexOf("let portalListening = false;");
+  const end = html.indexOf('window.addEventListener("pagehide"', start);
+  expect(start).toBeGreaterThan(0);
+  expect(end).toBeGreaterThan(start);
+  const posted: Posted[] = [];
+  const listeners: Record<string, (event: unknown) => void> = {};
+  const origin = "http://localhost:3102";
+  const parent = { postMessage: (data: Posted) => { posted.push(data); }, location: { origin } };
+  class Element { constructor(public href: string, public dataset: Record<string, string>) {} closest(selector: string) { return selector === "a[data-intro-screen]" ? this : null; } }
+  runInNewContext(html.slice(start, end), {
+    URL, Element, parent, stopped: false, input: { signal: undefined }, stopIntro: () => {},
+    window: { parent, addEventListener: (type: string, fn: (event: unknown) => void) => { listeners[type] = fn; } },
+    document: { addEventListener: (type: string, fn: (event: unknown) => void) => { listeners[`document:${type}`] = fn; } },
+    location: { origin, href: `${origin}/demo-assets/gateway/bubble-multi.html` },
+  });
+  const click = (route: string, screen: string): IntroClick => {
+    const event = {
+      defaultPrevented: false, button: 0, metaKey: false, ctrlKey: false, shiftKey: false, altKey: false,
+      target: new Element(`${origin}${route}`, { introScreen: screen }),
+      preventDefault: () => { event.prevented = true; },
+      prevented: false,
+    };
+    listeners["document:click"](event);
+    return event;
+  };
+  const answerFromPortal = () => listeners.message({ source: parent, origin, data: { type: "henkaku:intro:listening" } });
+  return { posted, click, answerFromPortal };
+}
+
 
 describe("application Gateway generation", () => {
   beforeAll(() => { execFileSync(process.execPath, ["scripts/gateway/build-gateway.mjs"]); });
@@ -123,6 +157,24 @@ describe("application Gateway generation", () => {
     const event = click("http://localhost:3102/setup");
     expect(event.prevented).toBe(true);
     expect(posted).toContainEqual({ type: "henkaku:home:navigate", screen: "setup" });
+  });
+  it("asks the portal to answer as soon as the intro runs", () => {
+    const { posted } = loadIntroLinkScript(read("bubble-multi.html"));
+    expect(posted).toContainEqual({ type: "henkaku:intro:ready" });
+  });
+  it("keeps the intro anchors' own navigation until the portal answers", () => {
+    // The intro is visible before hydration, so a click must not be swallowed while the portal loads (Issue #123).
+    const { click, posted } = loadIntroLinkScript(read("bubble-multi.html"));
+    const event = click("/setup", "setup");
+    expect(event.prevented).toBe(false);
+    expect(posted.some((message) => message.type === "henkaku:intro:navigate")).toBe(false);
+  });
+  it("hands intro links to the portal once it has answered", () => {
+    const { click, posted, answerFromPortal } = loadIntroLinkScript(read("bubble-multi.html"));
+    answerFromPortal();
+    const event = click("/setup", "setup");
+    expect(event.prevented).toBe(true);
+    expect(posted).toContainEqual({ type: "henkaku:intro:navigate", screen: "setup" });
   });
   it.each([["/", "home"], ["/setup", "setup"], ["/initiation", "journey"], ["/community", "community"], ["/passport", "passport"]])("the encrypted intro dispatches %s to its parent", (route, screen) => {
     const html = read("intro.html");

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { Providers } from "./providers";
+import { introInitializationScript } from "@/lib/intro";
 import { themeInitializationScript } from "@/lib/theme";
 
 const geistSans = Geist({
@@ -24,7 +25,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ja" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable}`}>
-      <head><script dangerouslySetInnerHTML={{ __html: themeInitializationScript }} /></head>
+      <head><script dangerouslySetInnerHTML={{ __html: themeInitializationScript }} /><script dangerouslySetInnerHTML={{ __html: introInitializationScript }} /></head>
       <body>
         {/* セッションの表示とウォレット操作を実Providersの内側に置く。 */}
         <Providers>

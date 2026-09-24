@@ -2,13 +2,14 @@
 // ABOUTME: Same-origin frame messages navigate to the application's five screens.
 "use client";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { INTRO_SEEN_KEY } from "@/lib/intro";
+import { isIntroReady, tellIntroListening } from "@/lib/portal/introFrame";
 import { useTheme } from "@/lib/useTheme";
 import { portalRoutes, type PortalScreen } from "@/lib/portal/navigation";
 
-const seenKey = "henkaku.intro.seen.bubble-multi.v1";
 let seenInMemory = false;
 function getSeen() {
-  try { return seenInMemory || sessionStorage.getItem(seenKey) === "1"; }
+  try { return seenInMemory || sessionStorage.getItem(INTRO_SEEN_KEY) === "1"; }
   catch { return seenInMemory; }
 }
 function subscribe(listener: () => void) {
@@ -17,7 +18,7 @@ function subscribe(listener: () => void) {
 }
 function markSeen() {
   seenInMemory = true;
-  try { sessionStorage.setItem(seenKey, "1"); } catch { /* memory is enough */ }
+  try { sessionStorage.setItem(INTRO_SEEN_KEY, "1"); } catch { /* memory is enough */ }
   window.dispatchEvent(new Event("henkaku:intro-change"));
 }
 
@@ -39,6 +40,10 @@ export function ReferenceGateway({ onNavigate }: {
     homepage.current?.contentWindow?.postMessage({ type: "henkaku:theme", theme }, location.origin);
     homepage.current?.contentWindow?.postMessage({ type: "henkaku:home-state", paused: false, active: !showIntro }, location.origin);
   }, [theme, showIntro]);
+  // The intro is visible before hydration (Issue #123) and keeps its anchors' own
+  // navigation until told the portal is listening. Answer both when it asks and as
+  // soon as the listener exists, since its question may have arrived before that.
+  const answerIntro = useCallback(() => { tellIntroListening(intro.current?.contentWindow, location.origin); }, []);
   const selectVariant = (next: typeof variant) => {
     if (leaving || next === variant) return;
     intro.current?.contentWindow?.postMessage({ type: "henkaku:intro:stop" }, location.origin);
@@ -71,14 +76,16 @@ export function ReferenceGateway({ onNavigate }: {
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
       if (event.origin !== location.origin || leaving) return;
+      if (isIntroReady(event, intro.current?.contentWindow, location.origin)) answerIntro();
       if (event.source === homepage.current?.contentWindow && event.data?.type === "henkaku:podcast:ready") syncHomeState();
       if (event.source === homepage.current?.contentWindow && event.data?.type === "henkaku:intro:replay") setReplaying(true);
       const navigation = (event.source === intro.current?.contentWindow && event.data?.type === "henkaku:intro:navigate") || (event.source === homepage.current?.contentWindow && event.data?.type === "henkaku:home:navigate");
       if (navigation && typeof event.data.screen === "string" && Object.hasOwn(portalRoutes, event.data.screen)) setDestination(event.data.screen);
     };
     window.addEventListener("message", onMessage);
+    answerIntro();
     return () => window.removeEventListener("message", onMessage);
-  }, [leaving, syncHomeState]);
+  }, [leaving, syncHomeState, answerIntro]);
 
   return <div className="pd-gateway-shell" data-intro={showIntro ? leaving ? "leaving" : "visible" : "dismissed"}>
     <iframe ref={homepage} className="pd-reference-gateway pd-homepage-frame" src="/demo-assets/gateway/index.html" title="HENKAKU トップページ" inert={showIntro} aria-hidden={showIntro} onLoad={syncHomeState} allow="autoplay" />

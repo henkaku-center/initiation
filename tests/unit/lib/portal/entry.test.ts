@@ -14,6 +14,12 @@ vi.mock("@/components/portal/PortalHome", () => ({ PortalHome: () => createEleme
 afterEach(() => vi.unstubAllEnvs());
 
 describe("application entry", () => {
+  it("decides the intro before the application's JavaScript arrives", () => {
+    // hydration まで待つと、イントロもHomeも出ない空白の時間ができる(Issue #123)。
+    const html = renderToStaticMarkup(RootLayout({ params: Promise.resolve({}), children: createElement(Home) }));
+    expect(html).toContain("henkaku.intro.seen.bubble-multi.v1");
+    expect(html).toContain("dataset.introSeen");
+  });
   it.each(["1", "0", ""])("always uses the application when the retired flag is %s", (flag) => {
     vi.stubEnv("HENKAKU_DEMO_ONLY", flag);
     const layout = RootLayout({ params: Promise.resolve({}), children: createElement(Home) });
