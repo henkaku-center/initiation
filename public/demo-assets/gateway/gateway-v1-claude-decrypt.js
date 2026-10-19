@@ -220,8 +220,8 @@ function collect(scope) {
   });
 }
 
-function arm() {
-  const scope = document.querySelector("[data-decrypt-scope]");
+function arm(root = document) {
+  const scope = root.querySelector("[data-decrypt-scope]");
   if (!scope) return;
 
   /* Both of these leave the card exactly as the markup wrote it. Asked for less
@@ -276,9 +276,11 @@ function arm() {
   let shown = false;
   let near = false;
   let queued = false;
+  let disposed = false;
 
   function check() {
     queued = false;
+    if (disposed) return;
     const doc = document.documentElement;
     const scrolled = window.scrollY ?? doc.scrollTop ?? 0;
     const left = doc.scrollHeight - window.innerHeight - scrolled;
@@ -317,9 +319,10 @@ function arm() {
   /* The frame is measured, so a change of width invalidates it. Rebuilding
      while it is enciphered would leave stale noise on screen, so the state is
      laid down again after. */
+  let resizeObserver;
   if (frame && typeof ResizeObserver === "function") {
     let known = "";
-    new ResizeObserver(() => {
+    resizeObserver = new ResizeObserver(() => {
       // Height as well as width: web fonts settle after first paint and take the
       // card's height with them, which a frame measured in rows has to follow.
       const box = scope.getBoundingClientRect();
@@ -333,8 +336,17 @@ function arm() {
       if (!line) return;
       line.text = frame.textContent;
       if (!shown) cipher(line, 0);
-    }).observe(scope);
+    });
+    resizeObserver.observe(scope);
   }
+  return () => {
+    disposed = true;
+    watcher.disconnect();
+    resizeObserver?.disconnect();
+    window.removeEventListener("scroll", request);
+    window.removeEventListener("resize", request);
+  };
 }
 
+window.henkakuArmGatewayDecrypt = arm;
 arm();

@@ -121,12 +121,10 @@ const html = `<!doctype html>
 <style>${gatewayStyle}</style><style>${adapters}</style><style>${homeShell}</style><style>${podcastStyles}</style></head><body>
 <div class="home-intro">
   <p>コミュニティの入口へ、ようこそ。</p><span>COMMUNITY GATEWAY</span>
-  <button type="button" class="home-replay">イントロを再生</button>
 </div>
 <main aria-label="HENKAKU トップページ">${sections}</main>
 <script type="module" src="./gateway-v1-claude-decrypt.js"></script>
 <script src="./gateway-data.js"></script><script>${scrollCode}
-document.querySelector('.home-replay').addEventListener('click', () => window.parent.postMessage({ type:'henkaku:intro:replay' }, location.origin));
 </script><script src="./community-pulse.js"></script><script src="./frequency.js"></script></body></html>`;
 fs.writeFileSync(path.join(root,"public/demo-assets/gateway/community-pulse.js"), read("assets/reference/gateway/community-pulse.js"));
 fs.writeFileSync(path.join(root,"public/demo-assets/gateway/frequency.js"), read("assets/reference/gateway/frequency.js"));
