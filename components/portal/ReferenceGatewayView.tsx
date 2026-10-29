@@ -22,8 +22,10 @@ function markSeen() {
   window.dispatchEvent(new Event("henkaku:intro-change"));
 }
 
-export function ReferenceGateway({ onNavigate }: {
+export function ReferenceGateway({ onNavigate, skipIntro = false, interactive = true }: {
   onNavigate: (screen: PortalScreen) => void;
+  skipIntro?: boolean;
+  interactive?: boolean;
 }) {
   const theme = useTheme();
   const seen = useSyncExternalStore(subscribe, getSeen, () => false);
@@ -35,7 +37,7 @@ export function ReferenceGateway({ onNavigate }: {
   const introDialog = useRef<HTMLDialogElement>(null);
   const homepage = useRef<HTMLIFrameElement>(null);
   const enterButton = useRef<HTMLButtonElement>(null);
-  const showIntro = replaying || !seen;
+  const showIntro = replaying || (!seen && !skipIntro);
   const syncHomeState = useCallback(() => {
     homepage.current?.contentWindow?.postMessage({ type: "henkaku:theme", theme }, location.origin);
     homepage.current?.contentWindow?.postMessage({ type: "henkaku:home-state", paused: false, active: !showIntro }, location.origin);
@@ -58,10 +60,10 @@ export function ReferenceGateway({ onNavigate }: {
       enterButton.current?.focus({ preventScroll: true });
     } else {
       document.getElementById("portal-main")?.focus({ preventScroll: true });
-      window.scrollTo({ top: 0, behavior: "instant" });
+      if (!skipIntro) window.scrollTo({ top: 0, behavior: "instant" });
     }
     return () => dialog?.close();
-  }, [showIntro]);
+  }, [showIntro, skipIntro]);
   useEffect(() => {
     if (destination === null) return;
     intro.current?.contentWindow?.postMessage({ type: "henkaku:intro:stop" }, location.origin);
@@ -78,17 +80,16 @@ export function ReferenceGateway({ onNavigate }: {
       if (event.origin !== location.origin || leaving) return;
       if (isIntroReady(event, intro.current?.contentWindow, location.origin)) answerIntro();
       if (event.source === homepage.current?.contentWindow && event.data?.type === "henkaku:podcast:ready") syncHomeState();
-      if (event.source === homepage.current?.contentWindow && event.data?.type === "henkaku:intro:replay") setReplaying(true);
       const navigation = (event.source === intro.current?.contentWindow && event.data?.type === "henkaku:intro:navigate") || (event.source === homepage.current?.contentWindow && event.data?.type === "henkaku:home:navigate");
       if (navigation && typeof event.data.screen === "string" && Object.hasOwn(portalRoutes, event.data.screen)) setDestination(event.data.screen);
     };
     window.addEventListener("message", onMessage);
     answerIntro();
     return () => window.removeEventListener("message", onMessage);
-  }, [leaving, syncHomeState, answerIntro]);
+  }, [leaving, syncHomeState, answerIntro, skipIntro]);
 
   return <div className="pd-gateway-shell" data-intro={showIntro ? leaving ? "leaving" : "visible" : "dismissed"}>
-    <iframe ref={homepage} className="pd-reference-gateway pd-homepage-frame" src="/demo-assets/gateway/index.html" title="HENKAKU トップページ" inert={showIntro} aria-hidden={showIntro} onLoad={syncHomeState} allow="autoplay" />
+    <iframe ref={homepage} className="pd-reference-gateway pd-homepage-frame" src="/demo-assets/gateway/index.html" title="HENKAKU トップページ" inert={showIntro || !interactive} aria-hidden={showIntro} onLoad={syncHomeState} allow="autoplay" />
     {showIntro && <dialog ref={introDialog} className={`pd-intro-overlay ${leaving ? "is-leaving" : ""}`} aria-label="HENKAKU 全画面イントロ" onCancel={(event) => { event.preventDefault(); if (!leaving) setDestination("home"); }}>
       <iframe key={variant} ref={intro} className="pd-intro-frame" src={`/demo-assets/gateway/${variant === "bubble-multi" ? "bubble-multi" : "intro"}.html`} title={variant === "bubble-multi" ? "複数の泡が漂うイントロ" : "暗号化と泡のイントロ（比較用）"} tabIndex={leaving ? -1 : 0} />
       <div className="pd-intro-access">

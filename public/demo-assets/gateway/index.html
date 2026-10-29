@@ -1031,8 +1031,6 @@ html[data-theme="dark"] .gate {
   --line:#dcded9;--surface:#fff;--accent-bg:#e8ebff;
 }
 body { font-family:Arial,"Helvetica Neue","Noto Sans JP",sans-serif; }
-.home-replay { flex:none;min-height:44px;font:12px/1.5 var(--font-mono);border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:10px 15px;cursor:pointer; }
-.home-replay:hover { border-color:var(--blue);color:var(--blue); }
 .home-intro { display:flex;flex-wrap:wrap;justify-content:space-between;gap:14px 20px;align-items:center;padding:27px clamp(18px,5vw,72px) 0;font-size:13px;color:var(--muted); }
 .home-intro p { flex:1 1 260px;margin:0; }.home-intro span { font:10px/1.5 var(--font-mono);letter-spacing:.13em; }
 .placeholder-section[data-gateway-section],.threshold-section {
@@ -1054,7 +1052,7 @@ html[data-theme="dark"] .voices-fragment,html[data-theme="dark"] .voices-observe
 .gate-head span:last-child { color:var(--blue); }
 .button-primary,.button-secondary:hover { color:var(--ink); }
 .button-secondary { border-color:var(--line); }
-.button-primary:focus-visible,.button-secondary:focus-visible,.home-replay:focus-visible { outline:3px solid #f58442;outline-offset:5px; }
+.button-primary:focus-visible,.button-secondary:focus-visible { outline:3px solid #f58442;outline-offset:5px; }
 .placeholder-section { min-height:128svh;margin-top:-6svh; }
 .placeholder-section[data-gateway-section="01-community-pulse"] { min-height:122svh; }
 .chapter { padding-top:clamp(36px,5vw,68px);padding-bottom:clamp(38px,5vw,70px); }
@@ -1135,7 +1133,6 @@ html[data-theme="dark"] .voices-fragment,html[data-theme="dark"] .voices-observe
 </style></head><body>
 <div class="home-intro">
   <p>コミュニティの入口へ、ようこそ。</p><span>COMMUNITY GATEWAY</span>
-  <button type="button" class="home-replay">イントロを再生</button>
 </div>
 <main aria-label="HENKAKU トップページ">  <section class="gateway-section placeholder-section" data-gateway-section="01-community-pulse" aria-labelledby="pulse-title">
     <div class="gateway-panel placeholder-panel reveal-once" data-panel-label="PULSE">
@@ -1419,5 +1416,4 @@ document.addEventListener('click', (event) => {
   window.parent.postMessage({ type:'henkaku:home:navigate', screen:destination }, location.origin);
 });
 
-document.querySelector('.home-replay').addEventListener('click', () => window.parent.postMessage({ type:'henkaku:intro:replay' }, location.origin));
 </script><script src="./community-pulse.js"></script><script src="./frequency.js"></script></body></html>
