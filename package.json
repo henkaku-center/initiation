@@ -18,15 +18,15 @@
     "docs:check": "tsx scripts/docs/check-translation.ts"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.118.0",
-    "@tanstack/react-query": "^5.104.5",
-    "iron-session": "^9.0.1",
-    "next": "16.4.2",
+    "@supabase/supabase-js": "^2.119.0",
+    "@tanstack/react-query": "^5.107.1",
+    "iron-session": "^9.1.0",
+    "next": "16.4.6",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "siwe": "^3.0.0",
-    "viem": "^2.57.10",
-    "wagmi": "^3.7.9"
+    "viem": "^2.57.19",
+    "wagmi": "^3.7.11"
   },
   "devDependencies": {
     "@eslint/compat": "^2.1.1",
