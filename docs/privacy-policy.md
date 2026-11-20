@@ -114,3 +114,12 @@ Polygon上の記録や、Discordが独自に保持する情報は、運営だけ
 ## 方針の変更
 
 取得する情報、公開範囲、利用目的に重要な変更がある場合は、変更案を公開し、意見を募集してから適用します。変更後の方針と適用日をこのページに掲載します。
+
+### 変更履歴
+
+| 変更 | 意見募集の期間 | 結果 | 適用日 |
+| --- | --- | --- | --- |
+| Discordのユーザー名を申請の条件にし、ウォレットアドレスとの対応を運営の申請審査担当者が閲覧する（[PR #118](https://github.com/henkaku-center/initiation/pull/118)） | 2026年9月22日〜9月28日 | 反対・修正案なし。変更案のまま反映 | 本番公開日 |
+| Initiationを開いた記録を残し、どこで離脱が起きているかの把握に使う（[PR #131](https://github.com/henkaku-center/initiation/pull/131)） | 2026年9月22日〜9月28日 | 反対・修正案なし。変更案のまま反映 | 本番公開日 |
+
+意見は GitHub の各Pull Requestと [Issue #46](https://github.com/henkaku-center/initiation/issues/46)、および henkaku community の Discord で募集しました。本サービスはこの時点で本番公開前のため、2件の変更は初版に含めて本番公開日から適用します。
