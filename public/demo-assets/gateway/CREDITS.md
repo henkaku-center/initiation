@@ -2,7 +2,8 @@
 
 The homepage is adapted from the supplied HENKAKU UI prototypes:
 
-- https://henkaku-ui.vercel.app/bubble-multi — default intro, eight drifting/merging bubbles, cursor trail, WebGL2 and Canvas 2D display modes.
+- Reference demo for the typography hero and scroll handoff: [HENKAKU UI](https://henkaku-ui.vercel.app/gateway-v1-claude). The adapted files in this repository are `henkaku-typography-hero.html` and `henkaku-typography/`.
+- https://henkaku-ui.vercel.app/bubble-multi — previous default intro, retained as a reference; eight drifting/merging bubbles, cursor trail, WebGL2 and Canvas 2D display modes.
 - https://henkaku-ui.vercel.app/liquid — archived encrypted comparison, rolling decrypt, Bubble and tuning controls.
 - https://henkaku-ui.vercel.app/gateway-v1-claude — layout, typography, pinned sections, sideways Voices scenes and Threshold.
 - https://github.com/henkaku-center/initiation/issues/52 — prototype attribution / 0xsalome.

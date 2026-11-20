@@ -1,0 +1,222 @@
+<!doctype html>
+<!-- ABOUTME: 浮かぶ henkaku をクリックやスクロールで「変革」へ組み上げるヒーロー画面。 -->
+<!-- ABOUTME: 精密な文字配置と再構築の動きは typography の作品を共用する。 -->
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HENKAKU — 文字から変革へ</title>
+  <link rel="stylesheet" href="henkaku-typography/style.css" />
+  <style>
+    :root { color-scheme: light; --ink: #171717; --paper: #fff; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font-family: Arial, "Hiragino Kaku Gothic ProN", sans-serif; }
+    .hero { position: relative; min-height: 100svh; overflow: hidden; isolation: isolate; background: var(--paper); }
+    .topbar { position: absolute; z-index: 4; inset: 0 0 auto; display: flex; justify-content: space-between; align-items: start; padding: clamp(22px, 3.2vw, 48px); pointer-events: none; }
+    .brand { display: inline-flex; align-items: center; gap: 14px; padding: 0; border: 0; appearance: none; background: none; color: inherit; font: inherit; font-size: 16px; font-weight: 800; letter-spacing: .11em; line-height: 1; text-align: left; cursor: pointer; pointer-events: auto; }
+    .brand svg { width: 34px; height: 42px; }
+    .brand small { display: block; margin-top: 3px; font-size: 9px; font-weight: 500; letter-spacing: .21em; }
+    .brand:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+    .stage { min-height: 100svh; }
+    .sheet { width: min(88vw, 70svh); background: transparent; border: 0; }
+    .sheet { transform: translate(var(--zoom-x, 0%), var(--zoom-y, 0%)) scale(var(--zoom-scale, 1)); transform-origin: var(--focus-x, 50%) var(--focus-y, 50%); }
+    .cursor-henkaku { position: absolute; z-index: 7; left: 0; top: 0; opacity: 0; pointer-events: none; font: 11px "Times New Roman", serif; letter-spacing: .02em; transition: opacity 420ms ease; }
+    .cursor-henkaku.is-visible { opacity: .64; }
+    .sheet:focus-visible { outline: 2px solid var(--ink); }
+    .sheet:not(.is-dispersed) .motion-node { transition-duration: 360ms; transition-delay: 0ms; transition-timing-function: cubic-bezier(.2,.8,.2,1), ease-out; }
+    .sheet:not(.is-dispersed) .float-node { animation-play-state: paused; transition-duration: 360ms; transition-delay: 0ms; transition-timing-function: cubic-bezier(.2,.8,.2,1); }
+    .sheet.is-dispersed .motion-node { transition-duration: 560ms; transition-delay: 0ms; transition-timing-function: cubic-bezier(.25,.55,.2,1), ease-out; }
+    .sheet.is-dispersed .float-node { transition-duration: 460ms; transition-delay: 0ms; }
+    .is-loading .motion-node, .is-loading .float-node { transition: none !important; animation: none !important; }
+    @media (max-width: 820px) {
+      .sheet { -webkit-tap-highlight-color: transparent; }
+      .brand { -webkit-tap-highlight-color: transparent; }
+      .sheet:not(.is-dispersed) .motion-node { transition-duration: 850ms; }
+      .sheet:not(.is-dispersed) .float-node { transition-duration: 850ms; }
+    }
+    @media (max-width: 620px) {
+      .brand { font-size: 12px; }
+      .brand svg { width: 27px; height: 34px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .sheet.is-dispersed .motion-node, .sheet:not(.is-dispersed) .motion-node,
+      .sheet.is-dispersed .float-node, .sheet:not(.is-dispersed) .float-node { transition-duration: .01ms; transition-delay: 0ms; }
+      .cursor-henkaku { display: none; }
+    }
+  </style>
+  <script src="henkaku-typography/zoom.js" defer></script>
+  <script src="henkaku-typography/script.js" defer></script>
+</head>
+<body class="is-loading">
+  <main class="hero" id="hero" aria-label="文字から変革へ">
+    <span class="cursor-henkaku" id="cursor-henkaku" aria-hidden="true">henkaku</span>
+    <header class="topbar">
+      <button class="brand" id="reset-hero" type="button" aria-label="ヒーローの最初に戻る"><svg viewBox="0 0 48 60" aria-hidden="true"><path fill="currentColor" d="M0 0 L48 37 L19 37 L0 60 Z" /></svg><span>HENKAKU<small>COMMUNITY</small></span></button>
+    </header>
+    <div class="stage">
+      <div class="sheet is-dispersed" id="sheet" role="button" tabindex="0" aria-label="変革の文字を再構築する" aria-pressed="true">
+        <div id="artwork"></div>
+      </div>
+    </div>
+  </main>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const sheet = document.getElementById('sheet');
+      sheet.addEventListener('click', event => {
+        if (event.detail > 0 && matchMedia('(max-width: 820px)').matches) sheet.blur();
+      });
+      const hero = document.getElementById('hero');
+      const artwork = document.getElementById('artwork');
+      const glyph = artwork.querySelector('#kaku-09 [data-index="3"] .glyph[data-glyph="0"]');
+      const canvas = document.createElement('canvas');
+      canvas.width = canvas.height = 160;
+      const context = canvas.getContext('2d');
+      context.font = '100px "Times New Roman"';
+      context.fillText('h', 40, 120);
+      const pixels = context.getImageData(0, 0, 160, 160).data;
+      let ink = { x: 51, y: 90 };
+      for (let radius = 0; radius < 24; radius++) {
+        let found = false;
+        for (let y = 90 - radius; y <= 90 + radius && !found; y++) {
+          for (let x = 51 - radius; x <= 51 + radius; x++) {
+            if (x < 4 || y < 4 || x > 155 || y > 155) continue;
+            if ([[-3, 0], [3, 0], [0, -3], [0, 3], [0, 0]].every(([dx, dy]) => pixels[((y + dy) * 160 + x + dx) * 4 + 3] > 245)) {
+              ink = { x, y };
+              found = true;
+              break;
+            }
+          }
+        }
+        if (found) break;
+      }
+      const matrix = new DOMMatrix(glyph.dataset.initialMatrix.split(' ').map(Number));
+      const focus = new DOMPoint(ink.x - 40, ink.y - 120).matrixTransform(matrix);
+      const focusX = focus.x / 1122;
+      const focusY = focus.y / 1402;
+      sheet.style.setProperty('--focus-x', `${(focusX * 100).toFixed(4)}%`);
+      sheet.style.setProperty('--focus-y', `${(focusY * 100).toFixed(4)}%`);
+      const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+      let zoomAmount = 0;
+      let zoomTarget = 0;
+      let zoomFrame = null;
+      let previousZoomTime = null;
+      const drawZoom = amount => {
+        const eased = Math.pow(amount, 1.35);
+        sheet.style.setProperty('--zoom-x', `${((.5 - focusX) * eased * 100).toFixed(4)}%`);
+        sheet.style.setProperty('--zoom-y', `${((.5 - focusY) * eased * 100).toFixed(4)}%`);
+        sheet.style.setProperty('--zoom-scale', Math.exp(Math.log(5000) * eased).toFixed(4));
+      };
+      const updateZoom = time => {
+        const elapsed = previousZoomTime === null ? 16 : Math.min(time - previousZoomTime, 64);
+        previousZoomTime = time;
+        zoomAmount = advanceZoom(zoomAmount, zoomTarget, elapsed, 900);
+        drawZoom(zoomAmount);
+        if (zoomAmount !== zoomTarget) zoomFrame = requestAnimationFrame(updateZoom);
+        else { zoomFrame = null; previousZoomTime = null; }
+      };
+      window.henkakuSetZoom = (progress, immediate = false) => {
+        zoomTarget = Math.max(0, Math.min(1, (progress - .18) / .8));
+        if (immediate || reducedMotion.matches) {
+          if (zoomFrame !== null) cancelAnimationFrame(zoomFrame);
+          zoomFrame = null;
+          previousZoomTime = null;
+          zoomAmount = zoomTarget;
+          drawZoom(zoomAmount);
+        } else if (zoomFrame === null && zoomAmount !== zoomTarget) {
+          zoomFrame = requestAnimationFrame(updateZoom);
+        }
+      };
+      const cursorWord = document.getElementById('cursor-henkaku');
+      let stillTimer;
+      let hideTimer;
+      hero.addEventListener('pointermove', event => {
+        if (event.pointerType !== 'mouse' || reducedMotion.matches) return;
+        cursorWord.style.left = `${event.clientX + 17}px`;
+        cursorWord.style.top = `${event.clientY + 14}px`;
+        clearTimeout(stillTimer);
+        if (cursorWord.classList.contains('is-visible') && !hideTimer) {
+          hideTimer = setTimeout(() => {
+            cursorWord.classList.remove('is-visible');
+            hideTimer = null;
+          }, 280);
+        }
+        stillTimer = setTimeout(() => cursorWord.classList.add('is-visible'), 2400);
+      });
+      hero.addEventListener('pointerleave', () => {
+        clearTimeout(stillTimer);
+        if (!hideTimer) hideTimer = setTimeout(() => {
+          cursorWord.classList.remove('is-visible');
+          hideTimer = null;
+        }, 280);
+      });
+      const assemble = () => {
+        if (sheet.classList.contains('is-dispersed')) sheet.click();
+      };
+      const disperse = () => {
+        if (!sheet.classList.contains('is-dispersed')) sheet.click();
+      };
+      document.getElementById('reset-hero').addEventListener('click', event => {
+        if (event.detail > 0) event.currentTarget.blur();
+        if (window.frameElement && typeof window.parent.henkakuGatewayReset === 'function') {
+          window.parent.henkakuGatewayReset();
+          return;
+        }
+        disperse();
+        window.henkakuSetZoom(0, true);
+        window.scrollTo(0, 0);
+      });
+      window.henkakuAssemble = assemble;
+      window.henkakuDisperse = disperse;
+      const forwardScroll = () => {
+        if (window.frameElement && typeof window.parent.henkakuGatewayScrollIntent === 'function') {
+          return window.parent.henkakuGatewayScrollIntent();
+        }
+        return false;
+      };
+      window.addEventListener('wheel', event => {
+        if (event.deltaY < 0) {
+          if (!window.frameElement || window.parent.henkakuGatewayReverseIntent?.()) disperse();
+          return;
+        }
+        if (event.deltaY === 0) return;
+        if (forwardScroll()) event.preventDefault();
+        assemble();
+      }, { passive: false });
+      let touchY = null;
+      window.addEventListener('touchstart', event => {
+        touchY = event.touches[0]?.clientY ?? null;
+      }, { passive: true });
+      window.addEventListener('touchmove', event => {
+        const nextY = event.touches[0]?.clientY ?? null;
+        if (nextY !== null && touchY !== null && nextY < touchY) {
+          if (forwardScroll()) event.preventDefault();
+          assemble();
+        }
+        if (nextY !== null && touchY !== null && nextY > touchY) {
+          if (!window.frameElement || window.parent.henkakuGatewayReverseIntent?.()) disperse();
+        }
+        touchY = nextY;
+      }, { passive: false });
+      if (window.frameElement) {
+        let previousParentScrollY = window.parent.scrollY;
+        window.parent.addEventListener('scroll', () => {
+          const nextParentScrollY = window.parent.scrollY;
+          if (typeof window.parent.henkakuGatewayScrollIntent === 'function') {
+            previousParentScrollY = nextParentScrollY;
+            return;
+          }
+          const bounds = window.frameElement.getBoundingClientRect();
+          if (bounds.top < window.parent.innerHeight * .8 && bounds.bottom > window.parent.innerHeight * .2) {
+            if (nextParentScrollY < previousParentScrollY) disperse();
+            if (nextParentScrollY > previousParentScrollY) assemble();
+          }
+          previousParentScrollY = nextParentScrollY;
+        }, { passive: true });
+      }
+      document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && !sheet.classList.contains('is-dispersed')) sheet.click();
+      });
+      requestAnimationFrame(() => requestAnimationFrame(() => document.body.classList.remove('is-loading')));
+    });
+  </script>
+</body>
+</html>

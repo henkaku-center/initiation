@@ -14,7 +14,7 @@ type Posted = { type?: string; screen?: string };
 // contract can be exercised without a browser.
 function loadHomeLinkScript(html: string) {
   const start = html.indexOf("let portalListening = false;");
-  const end = html.indexOf("document.querySelector('.home-replay')", start);
+  const end = html.indexOf("</script><script src=\"./community-pulse.js\"", start);
   expect(start).toBeGreaterThan(0);
   expect(end).toBeGreaterThan(start);
   const posted: Posted[] = [];
@@ -98,6 +98,11 @@ describe("application Gateway generation", () => {
     expect(html).not.toContain("COMMUNITY PLAYS / MOCK");
     expect(html).not.toContain("listening-history.js");
     expect(html).toContain('content="noindex,nofollow"');
+  });
+  it("does not show the retired intro replay control on the home", () => {
+    const html = read("index.html");
+    expect(html).not.toContain("イントロを再生");
+    expect(html).not.toContain("home-replay");
   });
   it("shows the podcast introduction without embedded YouTube players", () => {
     const html = read("index.html");

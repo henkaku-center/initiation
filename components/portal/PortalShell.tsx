@@ -8,6 +8,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SessionStatus } from "@/components/SessionStatus";
 import { PortalDialog } from "./PortalDialog";
+import { TypographyHeroBridge } from "./TypographyHeroBridge";
 import { portalRoutes } from "@/lib/portal/navigation";
 import "./base.css";
 import "./experience.css";
@@ -23,8 +24,16 @@ export function PortalShell({ children }: { children: ReactNode }) {
   return (
     <div className={`portal-app${pathname === "/" ? " pd-reference-home" : ""}`}>
       <a className="pd-skip" href="#portal-main">本文へスキップ</a>
+      {pathname === "/" && <TypographyHeroBridge />}
+      {pathname === "/" && <div className="pd-hero-transition" aria-hidden="true" />}
       <header className="pd-header">
-        <Link href="/" className="pd-brand" aria-label="HENKAKU ポータルへ">
+        <Link href="/" className="pd-brand" aria-label="ページの最初のヒーローに戻る" onClick={(event) => {
+          if (pathname !== "/") return;
+          event.preventDefault();
+          const heroWindow = window as Window & { henkakuGatewayReset?: () => void };
+          if (heroWindow.henkakuGatewayReset) heroWindow.henkakuGatewayReset();
+          else window.scrollTo({ top: 0, behavior: "instant" });
+        }}>
           <svg className="pd-mark" viewBox="0 0 48 60" fill="currentColor" aria-hidden="true"><path d="M0 0 L48 37 L19 37 L0 60 Z" /></svg>
           <span>HENKAKU<span className="pd-brand-sub">COMMUNITY</span></span>
         </Link>
