@@ -17,6 +17,7 @@ import {
   DuplicateApplicationError,
   type ApplicationRepository,
   type CheckinRepository,
+  type HealthRepository,
   type MemberRepository,
   type ProgressRepository,
   type RateLimitRepository,
@@ -306,10 +307,20 @@ const rateLimits: RateLimitRepository = {
   },
 };
 
+const health: HealthRepository = {
+  async ping(signal) {
+    // SQLを直接実行できないため、行を返さないHEAD読み取りで往復の成否だけを見る。
+    // 件数は数えず、1行で打ち切る。rate_limits は小さく、本文に何も返さない。
+    const { error } = await client().from("rate_limits").select("bucket", { head: true }).limit(1).abortSignal(signal);
+    if (error) throw error;
+  },
+};
+
 export const supabaseRepositories: Repositories = {
   members,
   progress,
   applications,
   checkins,
   rateLimits,
+  health,
 };
