@@ -11,7 +11,7 @@ on:
       - "docs/**"
       - ".github/workflows/docs.yml"
       - "package.json"
-      - "package-lock.json"
+      - "pnpm-lock.yaml"
   push:
     branches: [main]
     paths:
@@ -21,7 +21,7 @@ on:
       - "docs/**"
       - ".github/workflows/docs.yml"
       - "package.json"
-      - "package-lock.json"
+      - "pnpm-lock.yaml"
   # Pagesの初回公開や、手動での再公開に使う
   workflow_dispatch:
 
@@ -46,14 +46,16 @@ jobs:
           # lastUpdatedの表示に履歴が必要
           fetch-depth: 0
 
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+
       - uses: actions/setup-node@v7
         with:
           node-version: "24"
-          cache: npm
+          cache: pnpm
 
-      - run: npm ci
+      - run: pnpm install --frozen-lockfile
 
-      - run: npx vitest run tests/unit/docs
+      - run: pnpm exec vitest run tests/unit/docs
 
       # 翻訳が原文と同じ構造を保っているかを見る。手元での実行を忘れてもここで捕まえる。
       # トップページは翻訳ではなく個別に書くため対象外(docs/guide/translating.md)。
@@ -62,12 +64,12 @@ jobs:
           shopt -s globstar nullglob
           for file in docs/en/**/*.md; do
             [ "$file" = "docs/en/index.md" ] && continue
-            npm run docs:check -- "$file"
+            pnpm run docs:check "$file"
           done
-          npm run docs:check -- README.en.md
+          pnpm run docs:check README.en.md
 
       # リンク切れがあるとVitePressのビルドが失敗するため、これが検証を兼ねる
-      - run: npm run docs:build
+      - run: pnpm run docs:build
 
       - uses: actions/configure-pages@v6
         if: github.event_name != 'pull_request'

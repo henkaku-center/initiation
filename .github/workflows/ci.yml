@@ -21,6 +21,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+
       - uses: actions/setup-node@v7
         with:
           node-version: "22"
@@ -29,8 +31,7 @@ jobs:
       # devを含めると vitepress 経由の esbuild(No fix available、開発サーバー向けの
       # 勧告)で常に赤くなり、通知として機能しなくなる。moderate以下で落とさないのは、
       # 修正の出ていない勧告1件で無関係なPRまで止めないため(Issue #38)。
-      # npm audit は package-lock.json だけで動くので npm ci は要らない。
-      - run: npm audit --omit=dev --audit-level=high
+      - run: pnpm audit --prod --audit-level high
 
   static:
     name: build / typecheck / lint / unit (Node ${{ matrix.node }})
@@ -43,22 +44,24 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+
       - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node }}
-          cache: npm
+          cache: pnpm
 
-      - run: npm ci
+      - run: pnpm install --frozen-lockfile
 
       # tscはNext.jsがbuildで生成する型に依存するため、buildを先に実行する
-      - run: npm run build
+      - run: pnpm run build
 
-      - run: npx tsc --noEmit
+      - run: pnpm exec tsc --noEmit
 
-      - run: npm run lint
+      - run: pnpm run lint
 
       # 統合テストはSupabaseを必要とするため、このjobでは単体テストのみ実行する
-      - run: npx vitest run tests/unit
+      - run: pnpm exec vitest run tests/unit
 
   integration:
     name: integration tests (local supabase)
@@ -66,12 +69,14 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+
       - uses: actions/setup-node@v7
         with:
           node-version: "24"
-          cache: npm
+          cache: pnpm
 
-      - run: npm ci
+      - run: pnpm install --frozen-lockfile
 
       - uses: supabase/setup-cli@v3
         with:
@@ -99,4 +104,4 @@ jobs:
             echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY"
           } >> "$GITHUB_ENV"
 
-      - run: npx vitest run tests/integration
+      - run: pnpm exec vitest run tests/integration

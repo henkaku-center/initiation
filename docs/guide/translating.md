@@ -39,9 +39,9 @@
 翻訳のみの変更では、対象ファイルごとに構造検査し、サイトをビルドします。
 
 ```bash
-npm run docs:check -- docs/en/guide/setup.md
-npm run docs:check -- README.en.md
-npm run docs:build
+pnpm run docs:check docs/en/guide/setup.md
+pnpm run docs:check README.en.md
+pnpm run docs:build
 ```
 
 `docs:check` は見出しの数と階層、コードブロック、囲み枠の開始と種別、表の行数を比較します。コードはコメント・空行と上記の記入例を除いて比較します。通常のMarkdown形式のサイト内リンクを検査し、日本語の残存と一部の見出しリンクを警告します。

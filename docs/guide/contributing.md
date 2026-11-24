@@ -85,16 +85,16 @@ ls tests/integration/
 実装したら、次を順に実行します。
 
 ```bash
-npm test
-npm run build
-npx tsc --noEmit
-npm run lint
+pnpm test
+pnpm run build
+pnpm exec tsc --noEmit
+pnpm run lint
 ```
 
 すべて通ることを確認してからPull Requestを出します。コマンドの詳細は[検証コマンド一覧](/reference/commands)にあります。
 
 ::: tip 落ちたときは
-`Cannot find name 'LayoutProps'` は `npm run build` を先に実行すれば解消します。統合テストが `SUPABASE_SERVICE_ROLE_KEY` で失敗する場合は、ローカルSupabaseが起動しているか確認してください。→ [トラブルシューティング](/guide/troubleshooting)
+`Cannot find name 'LayoutProps'` は `pnpm run build` を先に実行すれば解消します。統合テストが `SUPABASE_SERVICE_ROLE_KEY` で失敗する場合は、ローカルSupabaseが起動しているか確認してください。→ [トラブルシューティング](/guide/troubleshooting)
 :::
 
 ## 6. Pull Requestを出す

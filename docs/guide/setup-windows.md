@@ -18,7 +18,7 @@ Gitやターミナルを初めて使うWindows利用者が、[30分セットア�
 | 場所 | 見分け方 | このコースで行うこと |
 | --- | --- | --- |
 | Windows | PowerShellは `PS C:\...>` と表示される | WSL2の導入、Docker Desktopの画面操作、ブラウザ |
-| Ubuntu（WSL2） | `名前@PC名:~$` のように表示される | Git、GitHub CLI、Node.js、npm、Supabase CLI、開発コマンド |
+| Ubuntu（WSL2） | `名前@PC名:~$` のように表示される | Git、GitHub CLI、Node.js、pnpm、Supabase CLI、開発コマンド |
 | インターネット | `github.com` など | fork、ソースコードの取得、公式ドキュメント |
 | 自分のPCだけ | `localhost`、`127.0.0.1` | 開発中のアプリとローカルSupabase |
 
@@ -96,7 +96,7 @@ Windows Terminalでは、通常のアプリとキーが異なります。
 
 ### 開発サーバーを起動したターミナル
 
-`npm run dev` のように起動し続けるコマンドを実行すると、そのターミナルはログ表示に使われます。別のコマンドは、もう1つUbuntuのタブを開いて実行します。終了するときは、サーバーを動かしているタブで `Ctrl+C` を押します。
+`pnpm run dev` のように起動し続けるコマンドを実行すると、そのターミナルはログ表示に使われます。別のコマンドは、もう1つUbuntuのタブを開いて実行します。終了するときは、サーバーを動かしているタブで `Ctrl+C` を押します。
 
 ## 3. UbuntuへGitを入れる
 
@@ -198,9 +198,9 @@ gh auth status
 
 `Logged in to github.com` と自分のGitHubユーザー名が表示されれば成功です。認証情報の保存先が表示されても、そのファイルの内容をIssue、チャット、AIへ貼り付けないでください。詳しい動作は[GitHub CLI公式のログイン手順](https://cli.github.com/manual/gh_auth_login)と[`gh auth setup-git`の説明](https://cli.github.com/manual/gh_auth_setup-git)にあります。
 
-## 4. UbuntuへNode.jsとnpmを入れる
+## 4. UbuntuへNode.jsとpnpmを入れる
 
-Node.jsは、このプロジェクトと開発ツールを動かす実行環境です。npmは必要なライブラリをインストールします。このコースでは、Node.jsのバージョンを切り替えられる `nvm` を使います。
+Node.jsは、このプロジェクトと開発ツールを動かす実行環境です。pnpmはプロジェクトの依存関係をインストールします。このコースでは、Node.jsのバージョンを切り替えられる `nvm` を使います。
 
 ### Ubuntu: curlを入れる
 
@@ -228,17 +228,18 @@ command -v nvm
 nvm install 24
 ```
 
-Node.jsとnpmを確認します。
+Node.jsを確認し、指定バージョンのpnpmを入れます。
 
 ```bash
 node -v
 ```
 
 ```bash
-npm -v
+npm install --global pnpm@10.34.5
+pnpm -v
 ```
 
-Node.jsが `v24` から始まるバージョンなら、このプロジェクトの要件（Node.js 22以上）を満たしています。
+Node.jsが `v24` から始まるバージョンなら、このプロジェクトの要件（Node.js 22.12.0以上）を満たしています。
 
 ### Ubuntu: 開発ファイルを置く場所を作る
 
@@ -268,10 +269,10 @@ Dockerは、アプリ本体ではなく**ローカルSupabase**を動かすた�
 
 | 作業 | Docker |
 | --- | --- |
-| Git操作、`npm install`、ドキュメント作業 | 不要 |
+| Git操作、`pnpm install --frozen-lockfile`、ドキュメント作業 | 不要 |
 | build、lint、型チェック、単体テスト | 不要 |
 | SIWEサインイン、進捗保存、チェックイン、申請 | 必要 |
-| 統合テストを含む `npm test` | 必要 |
+| 統合テストを含む `pnpm test` | 必要 |
 
 ### Windows: Docker Desktopをインストールする
 
@@ -397,7 +398,7 @@ node -v
 ```
 
 ```bash
-npm -v
+pnpm -v
 ```
 
 ```bash

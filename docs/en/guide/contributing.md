@@ -87,16 +87,16 @@ ls tests/integration/
 After implementation, run the following commands in order.
 
 ```bash
-npm test
-npm run build
-npx tsc --noEmit
-npm run lint
+pnpm test
+pnpm run build
+pnpm exec tsc --noEmit
+pnpm run lint
 ```
 
 Check that they all pass before submitting a Pull Request. See [Verification Commands (Japanese)](/reference/commands) for details.
 
 ::: tip If a check fails
-Run `npm run build` first to resolve `Cannot find name 'LayoutProps'`. If integration tests fail with `SUPABASE_SERVICE_ROLE_KEY`, check that local Supabase is running. → [Troubleshooting (Japanese)](/guide/troubleshooting)
+Run `pnpm run build` first to resolve `Cannot find name 'LayoutProps'`. If integration tests fail with `SUPABASE_SERVICE_ROLE_KEY`, check that local Supabase is running. → [Troubleshooting (Japanese)](/guide/troubleshooting)
 :::
 
 ## 6. Submit a Pull Request
