@@ -22,8 +22,8 @@ Use the menu at the top of the screen to proceed in this order.
 
 ## Development environment
 
-- Node.js 22.0.0 or later / npm (development checks use Node.js 24). Use whichever version manager you prefer
-  - Dependencies such as `@supabase/supabase-js` require `engines.node >=22.0.0`. With Node.js 20, `npm install` produces `EBADENGINE`, and builds and tests also produce warnings
+- Node.js 22.12.0 or later / pnpm 10.34.5 (development checks use Node.js 24). Use whichever version manager you prefer
+  - Vite requires Node.js 22.12.0 or later on the Node.js 22 line. If pnpm is not available, install it using `npm install --global pnpm@10.34.5`.
 - Next.js App Router / TypeScript
 - wagmi + viem: wallet connection, Polygon switching, and `wallet_watchAsset`
 - SIWE + iron-session: wallet signature authentication and sessions
@@ -37,7 +37,7 @@ Use the menu at the top of the screen to proceed in this order.
 ```bash
 git clone <repository-url>
 cd initiation
-npm install
+pnpm install --frozen-lockfile
 cp .env.example .env.local
 ```
 
@@ -82,7 +82,7 @@ Use `Project URL` and `Secret` from `supabase status` to set `SUPABASE_URL` and 
 ### Development server
 
 ```bash
-npm run dev -- --port 3000
+pnpm run dev --port 3000
 ```
 
 If a development server is already running, do not start another process on the same port.
@@ -90,17 +90,17 @@ If a development server is already running, do not start another process on the 
 ## Verification commands
 
 ```bash
-npm test
-npm run lint
-npm run build
-npx tsc --noEmit
+pnpm test
+pnpm run lint
+pnpm run build
+pnpm exec tsc --noEmit
 ```
 
-Immediately after cloning, run `npm run build` (or `npm run dev`) first. `npx tsc --noEmit` fails until Next.js generates types such as `LayoutProps`.
+Immediately after cloning, run `pnpm run build` (or `pnpm run dev`) first. `pnpm exec tsc --noEmit` fails until Next.js generates types such as `LayoutProps`.
 
 See [Verification Commands (Japanese)](https://henkaku-center.github.io/initiation/reference/commands) for details and ways to narrow the checks.
 
-Tests are split between `tests/unit/` and `tests/integration/`. Helpers for Supabase integration tests live in `tests/support/`. Test files match `tests/**/*.test.ts`. Integration tests automatically load Supabase settings from `.env.local`, so configure that file and start local Supabase before running `npm test`.
+Tests are split between `tests/unit/` and `tests/integration/`. Helpers for Supabase integration tests live in `tests/support/`. Test files match `tests/**/*.test.ts`. Integration tests automatically load Supabase settings from `.env.local`, so configure that file and start local Supabase before running `pnpm test`.
 
 ## Architecture boundaries
 
@@ -118,7 +118,7 @@ The application does not automatically execute on-chain Allowlist changes or HEN
 
 1. Share the purpose and scope in an issue
 2. Create a working branch from `main` (for example, `agent/navigation-readme`)
-3. Add tests first, then run `npm test`, type checking, and lint after implementation (CI also runs automatically after opening a PR)
+3. Add tests first, then run `pnpm test`, type checking, and lint after implementation (CI also runs automatically after opening a PR)
 4. Do not commit secrets or personal information
 5. Include the reason for the change, verification, and unresolved decisions in the Pull Request
 6. Attach screenshots or manual verification steps for UI changes

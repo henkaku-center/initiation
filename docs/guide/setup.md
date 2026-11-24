@@ -3,7 +3,7 @@
 手元で開発画面を表示するまでの手順です。各ステップに、実行するコマンドと**成功したときに表示されるもの**を書いています。表示が違う場合は[トラブルシューティング](/guide/troubleshooting)を見てください。
 
 ::: info Windowsで前提ツールを初めて入れる場合
-この30分は、Git、Node.js、npm、Docker Desktopがすでに動く状態からの目安です。WindowsでGitやターミナルを初めて使う場合は、先に[Windowsでゼロから始める](/guide/setup-windows)を進めてください。準備完了チェックを通過したところから、このコースへ戻ります。
+この30分は、Git、Node.js、pnpm、Docker Desktopがすでに動く状態からの目安です。WindowsでGitやターミナルを初めて使う場合は、先に[Windowsでゼロから始める](/guide/setup-windows)を進めてください。準備完了チェックを通過したところから、このコースへ戻ります。
 :::
 
 ::: warning 秘密情報の扱い
@@ -27,24 +27,25 @@
 
 ### 必須
 
-**Node.js 22.0.0 以上**と**npm**が必要です。バージョン管理ツール（nvm、mise、Volta など）は各自の好みで構いません。
+**Node.js 22.12.0 以上**と**pnpm 10.34.5**が必要です。バージョン管理ツール（nvm、mise、Volta など）は各自の好みで構いません。
 
 ```bash
 node -v
-npm -v
+npm install --global pnpm@10.34.5
+pnpm -v
 ```
 
 成功時の例:
 
 ```
 v24.4.1
-11.4.2
+10.34.5
 ```
 
-`v22.0.0` 以上であれば問題ありません。表示されない場合は [Node.js](https://nodejs.org/) を入れてください。
+`v22.12.0` 以上であれば問題ありません。表示されない場合は [Node.js](https://nodejs.org/) を入れてください。
 
 ::: warning Node.js 20 では動きません
-このプロジェクトが使う `@supabase/supabase-js` などは Node.js 22 以上を要求します。Node.js 20 で進めると、次の手順の `npm install` で `EBADENGINE` という警告が出て、以降のビルドやテストでも警告が続きます。バージョンが古い場合は先に上げてください。
+このプロジェクトが使う `@supabase/supabase-js` などは Node.js 22 以上を要求します。Node.js 20 で進めると、次の手順の `pnpm install --frozen-lockfile` で Node.js のバージョン要件を満たせません。バージョンが古い場合は先に上げてください。
 :::
 
 **Git** も必要です。
@@ -76,13 +77,13 @@ Supabase CLIは `npx` 経由で使うため、事前インストールは不要�
 ```bash
 git clone https://github.com/<あなたのアカウント>/initiation.git
 cd initiation
-npm install
+pnpm install --frozen-lockfile
 ```
 
 成功時の例:
 
 ```
-added 461 packages, and audited 462 packages in 5s
+Lockfile is up to date, resolution step is skipped
 ```
 
 ::: tip なぜforkするのか
@@ -196,7 +197,7 @@ Applying migration 20260806000001_core_tables.sql...
 ## 5. 開発サーバーの起動
 
 ```bash
-npm run dev -- --port 3000
+pnpm run dev --port 3000
 ```
 
 成功時の例:
@@ -231,7 +232,7 @@ LAN内IPで開いて画面は表示されるのにウォレット接続が動か
 続いて、テストが通ることを確認します。
 
 ```bash
-npm test
+pnpm test
 ```
 
 成功時:
@@ -244,19 +245,19 @@ Test Files  15 passed (15)
 件数はテストが増えるたびに変わります。**`failed` が0で、すべて `passed` と表示されていれば成功**です。
 
 ::: tip 統合テストについて
-テストは単体テストとローカルSupabaseを使う統合テストに分かれています。統合テストは `.env.local` のSupabase設定を自動で読み込むため、Supabaseを起動した状態で `npm test` を実行すれば両方が走ります。Supabaseを起動していない場合、統合テストは失敗します。
+テストは単体テストとローカルSupabaseを使う統合テストに分かれています。統合テストは `.env.local` のSupabase設定を自動で読み込むため、Supabaseを起動した状態で `pnpm test` を実行すれば両方が走ります。Supabaseを起動していない場合、統合テストは失敗します。
 :::
 
 最後に、他の検証コマンドも通ることを確認します。
 
 ```bash
-npm run build
-npx tsc --noEmit
-npm run lint
+pnpm run build
+pnpm exec tsc --noEmit
+pnpm run lint
 ```
 
 ::: warning 実行順に注意
-`npx tsc --noEmit` は、Next.jsがビルド時に生成する型に依存します。**クローン直後は `npm run build` を先に実行してください。** 順番を逆にすると `Cannot find name 'LayoutProps'` というエラーが出ます。
+`pnpm exec tsc --noEmit` は、Next.jsがビルド時に生成する型に依存します。**クローン直後は `pnpm run build` を先に実行してください。** 順番を逆にすると `Cannot find name 'LayoutProps'` というエラーが出ます。
 :::
 
 ## うまくいかないとき

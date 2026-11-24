@@ -13,11 +13,11 @@ app/layout.tsx(22,50): error TS2304: Cannot find name 'LayoutProps'.
 **対処**: 先にビルドを実行します。
 
 ```bash
-npm run build
-npx tsc --noEmit
+pnpm run build
+pnpm exec tsc --noEmit
 ```
 
-`npm run dev` を一度起動した場合も型が生成されます。
+`pnpm run dev` を一度起動した場合も型が生成されます。
 
 ## 統合テストが `SUPABASE_SERVICE_ROLE_KEY` で失敗する
 
@@ -36,7 +36,7 @@ npx supabase status
 
 起動していない場合は `npx supabase start` を実行し、表示された `Project URL` と `Secret` を `.env.local` の `SUPABASE_URL` と `SUPABASE_SERVICE_ROLE_KEY` へ設定します。`Publishable` は使用しません。
 
-統合テストは `.env.local` を自動で読み込むため、設定後は `npm test` をそのまま実行できます。
+統合テストは `.env.local` を自動で読み込むため、設定後は `pnpm test` をそのまま実行できます。
 
 ::: tip 単体テストだけ実行したい場合
 Supabaseを起動せずに単体テストだけ動かせます。
@@ -132,7 +132,7 @@ openssl rand -base64 32
 SIWE_ALLOWED_DOMAINS=localhost:3000
 ```
 
-`npm run dev -- --port 3001` のように3000以外のポートで動かしている場合は、そのポートに合わせてください。ブラウザのアドレスバーに出ているホスト名とポートがそのまま値になります。
+`pnpm run dev --port 3001` のように3000以外のポートで動かしている場合は、そのポートに合わせてください。ブラウザのアドレスバーに出ているホスト名とポートがそのまま値になります。
 
 他に次の場合も同じメッセージになります。
 
@@ -186,7 +186,7 @@ lsof -ti:3000
 既存のサーバーを使うか、別のポートで起動します。
 
 ```bash
-npm run dev -- --port 3001
+pnpm run dev --port 3001
 ```
 
 同じポートに新しいプロセスを重ねて起動しないでください。
@@ -236,7 +236,7 @@ WebSocket connection to 'ws://<LAN内IP>:3000/_next/hmr...' failed
 
 **通常の操作で届いてしまう場合は、上限の設定が実態と合っていません。** どの操作で何回目に出たかを添えてIssueで報告してください。設定値は `lib/domain/rateLimits.ts` にあります。
 
-## `npm install` で脆弱性の警告が出る
+## 監査で開発用依存関係の警告が出る
 
 現在、ドキュメントサイトの生成に使うVitePressが、開発サーバー向けの脆弱性を持つ依存（esbuild / vite）を含んでいます。
 
@@ -252,5 +252,5 @@ WebSocket connection to 'ws://<LAN内IP>:3000/_next/hmr...' failed
 
 - 実行したコマンド
 - 表示されたエラーメッセージ（**キーや秘密情報を除く**）
-- `node -v` と `npm -v` の出力
+- `node -v` と `pnpm -v` の出力
 - OS

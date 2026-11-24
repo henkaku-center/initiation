@@ -53,7 +53,7 @@ SIWE_ALLOWED_DOMAINS=localhost:3000
 - カンマ区切りで複数指定できます。大文字小文字は区別されません
 - **未設定だとサインインは必ず失敗します**（`domain not configured`）。設定漏れが「誰でも通る」側に倒れないようにするためです
 
-`npm run dev -- --port 3001` のように別のポートで動かす場合は、そのポートを含む値へ変更してください。
+`pnpm run dev --port 3001` のように別のポートで動かす場合は、そのポートを含む値へ変更してください。
 
 ### SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY
 

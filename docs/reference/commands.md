@@ -5,27 +5,27 @@ Pull Requestを出す前に実行するコマンドです。
 ## 検証コマンド
 
 ```bash
-npm test
-npm run build
-npx tsc --noEmit
-npm run lint
+pnpm test
+pnpm run build
+pnpm exec tsc --noEmit
+pnpm run lint
 ```
 
 | コマンド | 内容 | 備考 |
 | --- | --- | --- |
-| `npm test` | Vitestで単体テストと統合テストを実行 | 統合テストはローカルSupabaseの起動が必要 |
-| `npm run build` | Next.jsの本番ビルド | 型チェックの前に実行する |
-| `npx tsc --noEmit` | TypeScriptの型チェック | ビルドが生成する型に依存する |
-| `npm run lint` | ESLint | |
+| `pnpm test` | Vitestで単体テストと統合テストを実行 | 統合テストはローカルSupabaseの起動が必要 |
+| `pnpm run build` | Next.jsの本番ビルド | 型チェックの前に実行する |
+| `pnpm exec tsc --noEmit` | TypeScriptの型チェック | ビルドが生成する型に依存する |
+| `pnpm run lint` | ESLint | |
 
 ::: warning 実行順
-`npx tsc --noEmit` はNext.jsがビルド時に生成する型（`LayoutProps` など）に依存します。クローン直後は `npm run build` を先に実行してください。
+`pnpm exec tsc --noEmit` はNext.jsがビルド時に生成する型（`LayoutProps` など）に依存します。クローン直後は `pnpm run build` を先に実行してください。
 :::
 
 ## 開発サーバー
 
 ```bash
-npm run dev -- --port 3000
+pnpm run dev --port 3000
 ```
 
 既存の開発サーバーがある場合、同じポートに新しいプロセスを重ねて起動しないでください。
@@ -71,9 +71,9 @@ Supabase Studio は `http://127.0.0.1:54323` で開けます。
 このサイト自体の確認に使います。
 
 ```bash
-npm run docs:dev      # ローカルで確認
-npm run docs:build    # 静的ビルド（リンク切れがあると失敗する）
-npm run docs:preview  # ビルド結果を確認
+pnpm run docs:dev      # ローカルで確認
+pnpm run docs:build    # 静的ビルド（リンク切れがあると失敗する）
+pnpm run docs:preview  # ビルド結果を確認
 ```
 
 ## 関連
