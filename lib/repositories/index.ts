@@ -71,6 +71,11 @@ export interface RateLimitRepository {
   }): Promise<boolean>;
 }
 
+export interface HealthRepository {
+  /** 実DBへ読み取り専用の軽量な問い合わせを1回行う。失敗・中断時は例外を投げる。 */
+  ping(signal: AbortSignal): Promise<void>;
+}
+
 export class DuplicateApplicationError extends Error {
   constructor(message = "active application already exists") {
     super(message);
@@ -92,6 +97,7 @@ export type Repositories = {
   applications: ApplicationRepository;
   checkins: CheckinRepository;
   rateLimits: RateLimitRepository;
+  health: HealthRepository;
 };
 
 export function getRepositories(): Repositories {
