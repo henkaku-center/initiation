@@ -30,3 +30,7 @@
 ## この決定に含めないもの
 
 - COMMUNITY FIELD（Issue #132）のポリシー追記。実装時に同じ形で意見募集を行う
+
+## 追記（2026-11-25）
+
+本番を2026年11月25日に公開した（[Issue #136の構築記録](https://github.com/henkaku-center/initiation/issues/136#issuecomment-7137391741)）。2件の適用日はこの日になり、ポリシーの「適用開始」と「変更履歴」に日付を記載した。
