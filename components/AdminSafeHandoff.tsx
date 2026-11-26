@@ -36,7 +36,7 @@ function CopyButton({ label, value }: { label: string; value: string }) {
 
 function HandoffValue({ name, value, copyLabel, mono = true }: { name: string; value: string; copyLabel: string; mono?: boolean }) {
   return (
-    <div className="grid gap-1 sm:grid-cols-[7rem_1fr] sm:gap-3">
+    <div className="grid gap-1 sm:grid-cols-[7rem_1fr] sm:items-center sm:gap-3">
       <dt className="font-semibold text-muted">{name}</dt>
       <dd className="text-foreground">
         <span className={mono ? "break-all font-mono text-xs" : undefined}>{value}</span>
