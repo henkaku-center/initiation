@@ -55,11 +55,20 @@
 - [Polygonの文書](https://docs.polygon.technology/pos/concepts/finality/finality)は、`eth_getBlockByNumber` に `finalized` を渡して最新の確定済みブロックを取り、取引のブロック番号と比べる方法を示している。確定までの目安は2〜5秒
 - `polygon.drpc.org`(viemの既定)と `polygon-bor-rpc.publicnode.com` の両方で `finalized` が応答した。確定済みブロックは最新から3ブロック前だった
 
+### 取引詳細URLと実際の取引の形
+
+- 取引詳細URLは `https://app.safe.global/transactions/tx?safe=matic:<Safeアドレス>&id=multisig_<Safeアドレス>_<safeTxHash>`。`id` の形は [Safe Walletのソース](https://github.com/safe-global/safe-wallet-monorepo/blob/dev/apps/web/src/utils/transactions.ts)(`getSafeTxHashFromTxId`)で確認した
+- 配布用SafeからのHENKAKU送付は、`to` がHENKAKUトークン、`data` が `transfer(address,uint256)` の呼び出し(セレクタ `0xa9059cbb`)、`operation` が0だった。Runbookの参考トランザクション `0x7be6…1eaf7` で確認した
+- **1つのオンチェーントランザクションで、複数のSafe取引が実行されることがある。** 上の参考トランザクションは、6件のSafe取引(nonce 1982〜1987)をまとめて実行したもので、レシートの `to` はSafeではなく、同じ宛先への `Transfer` が6件並ぶ。tx hashと `safeTxHash` は1対1に対応しない
+- 正式な2つのSafeは、どちらもバージョン 1.3.0+L2。`ExecutionSuccess` の提案IDはindexedではなく、イベントのdataの先頭に入る
+- 未実行のまま残っている取引が、Allowlist用Safeに13件、配布用Safeに75件ある。いずれも `nonce` がSafeの現在の `nonce` より小さい
+- 存在しない `safeTxHash` を引くと、サービスは404を返す
+- `polygon-bor-rpc.publicnode.com` は、参考トランザクションのレシートを返さなかった(アーカイブへの問い合わせには個別のトークンが要る)。`polygon.drpc.org` は返した
+
 ### 未確認のこと
 
-- 取引詳細URLの `id` の実際の形。[Safe Walletのリンク生成](https://github.com/safe-global/safe-wallet-monorepo/blob/dev/apps/web/src/utils/tx-link.ts)から、パスが `/transactions/tx`、クエリが `safe=<チェーンの短縮名>:<Safeアドレス>` と `id=<取引ID>` であることは確認した。`id` に `safeTxHash` がどう入るかは、実物のURLで確認してから解析処理を書く
-- 配布用Safeで「Send tokens」から作ったHENKAKU送付の `data` と `operation`。今回確認できた配布用Safeの直近の取引はHENKAKUの送付ではなかった。Runbookの参考トランザクション `0x7be6…1eaf7` で確認する
-- 署名待ち・実行待ち・失敗・取消・置換の各状態で、サービスが実際に返す値。テスト用のSafeで確認する
+- Safe内部の処理が失敗した取引で、サービスとレシートが実際に返す値。配布用Safeの直近200件の実行済み取引に、`isSuccessful` が `false` のものはなかった。テスト用のSafeで確認する
+- 署名待ち・実行待ちの取引でサービスが返す値のうち、現在のキューにあるもの。今回確認できた未実行の取引は、すべて置換済みだった
 
 ## 実装設計
 
@@ -88,16 +97,18 @@
 | --- | --- |
 | 共通 | `safe` が正式なSafe、`to` がHENKAKUトークン、`value` が0、`operation` が0(delegatecallではない) |
 | 共通 | `isExecuted` と `isSuccessful` がともに真 |
-| 共通 | Polygonのレシートが成功で、同じ `safeTxHash` の `ExecutionSuccess` イベントを正式なSafeが出している |
+| 共通 | Polygonのレシートが成功で、同じ `safeTxHash` の `ExecutionSuccess` イベントを正式なSafeが出している。レシートの `to` がSafeであることは条件にしない(まとめて実行された場合、`to` は別のコントラクトになる) |
 | 共通 | 実行ブロックの番号が `finalized` のブロック番号以下 |
 | Allowlist | `data` が、申請者アドレスを引数とする `addWhitelistUser(address)` の呼び出しと全バイト一致する |
 | Allowlist | `isAllowed(申請者)` が真(Issue #91 と同じ読み方) |
 | 配布 | `data` が、申請者アドレスと `10 * 10^18` を引数とする `transfer(address,uint256)` の呼び出しと全バイト一致する |
-| 配布 | レシートに、HENKAKUトークンが出した `Transfer`(送付元が配布用Safe、宛先が申請者、数量が `10 * 10^18`)がある |
+| 配布 | レシートに、HENKAKUトークンが出した `Transfer`(送付元が配布用Safe、宛先が申請者、数量が `10 * 10^18`)がある。数えるのは、その提案の `ExecutionSuccess` と、直前のSafe取引の実行結果の間にあるログだけとする |
 
 操作内容は、サービスが解釈した `dataDecoded` ではなく `data` を自前で組み立てた値と比べる。外側のトランザクションが成功していても、Safe内部の処理が失敗している場合がある([Safeの説明](https://help.safe.global/articles/7835581861-my-safe-transaction-failed-but-etherscan-reports-success-why-is-that))ため、レシートの成功だけで判断せず `ExecutionSuccess` を見る。
 
-MultiSendによる複数件のまとめ送付は `operation` が1になるため、初期版では照合に通らない。1件ずつ処理する方針と合わせ、まとめ送付には対応しない。
+同じトランザクションでまとめて実行された別のSafe取引の `Transfer` を、この申請の配布として数えない。上の条件でログの範囲を限るのはこのためである。
+
+1つのSafe取引の中で複数の送付をまとめるMultiSendは `operation` が1になるため、初期版では照合に通らない。1件ずつ処理する方針と合わせ、対応しない。提案を1件ずつ作り、実行だけをまとめた場合は照合できる。
 
 ### 取消・置換の判定
 
@@ -118,7 +129,7 @@ MultiSendによる複数件のまとめ送付は `operation` が1になるため
 | `safe_address` | 紐付けた時点の正式なSafe |
 | `safe_tx_hash` | Safeの提案ID。テーブル全体で一意 |
 | `safe_nonce` | Safeのnonce |
-| `tx_hash` | 実行後のオンチェーンtx hash。未実行の間は空 |
+| `tx_hash` | 実行後のオンチェーンtx hash。未実行の間は空。複数のSafe取引が同じ値を持ちうるため、一意制約は置かない |
 | `observed_status` | 最後に取得できた状態 |
 | `observed_at` | 最後に取得できた時刻 |
 | `linked_by` | 紐付けた管理者のアドレス |
@@ -153,5 +164,6 @@ MultiSendによる複数件のまとめ送付は `operation` が1になるため
 - **手入力での完了確定を残すか。** 合意は「照合できない結果を管理者の操作だけで完了にしない」である。一方、連携後に手入力の経路を閉じると、Safe Transaction Serviceの障害中は完了を確定できなくなる。案: 実務者の一巡(Issue #48)が済むまでは手入力の経路を残し、一巡の結果を見て閉じるかどうかを決める
 - **本番のAPIキーを誰のアカウントで発行するか。** 上限はアカウント単位で、キーはVercelの環境変数に置く。運営の判断が必要
 - 承認人数・役割分担・完了連絡の運用。Issue #48 の決定に合わせ、工程4の後の案内に反映する
-- 上記「未確認のこと」の3点
+- 上記「未確認のこと」の2点
+- 手入力済みの古いtx hashを照合に使う場合のRPC。古いレシートを返さないRPCがある
 - プライバシーポリシーとの関係。保存するのは公開されているSafeの提案IDとtx hashで、閲覧できるのは `/admin` の管理者だけである。申請者に見せる範囲を `/passport` で広げる場合は、ポリシーの記載を確認する
