@@ -10,16 +10,20 @@ import { saveStep } from "@/app/initiation/actions";
 import { saveDisplayName } from "@/app/members/actions";
 import { needsOpeningRecord, OPENED_RECORD_ID, readJourneyAnswer, type JourneyStep, type JourneyAnswer } from "@/lib/initiation/journey";
 import type { ProgressEntry } from "@/lib/domain/types";
+import type { CommunityField } from "@/lib/domain/communityField";
+import { CommunityFieldPanel } from "./CommunityFieldPanel";
 import { journeyScenes } from "@/lib/portal/journeyScenes";
 import "./explorer-scene.css";
 
-export function PortalJourney({ steps, entries, displayName, complete, signedIn = true, review = false }: {
+export function PortalJourney({ steps, entries, displayName, complete, signedIn = true, review = false, field = null }: {
   steps: JourneyStep[];
   entries: ProgressEntry[];
   displayName: string | null;
   complete: boolean;
   signedIn?: boolean;
   review?: boolean;
+  /** 入口に出す集計。閲覧できるのはサインイン済みの人だけ。取得できなければ出さない(Issue #132)。 */
+  field?: CommunityField | null;
 }) {
   const byId = new Map(entries.map((entry) => [entry.stepId, entry]));
   const saved = steps.filter((step) => readJourneyAnswer(step.id, byId.get(step.id)?.answer));
@@ -87,7 +91,7 @@ export function PortalJourney({ steps, entries, displayName, complete, signedIn 
       </div>
       <div className="pd-game-bottom"><div className="pd-game-card" ref={card} tabIndex={-1} role="group" aria-label={scene.japanese}>
         <div className="pd-game-card-label"><span>{stage === 4 ? `FINAL QUESTIONS / ${position - 1} OF 3` : `SIGNAL ${String(stage + 1).padStart(2, "0")}`}</span><span>任意で答えられます</span></div>
-        {position === -2 ? <><h2>はじめまして、旅人。</h2><p>ここは、まだ決まった形のない場所。<br />問いを持った人たちが、集まっては何かをつくっています。</p><p>答えが見つからなくても大丈夫。<br />まずは、少し歩いてみませんか。</p>{!signedIn && <p className="pd-game-small">回答を保存するには、<Link className="pd-text-button" href="/setup">サインイン</Link>してください。</p>}<div className="pd-game-card-actions"><button className="pd-game-back" type="button" disabled>← 戻る</button><button className="pd-game-next" type="button" onClick={() => goTo(-1)}>NEXT →</button></div></> : position === -1 ? <Arrival displayName={displayName} signedIn={signedIn} onBack={() => goTo(-2)} onNext={() => goTo(0)} /> : step ? <StepAnswer key={step.id} step={step} last={position === steps.length - 1} signedIn={signedIn} entry={byId.get(step.id)} onBack={() => goTo(Math.max(-1, position - 1))} onNext={() => { goTo(position + 1); if (position === steps.length - 1) setEditing(false); }} /> : <div aria-live="polite"><h2>完走状態を確認しています…</h2><p>保存済みの記録を確認して、次の入口を表示します。</p><button className="pd-secondary" type="button" onClick={() => router.refresh()}>もう一度確認</button></div>}
+        {position === -2 ? <><h2>はじめまして、旅人。</h2><p>ここは、まだ決まった形のない場所。<br />問いを持った人たちが、集まっては何かをつくっています。</p><p>答えが見つからなくても大丈夫。<br />まずは、少し歩いてみませんか。</p>{signedIn && field && <CommunityFieldPanel field={field} />}{!signedIn && <p className="pd-game-small">回答を保存するには、<Link className="pd-text-button" href="/setup">サインイン</Link>してください。</p>}<div className="pd-game-card-actions"><button className="pd-game-back" type="button" disabled>← 戻る</button><button className="pd-game-next" type="button" onClick={() => goTo(-1)}>NEXT →</button></div></> : position === -1 ? <Arrival displayName={displayName} signedIn={signedIn} onBack={() => goTo(-2)} onNext={() => goTo(0)} /> : step ? <StepAnswer key={step.id} step={step} last={position === steps.length - 1} signedIn={signedIn} entry={byId.get(step.id)} onBack={() => goTo(Math.max(-1, position - 1))} onNext={() => { goTo(position + 1); if (position === steps.length - 1) setEditing(false); }} /> : <div aria-live="polite"><h2>完走状態を確認しています…</h2><p>保存済みの記録を確認して、次の入口を表示します。</p><button className="pd-secondary" type="button" onClick={() => router.refresh()}>もう一度確認</button></div>}
       </div></div>
     </div>}
     <div className="pd-music-credit"><span>Music: Breeze Zero / karawapo · CC BY 4.0 · Synth preview</span></div>

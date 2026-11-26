@@ -12,11 +12,13 @@ import type {
   ProgressEntry,
   StatusField,
 } from "@/lib/domain/types";
+import { FIELD_WINDOW_DAYS, summarizeInterests } from "@/lib/domain/communityField";
 import {
   ConcurrentTransitionError,
   DuplicateApplicationError,
   type ApplicationRepository,
   type CheckinRepository,
+  type CommunityFieldRepository,
   type HealthRepository,
   type MemberRepository,
   type ProgressRepository,
@@ -307,6 +309,42 @@ const rateLimits: RateLimitRepository = {
   },
 };
 
+/** PostgRESTは1回の応答の行数に上限があるため、集計の対象は区切って最後まで読む。 */
+const PAGE_SIZE = 1000;
+
+async function selectAll(
+  page: (from: number, to: number) => PromiseLike<{ data: unknown[] | null; error: unknown }>,
+): Promise<Row[]> {
+  const rows: Row[] = [];
+  for (let from = 0; ; from += PAGE_SIZE) {
+    const { data, error } = await page(from, from + PAGE_SIZE - 1);
+    if (error) throw error;
+    rows.push(...((data ?? []) as Row[]));
+    if (!data || data.length < PAGE_SIZE) return rows;
+  }
+}
+
+const communityField: CommunityFieldRepository = {
+  async summary(sinceDate) {
+    // 人数を数えるために member_id を読むが、数えた後は捨てる。この関数の外へは出さない。
+    const checkinRows = await selectAll((from, to) =>
+      client().from("checkins").select("member_id").gte("checkin_date", sinceDate).order("id").range(from, to),
+    );
+    // 関心タグは回答の列だけを読む。誰の回答かは取得しない。
+    const interestRows = await selectAll((from, to) =>
+      client().from("initiation_progress").select("answer").eq("step_id", "v2-interests").order("id").range(from, to),
+    );
+    return {
+      checkins: {
+        days: FIELD_WINDOW_DAYS,
+        count: checkinRows.length,
+        members: new Set(checkinRows.map((row) => row.member_id)).size,
+      },
+      interests: summarizeInterests(interestRows.map((row) => (row.answer as string) ?? null)),
+    };
+  },
+};
+
 const health: HealthRepository = {
   async ping(signal) {
     // SQLを直接実行できないため、行を返さないHEAD読み取りで往復の成否だけを見る。
@@ -322,5 +360,6 @@ export const supabaseRepositories: Repositories = {
   applications,
   checkins,
   rateLimits,
+  communityField,
   health,
 };

@@ -2070,3 +2070,92 @@
 }
 @media (prefers-reduced-motion: reduce) {
 }
+
+/* COMMUNITY FIELD: Initiationの入口に置く集計(Issue #132)。入口のカードの中に収める。 */
+.pd-field {
+  margin: 4px 0 18px;
+  padding: 14px 16px;
+  border: 1px solid var(--pd-line-strong);
+  background: var(--pd-paper);
+}
+.pd-field-label {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin: 0 0 12px;
+  color: var(--pd-blue);
+  font-family: monospace;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+}
+.pd-field-label > span:last-child {
+  color: var(--pd-muted);
+  font-family: inherit;
+  font-size: 10px;
+  letter-spacing: 0;
+}
+.pd-field-block + .pd-field-block {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--pd-line-strong);
+}
+.pd-field h3 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pd-ink);
+}
+.pd-field-numbers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 24px;
+  margin: 0;
+}
+.pd-field-numbers dt {
+  font-size: 10px;
+  color: var(--pd-muted);
+}
+.pd-field-numbers dd {
+  margin: 0;
+  font-size: 11px;
+  color: var(--pd-muted);
+}
+.pd-field-numbers b {
+  margin-right: 2px;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--pd-ink);
+}
+.pd-field-tags,
+.pd-field-combinations {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.pd-field-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.pd-field-tags li {
+  border: 1px solid var(--pd-line-strong);
+  padding: 3px 8px;
+  font-family: monospace;
+  font-size: 10px;
+  color: var(--pd-muted);
+}
+.pd-field-tags b {
+  color: var(--pd-ink);
+}
+.pd-field-combinations {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--pd-muted);
+}
+.pd-field-empty {
+  margin: 0;
+  font-size: 12px;
+  color: var(--pd-muted);
+}
