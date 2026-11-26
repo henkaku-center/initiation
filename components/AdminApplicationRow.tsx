@@ -5,6 +5,7 @@
 import { useRouter } from "next/navigation";
 import { Fragment, useState, useTransition } from "react";
 import { AdminApplicationHistory } from "@/components/AdminApplicationHistory";
+import { AdminSafeHandoff } from "@/components/AdminSafeHandoff";
 import { fieldLabel } from "@/lib/applicationEventLabels";
 import type { EventByField } from "@/lib/domain/applicationEvents";
 import type { ApplicationEvent, ApplicationWithMember, StatusField } from "@/lib/domain/types";
@@ -74,6 +75,8 @@ export function AdminApplicationRow({
       <td className="px-4 py-4 font-semibold text-foreground">{application.allowlistStatus}</td>
       <td className="px-4 py-4 font-semibold text-foreground">{application.distributionStatus}</td>
       <td className="min-w-[28rem] px-4 py-4">
+        {/* 承認後は、どのSafeで何を入力するかを操作欄の上に出す(Issue #137)。 */}
+        <AdminSafeHandoff application={application} />
         <div className="flex flex-wrap items-center gap-2">
           {(review === "pending" || review === "needs_info") && (
             <>
