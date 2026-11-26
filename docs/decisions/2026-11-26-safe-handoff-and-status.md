@@ -63,7 +63,7 @@
 - **1つのオンチェーントランザクションで、複数のSafe取引が実行されることがある。** 上の参考トランザクションは、6件のSafe取引(nonce 1982〜1987)をまとめて実行したもので、レシートの `to` はSafeではなく、同じ宛先への `Transfer` が6件並ぶ。tx hashと `safeTxHash` は1対1に対応しない
 - 正式な2つのSafeは、どちらもバージョン 1.3.0+L2。`ExecutionSuccess` の提案IDはindexedではなく、イベントのdataの先頭に入る
 - 未実行のまま残っている取引が、Allowlist用Safeに13件、配布用Safeに75件ある。いずれも `nonce` がSafeの現在の `nonce` より小さい
-- `GET /api/v2/safes/{Safe}/multisig-transactions/?nonce={nonce}&executed=true` は、そのnonceで実行された取引を返す(2026-11-27に確認)。Allowlist用Safeの未実行の取引3件(nonce 282・284・287)について、それぞれ別の `safeTxHash` の実行済み取引が1件ずつ返った。`executed` を付けなければ、同じnonceの未実行の取引も並ぶ
+- `GET /api/v2/safes/{Safe}/multisig-transactions/?nonce={nonce}&executed=true` は、そのnonceで実行された取引を返す(2026-11-27に確認)。Allowlist用Safeの未実行の取引3件(nonce 282・284・287)について、それぞれ別の `safeTxHash` の実行済み取引が1件ずつ返った。3件とも、`polygon.drpc.org` が返したレシートに、Allowlist用Safeが出したその `safeTxHash` の `ExecutionSuccess` があった。`executed` を付けなければ、同じnonceの未実行の取引も並ぶ
 - 存在しない `safeTxHash` を引くと、サービスは404を返す
 - `polygon-bor-rpc.publicnode.com` は、参考トランザクションのレシートを返さなかった(アーカイブへの問い合わせには個別のトークンが要る)。`polygon.drpc.org` は返した
 
@@ -117,10 +117,11 @@
 - 未実行の取引の `nonce` より、Safeの現在の `nonce` が大きいことだけでは、取消・置換が確定したと判定しない。元の提案自体が実行されてnonceが進み、その実行結果がサービスの応答にまだ反映されていないだけの場合がある。ここで置換済みとして新しい提案を案内すると、同じ追加・配布を二重に実行させてしまう
 - 取消・置換が確定したと判定するのは、次をすべて満たしたときだけとする
   - 紐付けた取引が未実行で、その `nonce` よりSafeの現在の `nonce` が大きい
-  - 同じSafe・同じ `nonce` で、**別の `safeTxHash`** の取引が実行済みになっている(`isExecuted` が真で、`transactionHash` と `blockNumber` がある)。置換先がSafe内部で失敗していても、nonceは消費されているため置換とみなす
+  - 同じSafe・同じ `nonce` で、**別の `safeTxHash`** の取引が実行済みになっている(`isExecuted` が真で、`transactionHash` と `blockNumber` がある)
+  - その `transactionHash` のレシートが成功で、ブロック番号がサービスの応答と一致し、置換先の `safeTxHash` について正式なSafeが実行結果のイベント(`ExecutionSuccess` または `ExecutionFailure`)を出している。サービスの報告だけでは置換先の実行を信用しない。置換先がSafe内部で失敗していても、nonceは消費されているため置換とみなす
   - その実行ブロックの番号が `finalized` のブロック番号以下
   - 同じ `nonce` の実行済み取引に、紐付けた取引と同じ `safeTxHash` のものがない(あれば元の提案が実行されており、再取得して通常の照合へ進む)
-- 上を満たさない間は「取消・置換を確認中」と表示する。同じ `nonce` の実行済み取引を取得できない、まだ返ってこない、確定していない場合を含む
+- 上を満たさない間は「取消・置換を確認中」と表示する。同じ `nonce` の実行済み取引やそのレシートを取得できない、まだ返ってこない、確定していない場合を含む
 - サービスが404を返す、またはSafeのキューから取引が消えただけの場合も、取消の確定とは判定しない。「取消・置換を確認中」または「取得できない」と表示する
 - 取消・置換が確定するまで、同じ工程の新しい提案の作成を案内しない
 - 置換先の取引は、別の取引として紐付け直し、同じ条件で照合する
