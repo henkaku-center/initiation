@@ -1,0 +1,22 @@
+{
+ "safe": "0x3F1D35bF5f182D7b4ef95a3f298f059BC33d2020",
+ "to": "0x0cc91a5FFC2E9370eC565Ab42ECE33bbC08C11a2",
+ "value": "0",
+ "data": "0x84083c890000000000000000000000008bc20c33dab1ad9e51b6d94b79f150279319db47",
+ "operation": 0,
+ "nonce": "380",
+ "safeTxHash": "0xfd48a383b8021584acc34f3aeb296035b1f294a0c789eb6748dd1445365c8063",
+ "transactionHash": "0x8b70c61edd3e4aa49f2ffd751c7aad86ca34303301256087dbeed4cc2ccd1fe9",
+ "blockNumber": 86472877,
+ "isExecuted": true,
+ "isSuccessful": true,
+ "confirmationsRequired": 2,
+ "confirmations": [
+  {
+   "owner": "0x0FF051891dEBb1F6bEeE93b932dcae625735A2D8"
+  },
+  {
+   "owner": "0x3E13a91bbFb776bf02aeA1C57d6904a4714e80C6"
+  }
+ ]
+}
