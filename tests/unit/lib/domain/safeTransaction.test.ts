@@ -46,6 +46,8 @@ const allowlistTx = serviceTx(fixture("service-allowlist-executed"));
 const batch: SafeServiceTx[] = fixture("service-distribution-batch").map(serviceTx);
 const fiftyTx = batch.find((tx) => tx.safeTxHash === FIFTY_SAFE_TX)!;
 const unexecuted: SafeServiceTx[] = fixture("service-allowlist-unexecuted").map(serviceTx);
+// 上の未実行の取引と同じnonceで実行された取引。2026-11-27に `?nonce=<n>&executed=true` で取得した。
+const replacements: SafeServiceTx[] = fixture("service-allowlist-replacements").map(serviceTx);
 
 describe("parseSafeTxUrl", () => {
   const url = (safe: string, hash: string, prefix = "matic") =>
@@ -206,32 +208,93 @@ describe("proposalMismatches", () => {
 });
 
 describe("safeTxPhase", () => {
+  // Safeの現在のnonceが381で、同じnonceの実行済み取引をまだ取得していない状態。
+  const at381 = { safeNonce: 381, executedAtNonce: null, finalizedBlock: null };
+
   it("reports a successful execution", () => {
-    expect(safeTxPhase(allowlistTx, 381)).toBe("executed");
+    expect(safeTxPhase(allowlistTx, at381)).toBe("executed");
   });
 
   it("reports a failed Safe-internal execution separately", () => {
-    expect(safeTxPhase({ ...allowlistTx, isSuccessful: false }, 381)).toBe("failed");
+    expect(safeTxPhase({ ...allowlistTx, isSuccessful: false }, at381)).toBe("failed");
   });
 
   it("does not guess when the service marks an execution without a result", () => {
-    expect(safeTxPhase({ ...allowlistTx, isSuccessful: null }, 381)).toBe("unknown");
+    expect(safeTxPhase({ ...allowlistTx, isSuccessful: null }, at381)).toBe("unknown");
   });
 
   it("separates waiting for signatures from waiting for execution", () => {
     const pending = { ...allowlistTx, isExecuted: false, isSuccessful: null, transactionHash: null, blockNumber: null, nonce: 381 };
-    expect(safeTxPhase({ ...pending, confirmationCount: 1 }, 381)).toBe("awaiting_confirmations");
-    expect(safeTxPhase({ ...pending, confirmationCount: 2 }, 381)).toBe("awaiting_execution");
-    expect(safeTxPhase({ ...pending, confirmationCount: 2, nonce: 385 }, 381)).toBe("awaiting_execution");
+    expect(safeTxPhase({ ...pending, confirmationCount: 1 }, at381)).toBe("awaiting_confirmations");
+    expect(safeTxPhase({ ...pending, confirmationCount: 2 }, at381)).toBe("awaiting_execution");
+    expect(safeTxPhase({ ...pending, confirmationCount: 2, nonce: 385 }, at381)).toBe("awaiting_execution");
   });
 
-  it("treats real unexecuted transactions behind the Safe's nonce as replaced", () => {
-    // Allowlist用Safeに残っている未実行の取引(nonce 282〜287)。Safeの現在のnonceは381。
-    expect(unexecuted.length).toBeGreaterThan(0);
-    for (const tx of unexecuted) {
-      expect(tx.isExecuted).toBe(false);
-      expect(safeTxPhase(tx, 381)).toBe("replaced");
-    }
+  describe("when the Safe's nonce has moved past an unexecuted transaction", () => {
+    // Allowlist用Safeに残っている未実行の取引(nonce 282・284・287)と、同じnonceで実際に実行された取引。
+    const replacementOf = (tx: SafeServiceTx) => replacements.filter((other) => other.nonce === tx.nonce);
+    const FINALIZED = BigInt(86472877);
+
+    it("uses real pairs of an unexecuted transaction and the one executed at its nonce", () => {
+      expect(unexecuted.length).toBeGreaterThan(0);
+      for (const tx of unexecuted) {
+        expect(tx.isExecuted).toBe(false);
+        const [replacement, ...rest] = replacementOf(tx);
+        expect(rest).toEqual([]);
+        expect(replacement.isExecuted).toBe(true);
+        expect(replacement.safeTxHash).not.toBe(tx.safeTxHash);
+      }
+    });
+
+    it("reports replaced once another Safe transaction at the same nonce is executed and finalized", () => {
+      for (const tx of unexecuted) {
+        expect(safeTxPhase(tx, { safeNonce: 381, executedAtNonce: replacementOf(tx), finalizedBlock: FINALIZED })).toBe("replaced");
+      }
+    });
+
+    it("does not report replaced from the nonce alone", () => {
+      // 元の提案自体が実行されてnonceが進み、サービスの応答にまだ実行結果が反映されていない場合がある。
+      // ここで置換と判定すると新しい提案を案内し、同じ操作を二重に実行させてしまう。
+      for (const tx of unexecuted) {
+        expect(safeTxPhase(tx, { safeNonce: 381, executedAtNonce: null, finalizedBlock: FINALIZED })).toBe("replacement_unconfirmed");
+        expect(safeTxPhase(tx, { safeNonce: 381, executedAtNonce: [], finalizedBlock: FINALIZED })).toBe("replacement_unconfirmed");
+      }
+    });
+
+    it("keeps checking when the transaction executed at that nonce is the original itself", () => {
+      const stale = { ...allowlistTx, isExecuted: false, isSuccessful: null, transactionHash: null, blockNumber: null };
+      expect(safeTxPhase(stale, { safeNonce: 381, executedAtNonce: [allowlistTx], finalizedBlock: FINALIZED })).toBe(
+        "replacement_unconfirmed",
+      );
+      // 同じnonceに別の取引が並んでいても、元の提案の実行が見えている限り置換とは判定しない。
+      const other = { ...allowlistTx, safeTxHash: `0x${"ab".repeat(32)}` };
+      expect(safeTxPhase(stale, { safeNonce: 381, executedAtNonce: [other, allowlistTx], finalizedBlock: FINALIZED })).toBe(
+        "replacement_unconfirmed",
+      );
+    });
+
+    it("waits until the replacing execution is finalized", () => {
+      const [tx] = unexecuted;
+      const [replacement] = replacementOf(tx);
+      const evidence = { safeNonce: 381, executedAtNonce: [replacement] };
+      expect(safeTxPhase(tx, { ...evidence, finalizedBlock: null })).toBe("replacement_unconfirmed");
+      expect(safeTxPhase(tx, { ...evidence, finalizedBlock: BigInt(replacement.blockNumber! - 1) })).toBe("replacement_unconfirmed");
+      expect(safeTxPhase(tx, { ...evidence, finalizedBlock: BigInt(replacement.blockNumber!) })).toBe("replaced");
+    });
+
+    it("ignores transactions that do not prove an execution at the same Safe and nonce", () => {
+      const [tx] = unexecuted;
+      const [replacement] = replacementOf(tx);
+      const phase = (other: SafeServiceTx) => safeTxPhase(tx, { safeNonce: 381, executedAtNonce: [other], finalizedBlock: FINALIZED });
+      expect(phase({ ...replacement, nonce: tx.nonce + 1 })).toBe("replacement_unconfirmed");
+      expect(phase({ ...replacement, safe: DISTRIBUTION_SAFE })).toBe("replacement_unconfirmed");
+      expect(phase({ ...replacement, isExecuted: false, isSuccessful: null, transactionHash: null, blockNumber: null })).toBe(
+        "replacement_unconfirmed",
+      );
+      expect(phase({ ...replacement, transactionHash: null })).toBe("replacement_unconfirmed");
+      // 置換先がSafe内部で失敗していても、nonceは消費されている。
+      expect(phase({ ...replacement, isSuccessful: false })).toBe("replaced");
+    });
   });
 });
 

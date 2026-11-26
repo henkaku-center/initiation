@@ -188,22 +188,54 @@ export type SafeTxPhase =
   | "awaiting_execution"
   | "executed"
   | "failed"
+  | "replacement_unconfirmed"
   | "replaced"
   | "unknown";
+
+/** Safeのnonceと、取消・置換を確定させるための根拠。 */
+export type SafeNonceEvidence = {
+  /** Safeの現在のnonce。 */
+  safeNonce: number;
+  /** 同じSafe・同じnonceで実行済みとしてサービスが返した取引。取得していない・できなかった場合は null。 */
+  executedAtNonce: readonly SafeServiceTx[] | null;
+  /** `finalized` のブロック番号。取得できなければ null。 */
+  finalizedBlock: bigint | null;
+};
 
 /**
  * サービスの応答から取引の段階を決める。`executed` はSafe内部の処理が成功したという
  * サービス側の報告で、完了の確定には verifyExecution でのオンチェーン確認が要る。
- * 未実行のまま Safe の nonce が先へ進んでいれば、同じ nonce で別の取引が実行されている。
+ *
+ * 未実行のまま Safe の nonce が先へ進んでいても、それだけでは `replaced` にしない。
+ * 元の提案自体が実行され、その結果がまだ応答に反映されていないだけの場合があり、
+ * ここで新しい提案を案内すると同じ操作を二重に実行させてしまう。同じSafe・同じnonceで
+ * 別の safeTxHash の実行が確定したときだけ `replaced` とし、それまでは `replacement_unconfirmed` に留める。
  */
-export function safeTxPhase(tx: SafeServiceTx, safeNonce: number): SafeTxPhase {
+export function safeTxPhase(tx: SafeServiceTx, evidence: SafeNonceEvidence): SafeTxPhase {
   if (tx.isExecuted) {
     if (tx.isSuccessful === true) return "executed";
     if (tx.isSuccessful === false) return "failed";
     return "unknown";
   }
-  if (tx.nonce < safeNonce) return "replaced";
-  return tx.confirmationCount >= tx.confirmationsRequired ? "awaiting_execution" : "awaiting_confirmations";
+  if (tx.nonce >= evidence.safeNonce) {
+    return tx.confirmationCount >= tx.confirmationsRequired ? "awaiting_execution" : "awaiting_confirmations";
+  }
+
+  const executed = (evidence.executedAtNonce ?? []).filter(
+    (other) => sameAddress(other.safe, tx.safe) && other.nonce === tx.nonce && other.isExecuted,
+  );
+  const isOriginal = (other: SafeServiceTx) => other.safeTxHash.toLowerCase() === tx.safeTxHash.toLowerCase();
+  if (executed.some(isOriginal)) return "replacement_unconfirmed";
+
+  const { finalizedBlock } = evidence;
+  const replacedByFinalized = executed.some(
+    (other) =>
+      other.transactionHash !== null &&
+      other.blockNumber !== null &&
+      finalizedBlock !== null &&
+      BigInt(other.blockNumber) <= finalizedBlock,
+  );
+  return replacedByFinalized ? "replaced" : "replacement_unconfirmed";
 }
 
 export type SafeReceiptLog = { address: string; topics: readonly string[]; data: string };
