@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { SAFE_OPERATIONS } from "@/lib/domain/safeHandoff";
 import {
+  EXECUTION_FAILURE_TOPIC,
   EXECUTION_SUCCESS_TOPIC,
   expectedSafeCall,
   parseSafeTxUrl,
@@ -11,6 +12,7 @@ import {
   safeTxPhase,
   toSafeServiceTx,
   verifyExecution,
+  type ExecutedSafeTx,
   type SafeReceipt,
   type SafeServiceTx,
 } from "@/lib/domain/safeTransaction";
@@ -22,14 +24,13 @@ const serviceTx = (raw: unknown): SafeServiceTx => {
   if (!tx) throw new Error("fixture is not a Safe service transaction");
   return tx;
 };
-const receipt = (name: string): SafeReceipt => {
-  const raw = fixture(name);
-  return {
-    status: raw.status === "0x1" ? "success" : "reverted",
-    blockNumber: BigInt(raw.blockNumber),
-    logs: raw.logs,
-  };
-};
+type RawReceipt = { transactionHash: string; status: string; blockNumber: string; logs: SafeReceipt["logs"] };
+const toReceipt = (raw: RawReceipt): SafeReceipt => ({
+  status: raw.status === "0x1" ? "success" : "reverted",
+  blockNumber: BigInt(raw.blockNumber),
+  logs: raw.logs,
+});
+const receipt = (name: string): SafeReceipt => toReceipt(fixture(name));
 
 const ALLOWLIST_SAFE = SAFE_OPERATIONS.allowlistSafe;
 const DISTRIBUTION_SAFE = SAFE_OPERATIONS.distributionSafe;
@@ -47,7 +48,14 @@ const batch: SafeServiceTx[] = fixture("service-distribution-batch").map(service
 const fiftyTx = batch.find((tx) => tx.safeTxHash === FIFTY_SAFE_TX)!;
 const unexecuted: SafeServiceTx[] = fixture("service-allowlist-unexecuted").map(serviceTx);
 // 上の未実行の取引と同じnonceで実行された取引。2026-11-27に `?nonce=<n>&executed=true` で取得した。
-const replacements: SafeServiceTx[] = fixture("service-allowlist-replacements").map(serviceTx);
+// レシートは同じ日に polygon.drpc.org から取得した。
+const replacementReceipts: RawReceipt[] = fixture("receipts-allowlist-replacements");
+const replacements: ExecutedSafeTx[] = fixture("service-allowlist-replacements")
+  .map(serviceTx)
+  .map((tx: SafeServiceTx) => ({
+    tx,
+    receipt: toReceipt(replacementReceipts.find((raw) => raw.transactionHash === tx.transactionHash)!),
+  }));
 
 describe("parseSafeTxUrl", () => {
   const url = (safe: string, hash: string, prefix = "matic") =>
@@ -232,8 +240,9 @@ describe("safeTxPhase", () => {
 
   describe("when the Safe's nonce has moved past an unexecuted transaction", () => {
     // Allowlist用Safeに残っている未実行の取引(nonce 282・284・287)と、同じnonceで実際に実行された取引。
-    const replacementOf = (tx: SafeServiceTx) => replacements.filter((other) => other.nonce === tx.nonce);
+    const replacementOf = (tx: SafeServiceTx) => replacements.filter((other) => other.tx.nonce === tx.nonce);
     const FINALIZED = BigInt(86472877);
+    const allowlistExecuted: ExecutedSafeTx = { tx: allowlistTx, receipt: receipt("receipt-allowlist") };
 
     it("uses real pairs of an unexecuted transaction and the one executed at its nonce", () => {
       expect(unexecuted.length).toBeGreaterThan(0);
@@ -241,8 +250,8 @@ describe("safeTxPhase", () => {
         expect(tx.isExecuted).toBe(false);
         const [replacement, ...rest] = replacementOf(tx);
         expect(rest).toEqual([]);
-        expect(replacement.isExecuted).toBe(true);
-        expect(replacement.safeTxHash).not.toBe(tx.safeTxHash);
+        expect(replacement.tx.isExecuted).toBe(true);
+        expect(replacement.tx.safeTxHash).not.toBe(tx.safeTxHash);
       }
     });
 
@@ -263,14 +272,26 @@ describe("safeTxPhase", () => {
 
     it("keeps checking when the transaction executed at that nonce is the original itself", () => {
       const stale = { ...allowlistTx, isExecuted: false, isSuccessful: null, transactionHash: null, blockNumber: null };
-      expect(safeTxPhase(stale, { safeNonce: 381, executedAtNonce: [allowlistTx], finalizedBlock: FINALIZED })).toBe(
+      expect(safeTxPhase(stale, { safeNonce: 381, executedAtNonce: [allowlistExecuted], finalizedBlock: FINALIZED })).toBe(
         "replacement_unconfirmed",
       );
       // 同じnonceに別の取引が並んでいても、元の提案の実行が見えている限り置換とは判定しない。
-      const other = { ...allowlistTx, safeTxHash: `0x${"ab".repeat(32)}` };
-      expect(safeTxPhase(stale, { safeNonce: 381, executedAtNonce: [other, allowlistTx], finalizedBlock: FINALIZED })).toBe(
+      const otherHash = `0x${"ab".repeat(32)}`;
+      const other: ExecutedSafeTx = {
+        tx: { ...allowlistTx, safeTxHash: otherHash },
+        receipt: {
+          ...allowlistExecuted.receipt!,
+          logs: [{ address: ALLOWLIST_SAFE, topics: [EXECUTION_SUCCESS_TOPIC], data: `${otherHash}${"0".repeat(64)}` }],
+        },
+      };
+      expect(safeTxPhase(stale, { safeNonce: 381, executedAtNonce: [other], finalizedBlock: FINALIZED })).toBe("replaced");
+      expect(safeTxPhase(stale, { safeNonce: 381, executedAtNonce: [other, allowlistExecuted], finalizedBlock: FINALIZED })).toBe(
         "replacement_unconfirmed",
       );
+      // レシートを取得できていなくても、サービスが元の提案を実行済みと返していれば置換にしない。
+      expect(
+        safeTxPhase(stale, { safeNonce: 381, executedAtNonce: [other, { tx: allowlistTx, receipt: null }], finalizedBlock: FINALIZED }),
+      ).toBe("replacement_unconfirmed");
     });
 
     it("waits until the replacing execution is finalized", () => {
@@ -278,22 +299,72 @@ describe("safeTxPhase", () => {
       const [replacement] = replacementOf(tx);
       const evidence = { safeNonce: 381, executedAtNonce: [replacement] };
       expect(safeTxPhase(tx, { ...evidence, finalizedBlock: null })).toBe("replacement_unconfirmed");
-      expect(safeTxPhase(tx, { ...evidence, finalizedBlock: BigInt(replacement.blockNumber! - 1) })).toBe("replacement_unconfirmed");
-      expect(safeTxPhase(tx, { ...evidence, finalizedBlock: BigInt(replacement.blockNumber!) })).toBe("replaced");
+      expect(safeTxPhase(tx, { ...evidence, finalizedBlock: replacement.receipt!.blockNumber - BigInt(1) })).toBe(
+        "replacement_unconfirmed",
+      );
+      expect(safeTxPhase(tx, { ...evidence, finalizedBlock: replacement.receipt!.blockNumber })).toBe("replaced");
     });
 
     it("ignores transactions that do not prove an execution at the same Safe and nonce", () => {
       const [tx] = unexecuted;
       const [replacement] = replacementOf(tx);
-      const phase = (other: SafeServiceTx) => safeTxPhase(tx, { safeNonce: 381, executedAtNonce: [other], finalizedBlock: FINALIZED });
-      expect(phase({ ...replacement, nonce: tx.nonce + 1 })).toBe("replacement_unconfirmed");
-      expect(phase({ ...replacement, safe: DISTRIBUTION_SAFE })).toBe("replacement_unconfirmed");
-      expect(phase({ ...replacement, isExecuted: false, isSuccessful: null, transactionHash: null, blockNumber: null })).toBe(
+      const phase = (other: SafeServiceTx) =>
+        safeTxPhase(tx, { safeNonce: 381, executedAtNonce: [{ ...replacement, tx: other }], finalizedBlock: FINALIZED });
+      expect(phase({ ...replacement.tx, nonce: tx.nonce + 1 })).toBe("replacement_unconfirmed");
+      expect(phase({ ...replacement.tx, safe: DISTRIBUTION_SAFE })).toBe("replacement_unconfirmed");
+      expect(phase({ ...replacement.tx, isExecuted: false, isSuccessful: null, transactionHash: null, blockNumber: null })).toBe(
         "replacement_unconfirmed",
       );
-      expect(phase({ ...replacement, transactionHash: null })).toBe("replacement_unconfirmed");
-      // 置換先がSafe内部で失敗していても、nonceは消費されている。
-      expect(phase({ ...replacement, isSuccessful: false })).toBe("replaced");
+      expect(phase({ ...replacement.tx, transactionHash: null })).toBe("replacement_unconfirmed");
+    });
+
+    describe("the replacing execution must be visible in its receipt", () => {
+      const [tx] = unexecuted;
+      const [replacement] = replacementOf(tx);
+      const real = replacement.receipt!;
+      const phase = (other: SafeReceipt | null) =>
+        safeTxPhase(tx, { safeNonce: 381, executedAtNonce: [{ tx: replacement.tx, receipt: other }], finalizedBlock: FINALIZED });
+      const mapExecutionLog = (change: (log: SafeReceipt["logs"][number]) => SafeReceipt["logs"][number]): SafeReceipt => ({
+        ...real,
+        logs: real.logs.map((log) => (log.topics[0] === EXECUTION_SUCCESS_TOPIC ? change(log) : log)),
+      });
+
+      it("finds the Safe's execution event for the replacing transaction in the real receipt", () => {
+        expect(real.logs.filter((log) => log.topics[0] === EXECUTION_SUCCESS_TOPIC)).toHaveLength(1);
+        expect(phase(real)).toBe("replaced");
+      });
+
+      it("does not rely on the service alone when the receipt is missing", () => {
+        expect(phase(null)).toBe("replacement_unconfirmed");
+      });
+
+      it("rejects a reverted receipt and a receipt from another block", () => {
+        expect(phase({ ...real, status: "reverted" })).toBe("replacement_unconfirmed");
+        expect(phase({ ...real, blockNumber: real.blockNumber + BigInt(1) })).toBe("replacement_unconfirmed");
+      });
+
+      it("rejects a receipt without the Safe's execution event for the replacing transaction", () => {
+        expect(phase({ ...real, logs: real.logs.filter((log) => log.topics[0] !== EXECUTION_SUCCESS_TOPIC) })).toBe(
+          "replacement_unconfirmed",
+        );
+        // 別の提案IDの実行結果。
+        expect(phase(mapExecutionLog((log) => ({ ...log, data: `0x${"cd".repeat(32)}${log.data.slice(66)}` })))).toBe(
+          "replacement_unconfirmed",
+        );
+        // 別のコントラクトが出した同じ形のイベント。
+        expect(phase(mapExecutionLog((log) => ({ ...log, address: DISTRIBUTION_SAFE })))).toBe("replacement_unconfirmed");
+      });
+
+      it("counts a replacing transaction that failed inside the Safe, because the nonce is consumed", () => {
+        const failed = mapExecutionLog((log) => ({ ...log, topics: [EXECUTION_FAILURE_TOPIC, ...log.topics.slice(1)] }));
+        expect(
+          safeTxPhase(tx, {
+            safeNonce: 381,
+            executedAtNonce: [{ tx: { ...replacement.tx, isSuccessful: false }, receipt: failed }],
+            finalizedBlock: FINALIZED,
+          }),
+        ).toBe("replaced");
+      });
     });
   });
 });

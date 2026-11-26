@@ -192,12 +192,15 @@ export type SafeTxPhase =
   | "replaced"
   | "unknown";
 
+/** サービスが実行済みと返した取引と、その `transactionHash` のレシート。レシートを取得できなければ null。 */
+export type ExecutedSafeTx = { tx: SafeServiceTx; receipt: SafeReceipt | null };
+
 /** Safeのnonceと、取消・置換を確定させるための根拠。 */
 export type SafeNonceEvidence = {
   /** Safeの現在のnonce。 */
   safeNonce: number;
   /** 同じSafe・同じnonceで実行済みとしてサービスが返した取引。取得していない・できなかった場合は null。 */
-  executedAtNonce: readonly SafeServiceTx[] | null;
+  executedAtNonce: readonly ExecutedSafeTx[] | null;
   /** `finalized` のブロック番号。取得できなければ null。 */
   finalizedBlock: bigint | null;
 };
@@ -210,6 +213,7 @@ export type SafeNonceEvidence = {
  * 元の提案自体が実行され、その結果がまだ応答に反映されていないだけの場合があり、
  * ここで新しい提案を案内すると同じ操作を二重に実行させてしまう。同じSafe・同じnonceで
  * 別の safeTxHash の実行が確定したときだけ `replaced` とし、それまでは `replacement_unconfirmed` に留める。
+ * 置換先の実行はサービスの報告だけで信用せず、そのSafeが出した実行結果のイベントをレシートで確かめる。
  */
 export function safeTxPhase(tx: SafeServiceTx, evidence: SafeNonceEvidence): SafeTxPhase {
   if (tx.isExecuted) {
@@ -222,18 +226,23 @@ export function safeTxPhase(tx: SafeServiceTx, evidence: SafeNonceEvidence): Saf
   }
 
   const executed = (evidence.executedAtNonce ?? []).filter(
-    (other) => sameAddress(other.safe, tx.safe) && other.nonce === tx.nonce && other.isExecuted,
+    ({ tx: other }) => sameAddress(other.safe, tx.safe) && other.nonce === tx.nonce && other.isExecuted,
   );
-  const isOriginal = (other: SafeServiceTx) => other.safeTxHash.toLowerCase() === tx.safeTxHash.toLowerCase();
-  if (executed.some(isOriginal)) return "replacement_unconfirmed";
+  // 元の提案が実行済みと返っているなら、レシートの有無にかかわらず置換にしない。
+  if (executed.some(({ tx: other }) => sameHash(other.safeTxHash, tx.safeTxHash))) return "replacement_unconfirmed";
 
   const { finalizedBlock } = evidence;
   const replacedByFinalized = executed.some(
-    (other) =>
+    ({ tx: other, receipt }) =>
       other.transactionHash !== null &&
       other.blockNumber !== null &&
+      receipt !== null &&
+      receipt.status === "success" &&
+      receipt.blockNumber === BigInt(other.blockNumber) &&
+      // Safe内部で失敗していても nonce は消費されるため、成功・失敗のどちらのイベントでもよい。
+      receipt.logs.some((log) => isSafeExecutionLog(log, tx.safe) && sameHash(executionEventHash(log), other.safeTxHash)) &&
       finalizedBlock !== null &&
-      BigInt(other.blockNumber) <= finalizedBlock,
+      receipt.blockNumber <= finalizedBlock,
   );
   return replacedByFinalized ? "replaced" : "replacement_unconfirmed";
 }
@@ -253,6 +262,18 @@ export type ExecutionProblem =
 /** Safeが出した実行結果のイベントが指す提案ID。1.3.0はdataの先頭、1.4.1以降はindexed。 */
 function executionEventHash(log: SafeReceiptLog): string {
   return (log.topics[1] ?? log.data.slice(0, 66)).toLowerCase();
+}
+
+function sameHash(a: string, b: string): boolean {
+  return a.toLowerCase() === b.toLowerCase();
+}
+
+/** そのSafeが出した、Safe取引の実行結果(成功・失敗)のイベントか。 */
+function isSafeExecutionLog(log: SafeReceiptLog, safe: string): boolean {
+  return (
+    sameAddress(log.address, safe) &&
+    (log.topics[0] === EXECUTION_SUCCESS_TOPIC || log.topics[0] === EXECUTION_FAILURE_TOPIC)
+  );
 }
 
 function topicAddress(topic: string | undefined): string {
@@ -286,14 +307,11 @@ export function verifyExecution(input: {
   // 外側のトランザクションが成功していてもSafe内部の処理は失敗しうるため、
   // このSafeが、この提案IDについて出した ExecutionSuccess を探す。
   const safe = stepSafe(input.step, operations);
-  const isSafeExecutionLog = (log: SafeReceiptLog) =>
-    sameAddress(log.address, safe) &&
-    (log.topics[0] === EXECUTION_SUCCESS_TOPIC || log.topics[0] === EXECUTION_FAILURE_TOPIC);
   const successIndex = receipt.logs.findIndex(
     (log) =>
-      isSafeExecutionLog(log) &&
+      isSafeExecutionLog(log, safe) &&
       log.topics[0] === EXECUTION_SUCCESS_TOPIC &&
-      executionEventHash(log) === tx.safeTxHash.toLowerCase(),
+      sameHash(executionEventHash(log), tx.safeTxHash),
   );
   if (successIndex < 0) {
     problems.push("no_execution_success");
@@ -301,7 +319,7 @@ export function verifyExecution(input: {
     // 1つのトランザクションで複数のSafe取引が実行されることがある。この提案が出した
     // Transfer だけを数えるため、直前のSafe取引の実行結果より後のログに限る。
     let start = successIndex - 1;
-    while (start >= 0 && !isSafeExecutionLog(receipt.logs[start])) start -= 1;
+    while (start >= 0 && !isSafeExecutionLog(receipt.logs[start], safe)) start -= 1;
     const amount = distributionAmount(operations);
     const transferred = receipt.logs.slice(start + 1, successIndex).some(
       (log) =>
