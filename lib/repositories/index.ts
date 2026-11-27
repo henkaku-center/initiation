@@ -11,6 +11,7 @@ import type {
   ProgressEntry,
   StatusField,
 } from "@/lib/domain/types";
+import type { CommunityField } from "@/lib/domain/communityField";
 
 export interface MemberRepository {
   findByAddress(address: Address): Promise<Member | null>;
@@ -71,6 +72,15 @@ export interface RateLimitRepository {
   }): Promise<boolean>;
 }
 
+export interface CommunityFieldRepository {
+  /**
+   * メンバーをまたいだ集計。`sinceDate`(JSTの日付、YYYY-MM-DD)以降のチェックインと、
+   * Initiationの「気になること」の回答を数える。返すのは件数とタグ名だけで、
+   * メンバーID・ウォレットアドレス・呼び名・回答本文はこの境界の外へ出さない(Issue #132)。
+   */
+  summary(sinceDate: string): Promise<CommunityField>;
+}
+
 export interface HealthRepository {
   /** 実DBへ読み取り専用の軽量な問い合わせを1回行う。失敗・中断時は例外を投げる。 */
   ping(signal: AbortSignal): Promise<void>;
@@ -97,6 +107,7 @@ export type Repositories = {
   applications: ApplicationRepository;
   checkins: CheckinRepository;
   rateLimits: RateLimitRepository;
+  communityField: CommunityFieldRepository;
   health: HealthRepository;
 };
 
