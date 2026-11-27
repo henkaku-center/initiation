@@ -92,8 +92,6 @@ Polygon上の記録や、Discordが独自に保持する情報は、運営だけ
 | [GitHub Pages](https://docs.github.com/ja/site-policy/privacy-policies/github-general-privacy-statement) | 本方針を含む公開ドキュメントの配信 | GitHubのプライバシーステートメントに従います |
 | Polygonの公開RPC(既定は[dRPC](https://drpc.org/privacy-policy)) | 接続中のウォレットのHENKAKU残高とAllowlist登録状況の読み取り | RPC事業者のプライバシーポリシーに従います |
 
-トップページのPodcast映像とサムネイルはYouTubeから読み込みます。該当部分を表示するとブラウザからYouTubeへ通信し、IPアドレス等はYouTube側で処理されます（[Googleのプライバシーポリシー](https://policies.google.com/privacy)）。本アプリは映像の視聴履歴を保存しません。FREQUENCYの履歴表示は架空の固定サンプルです。
-
 各事業者の設備や再委託先により、日本国外で情報が処理される場合があります。
 
 ウォレット接続後の状態確認では、利用者のブラウザからPolygonの公開RPCへ直接問い合わせるため、接続中のウォレットアドレスと閲覧者のIPアドレスがRPC事業者へ送られます。これは本サービスのサーバーを経由せず、運営はこの問い合わせ内容を保存しません。サインインは不要で、送られるのは公開されているブロックチェーン上の情報の照会だけです。

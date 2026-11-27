@@ -22,13 +22,13 @@ The introduction to “Joi Ito's Podcast — 変革への道” is an original e
 
 The preview and fictional sample history have been restored from the repository revision before `cca6e14`, matching https://sangraal-demo-initiation.vercel.app/#home at the user’s request.
 
-Videos / Joi Ito and the respective rights holders / https://www.youtube.com/@joiito/podcasts → “Joi Ito's Podcast (VIDEO)”, https://www.youtube.com/playlist?list=PLdwOpF5thM-7Q5OILxkZpRnUnrt0w7US2 and the per-video URLs recorded in the earlier revision of `gateway-data.js` (checked 2026-09-09) / externally hosted YouTube content, used through the official embedded player; no CC BY 4.0 or repository MIT relicensing is claimed.
+Videos / Joi Ito and the respective rights holders / https://www.youtube.com/@joiito/podcasts → “Joi Ito's Podcast (VIDEO)”, https://www.youtube.com/playlist?list=PLdwOpF5thM-7Q5OILxkZpRnUnrt0w7US2 and the per-video URLs recorded in `gateway-data.js` (checked 2026-09-09) / externally hosted YouTube content, used through the official embedded player; no CC BY 4.0 or repository MIT relicensing is claimed.
 
 Thumbnails / Joi Ito and the respective rights holders / YouTube's `i.ytimg.com/vi/VIDEO_ID/` URLs / externally referenced YouTube thumbnails, subject to their original rights and YouTube's service terms; no local copies are distributed.
 
-The earlier four Voices scenes showed official muted video excerpts, selected from six VIDEO playlist entries: conversations with Kengo Kuma, Dai Tamesue, Aya Miyaguchi, Mizuko Ito, Emily Yang (Pplpleasr), and Lawrence Lessig. Titles are shortened from the linked official video titles; each scene identifies the speakers and links to its YouTube page. When embedding is unavailable, a remotely referenced thumbnail and official link are shown. The earlier Frequency listener labels, icons and relative play times were fictional fixtures, not actual listening histories. No video, audio, transcript or thumbnail files were downloaded into the project.
+The four Voices scenes reference six official VIDEO playlist entries: conversations with Kengo Kuma, Dai Tamesue, Aya Miyaguchi, Mizuko Ito, Emily Yang (Pplpleasr), and Lawrence Lessig. Titles are shortened from the linked official video titles; each scene identifies the speakers and links to its YouTube page. Frequency listener labels and relative play times are fictional fixtures. No video, audio, transcript or thumbnail files are distributed with the project.
 
-Frequency listener indicators (orbit, mosaic, spark and anonymous silhouette) / HENKAKU portal demo, authored with Codex / original CSS geometry in the earlier revision of `assets/reference/gateway/podcast.css` / repository MIT-licensed UI code; no third-party artwork or real user avatars.
+Frequency listener indicators (orbit, mosaic, spark and anonymous silhouette) / HENKAKU portal demo, authored with Codex / original CSS geometry in `assets/reference/gateway/podcast.css` / repository MIT-licensed UI code; no third-party artwork or real user avatars.
 
 ## Retained FREQUENCY ranking adapter
 
@@ -41,7 +41,3 @@ The public API is read only by the retained legacy ranking adapter; normal Home 
 `podcast-preview.js`, `listening-history.js`, the episode/sample catalogue, and `podcast.css` / original HENKAKU portal implementation / Git revision `cca6e14^`, compared with https://sangraal-demo-initiation.vercel.app/#home / repository MIT code license, retaining the prototype attribution above. Adaptations: ShadowRoot selectors, actual iframe elements for the YouTube API, app-route teardown, and header-aware viewport math.
 
 Videos and thumbnails / Joi Ito and the respective rights holders / the six official VIDEO playlist URLs in `gateway-data.js` / externally embedded or linked YouTube content under its original rights and service terms; no video, audio or image files are redistributed or relicensed.
-
-Listener names, relative times and CSS avatars are fictional sample fixtures, never actual viewing histories. Normal Home uses these fixtures; the existing public ranking adapter remains only for compatibility and retains its 8-second timeout.
-
-Playback update (2026-11-27): the user requested standard, interactive YouTube controls with sound permitted. Muted excerpts, random seek/loop and the custom silent-play toolbar were replaced by user-initiated full-episode players. External media rights remain unchanged; no recordings or listening histories are stored.
