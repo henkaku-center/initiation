@@ -72,8 +72,8 @@ Allowlist は HENKAKU トークンコントラクト内の `whitelist` で管理
 
 ### 3. Allowlistへ追加する
 
-1. `/admin` で承認済み申請のウォレットアドレスをコピーする
-2. Safe Wallet で Allowlist追加の実行元 Safe(`0x3F1D…2020`)を Polygon で開き、Transaction Builder でトークンコントラクト `0x0cc9…11a2` の `addWhitelistUser` を選び、`user` に申請者のアドレスを貼り付ける
+1. `/admin` の承認済み申請に出る「Safeでの処理」で、「コントラクトをコピー」「申請者アドレスをコピー」を使って値を取る(Issue #137)
+2. 同じ欄の「Allowlist用Safeを開く」で Allowlist追加の実行元 Safe(`0x3F1D…2020`)を Polygon で開き、Transaction Builder でトークンコントラクト `0x0cc9…11a2` の `addWhitelistUser` を選び、`user` に申請者のアドレスを貼り付ける
 3. 実行前に次を二者で照合する(**確認項目**)
    - ネットワークが Polygon である
    - 宛先コントラクトが上記のトークンコントラクトと一致する
@@ -91,7 +91,7 @@ tx hashの入力は必須です。このアプリはAllowlist追加を実行し�
 Allowlist追加と配布は直列です。Allowlist に未登録のアドレスへの転送はコントラクト側で失敗するため、必ず手順3の完了後に行います。
 
 1. `/admin` で対象申請の Allowlist が `added` で、tx hash が記録されていることを確認する
-2. Safe Wallet で配布の実行元 Safe(`0x1C9D…6a33`)を Polygon で開き、「Send tokens」で HENKAKU を選び、宛先に申請者のアドレス、数量に `10` を入力する
+2. `/admin` の「Safeでの処理」の「配布用Safeを開く」で配布の実行元 Safe(`0x1C9D…6a33`)を Polygon で開き、「Send tokens」で HENKAKU を選び、宛先に申請者のアドレス、数量に `10` を入力する。送付先・トークン・数量は同じ欄からコピーできる。配布用Safeへのリンクは、Allowlistを追加済みにするまで表示されない
 3. 実行前に次を二者で照合する(**確認項目**)
    - ネットワークが Polygon で、トークンが上記のコントラクトアドレスの HENKAKU である(同名の別トークンを選んでいない)
    - 宛先が `/admin` の申請行のアドレスと**全桁**一致し、手順3で Allowlist に追加したアドレスと同じである

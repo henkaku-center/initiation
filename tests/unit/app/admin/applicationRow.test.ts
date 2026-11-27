@@ -79,6 +79,63 @@ describe("AdminApplicationRow", () => {
     expect(html).not.toContain("Allowlist 追加後に配布を記録できます");
   });
 
+  // Safeへの受け渡し(Issue #137)。値の正本はRunbookの運用入力。
+  const ALLOWLIST_SAFE = "0x3F1D35bF5f182D7b4ef95a3f298f059BC33d2020";
+  const DISTRIBUTION_SAFE = "0x1C9D58eBd2A9F4952C2A4a8f9906FeF133056a33";
+  const TOKEN = "0x0cc91a5FFC2E9370eC565Ab42ECE33bbC08C11a2";
+
+  it("hands the allowlist step over to the allowlist Safe after approval", () => {
+    const html = render(application());
+    expect(html).toContain(`href="https://app.safe.global/home?safe=matic:${ALLOWLIST_SAFE}"`);
+    expect(html).toContain("Allowlist用Safeを開く");
+    expect(html).toContain("addWhitelistUser");
+    expect(html).toContain(TOKEN);
+    expect(html).toContain("申請者アドレスをコピー");
+    expect(html).toContain("コントラクトをコピー");
+  });
+
+  it("does not offer the distribution Safe before the allowlist is added", () => {
+    for (const allowlistStatus of ["pending", "failed"] as const) {
+      const html = render(application({ allowlistStatus }));
+      expect(html).not.toContain(DISTRIBUTION_SAFE);
+      expect(html).not.toContain("配布用Safeを開く");
+    }
+  });
+
+  it("hands the distribution step over to the distribution Safe once the allowlist is added", () => {
+    const html = render(application({ allowlistStatus: "added" }));
+    expect(html).toContain(`href="https://app.safe.global/home?safe=matic:${DISTRIBUTION_SAFE}"`);
+    expect(html).toContain("配布用Safeを開く");
+    expect(html).toContain("10 HENKAKU");
+    expect(html).toContain("送付先をコピー");
+    expect(html).toContain("数量をコピー");
+    // 済んだ工程のSafeは出さない(配布用Safeとの取り違えを防ぐ)。
+    expect(html).not.toContain(ALLOWLIST_SAFE);
+    expect(html).not.toContain("Allowlist用Safeを開く");
+  });
+
+  it("opens Safe links in a new tab without leaking the admin page as opener", () => {
+    const html = render(application());
+    expect(html).toMatch(/target="_blank"[^>]*rel="noopener noreferrer"|rel="noopener noreferrer"[^>]*target="_blank"/);
+  });
+
+  it("points to the completion notice once distribution is sent", () => {
+    const html = render(
+      application({ allowlistStatus: "added", distributionStatus: "sent", distributionTxId: "0xabc", discordUsername: "traveler" }),
+    );
+    expect(html).toContain("申請者へ完了を連絡");
+    expect(html).not.toContain(ALLOWLIST_SAFE);
+    expect(html).not.toContain(DISTRIBUTION_SAFE);
+  });
+
+  it("shows no Safe handoff before approval or after rejection", () => {
+    for (const reviewStatus of ["pending", "needs_info", "rejected"] as const) {
+      const html = render(application({ reviewStatus }));
+      expect(html).not.toContain("app.safe.global");
+      expect(html).not.toContain("addWhitelistUser");
+    }
+  });
+
   it("shows no execution controls before approval", () => {
     const html = render(application({ reviewStatus: "pending" }));
     expect(html).toContain("承認");
