@@ -5,7 +5,8 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { musicApi, musicChart } from "./music-fixture.mjs";
 
-const origin = "http://127.0.0.1:3102";
+const origin = process.env.PORTAL_TEST_ORIGIN ?? "http://127.0.0.1:3102";
+assert.ok(["http://127.0.0.1:3102", "http://localhost:3102"].includes(origin), "Use a local verification server");
 const { chromium } = await import(pathToFileURL(resolve(process.argv[2], "index.mjs")).href);
 const output = resolve(process.argv[3]);
 await mkdir(output, { recursive: true });
@@ -82,11 +83,9 @@ try {
   await page.evaluate(() => { window.dispatchEvent(new Event("focus")); document.dispatchEvent(new Event("visibilitychange")); });
   assert.equal(requests, beforeFocus);
   await page.goto(origin);
-  await page.getByRole("button", { name: "イントロをスキップ", exact: true }).click();
-  await page.locator('.pd-gateway-shell[data-intro="dismissed"]').waitFor();
-  const home = page.frameLocator('iframe[title="HENKAKU トップページ"]');
+  const home = page.locator(".pd-inline-gateway");
   await home.locator("[data-pulse-list] a").nth(5).waitFor();
   await page.screenshot({ path: `${output}/pulse-portal.png`, fullPage: false });
   assert.deepEqual(errors, []);
-  console.log("PASS Community Pulse: loading, fresh/stale/empty/error, text safety, six cards, 360/768/1440 light/dark, keyboard, motion, portal iframe");
+  console.log("PASS Community Pulse: loading, fresh/stale/empty/error, text safety, six cards, 360/768/1440 light/dark, keyboard, motion, portal shadow DOM");
 } finally { await browser.close(); }

@@ -14,7 +14,7 @@ type Posted = { type?: string; screen?: string };
 // contract can be exercised without a browser.
 function loadHomeLinkScript(html: string) {
   const start = html.indexOf("let portalListening = false;");
-  const end = html.indexOf("document.querySelector('.home-replay')", start);
+  const end = html.indexOf("</script><script src=\"./community-pulse.js\"", start);
   expect(start).toBeGreaterThan(0);
   expect(end).toBeGreaterThan(start);
   const posted: Posted[] = [];
@@ -27,11 +27,12 @@ function loadHomeLinkScript(html: string) {
     document: { addEventListener: (type: string, fn: (event: unknown) => void) => { listeners[`document:${type}`] = fn; } },
     location: { origin, href: `${origin}/demo-assets/gateway/index.html` },
   });
-  const click = (href: string): StubEvent => {
+  const click = (href: string, modifiers: Partial<Pick<MouseEvent, "button" | "ctrlKey" | "metaKey" | "shiftKey" | "altKey">> = {}): StubEvent => {
     const event: StubEvent = {
       target: { closest: (selector: string) => (selector === 'a[target="_top"]' ? { href } : null) },
       preventDefault: () => { event.prevented = true; },
       prevented: false,
+      ...{ button: 0, ...modifiers },
     };
     listeners["document:click"](event);
     return event;
@@ -84,34 +85,33 @@ describe("application Gateway generation", () => {
       expect(scripts[name]).not.toContain("scripts/demo/");
     }
   });
-  it("generates a normal home with public ListenBrainz music charts", () => {
+  it("restores the reference sample history with real application routes", () => {
     const html = read("index.html");
     expect(html).toContain('href="/setup" target="_top"');
     expect(html).toContain('href="/initiation" target="_top"');
     expect(html).not.toContain('href="/#');
     expect(html).toContain('data-gateway-section="03-frequency"');
-    expect(html).toContain("frequency.js");
-    expect(html).toContain("ListenBrainz / WEEKLY TOP TRACKS");
-    expect(html).toContain('href="https://listenbrainz.org/statistics/?range=week"');
-    expect(html).toContain("ListenBrainz全体の公開ランキングです。");
-    expect(html.includes("（将来的にはコミュニティメンバーが聞いている曲が共有されるかも！？）")).toBe(true);
-    expect(html).not.toContain("COMMUNITY PLAYS / MOCK");
-    expect(html).not.toContain("listening-history.js");
+    expect(html).toContain('data-frequency-mode="sample"');
+    expect(html).toContain("COMMUNITY PLAYS / MOCK");
+    expect(html).toContain("実際の視聴履歴ではありません");
+    expect(html).not.toContain('src="./frequency.js"');
+    expect(html).toContain('src="./listening-history.js"');
     expect(html).toContain('content="noindex,nofollow"');
   });
-  it("shows the podcast introduction without embedded YouTube players", () => {
+  it("does not show the retired intro replay control on the home", () => {
+    const html = read("index.html");
+    expect(html).not.toContain("イントロを再生");
+    expect(html).not.toContain("home-replay");
+  });
+  it("retains the four production abstract Voices scenes and official show link", () => {
     const html = read("index.html");
     expect(html).toContain("VOICES / PODCAST");
     expect(html).toContain('href="https://joi.ito.com/podcast/"');
-    expect(html).toContain('aria-label="Voices horizontal scene strip"');
-    expect(html.includes("Joi Itoとゲストの対話。番組の公式サイトから聴けます。")).toBe(false);
-    expect(html.match(/class="voices-scene"/g)).toHaveLength(4);
-    for (const title of ["LISTENING ROOM", "FRAGMENTS", "OBSERVED", "ENTER"]) expect(html).toContain(title);
-    expect(html).not.toContain('src="./podcast-preview.js"');
+    expect([...html.matchAll(/class="voices-scene-title">([^<]+)/g)].map(([, title]) => title)).toEqual(["LISTENING ROOM", "FRAGMENTS", "OBSERVED", "ENTER"]);
+    expect(html).not.toContain("data-podcast-link");
     expect(html).not.toContain("data-podcast-player");
-    expect(html).not.toContain("data-podcast-toggle");
-    expect(html).not.toContain("無音プレビュー");
-    expect(html).not.toContain("映像は無音で流れます");
+    expect(html).not.toContain('src="./podcast-preview.js"');
+    expect(html).toContain('src="/demo-assets/gateway/thumbs/hero.png"');
   });
   it.each(["bubble-multi.html", "intro.html"])("uses normal URL fallbacks in %s", (file) => {
     const html = read(file);
@@ -135,15 +135,22 @@ describe("application Gateway generation", () => {
     expect(read("gateway-data.js")).not.toContain("pulse:");
     expect(read("community-pulse.js")).toBe(readFileSync("assets/reference/gateway/community-pulse.js", "utf8"));
   });
-  it("does not publish unused mock listening histories or player code", () => {
-    expect(read("gateway-data.js").includes("communityPlays")).toBe(false);
-    expect(read("gateway-data.js").includes("episodes:")).toBe(false);
-    expect(existsSync("public/demo-assets/gateway/listening-history.js")).toBe(false);
+  it("publishes the reference catalogue and fictional fixtures without collecting history", () => {
+    expect(read("gateway-data.js")).toContain("communityPlays");
+    expect(read("gateway-data.js")).toContain("episodes:");
+    expect(existsSync("public/demo-assets/gateway/listening-history.js")).toBe(true);
     expect(existsSync("public/demo-assets/gateway/podcast-preview.js")).toBe(false);
+    expect(read("listening-history.js")).toContain("i.ytimg.com/vi/");
   });
   it("asks the portal to answer as soon as the embedded home runs", () => {
     const { posted } = loadHomeLinkScript(read("index.html"));
     expect(posted).toContainEqual({ type: "henkaku:podcast:ready" });
+  });
+  it.each([{ ctrlKey: true }, { metaKey: true }, { shiftKey: true }, { altKey: true }, { button: 1 }])("lets the browser handle modified Gateway links (%j)", (modifiers) => {
+    const { click, posted, answerFromPortal } = loadHomeLinkScript(read("index.html"));
+    answerFromPortal();
+    expect(click("http://localhost:3102/setup", modifiers).prevented).toBe(false);
+    expect(posted.some((message) => message.type === "henkaku:home:navigate")).toBe(false);
   });
   it("keeps the anchor's own navigation until the portal answers", () => {
     const { click, posted } = loadHomeLinkScript(read("index.html"));

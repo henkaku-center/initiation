@@ -1,4 +1,4 @@
-// ABOUTME: Check the public aggregate music chart and preserved threshold theme.
+// ABOUTME: Check the fictional reference sample history and preserved threshold theme.
 // ABOUTME: Run on a ready chart response; failure and loading states use the browser suite.
 export function auditCommunityFrequency(body) {
   const doc = body.ownerDocument;
@@ -6,14 +6,14 @@ export function auditCommunityFrequency(body) {
   const issues = [];
   const section = doc.querySelector('[data-gateway-section="03-frequency"]');
   const entries = [...doc.querySelectorAll('.frequency-entry')];
-if (!section?.textContent.includes('ListenBrainz / WEEKLY TOP TRACKS')) issues.push('Music ranking heading is missing');
+if (!section?.textContent.includes('COMMUNITY PLAYS / MOCK')) issues.push('Music ranking heading is missing');
 if (entries.length !== 4) issues.push('Four public tracks are required for this ready-state audit');
-if (section?.querySelector('.frequency-listener, .frequency-avatar, .frequency-progress')) issues.push('Personal-history indicators remain');
-if (!section?.textContent.includes('ListenBrainz全体の公開ランキング')) issues.push('Source disclosure is missing');
+if (section?.querySelectorAll('.frequency-listener').length !== 4) issues.push('Four fictional listener labels are required');
+if (!section?.textContent.includes('実際の視聴履歴ではありません')) issues.push('Source disclosure is missing');
 for (const entry of entries) {
   const link = entry.querySelector('.frequency-link');
   const url = link && new URL(link.href);
-  if (!url || !['musicbrainz.org', 'listenbrainz.org'].includes(url.hostname)) issues.push('Track source link is missing');
+  if (!url || !['www.youtube.com'].includes(url.hostname)) issues.push('Track source link is missing');
   for (const element of [entry, link].filter(Boolean)) {
     const box = element.getBoundingClientRect();
     if (box.left < -1 || box.right > view.innerWidth + 1 || element.scrollWidth > element.clientWidth + 2) issues.push('Music chart is clipped');

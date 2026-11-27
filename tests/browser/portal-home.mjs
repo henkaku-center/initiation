@@ -7,7 +7,7 @@ import { pathToFileURL } from "node:url";
 import { musicChart, musicApi } from "./music-fixture.mjs";
 
 const origin = process.argv[5] ?? "http://127.0.0.1:3102";
-assert.equal(origin, "http://127.0.0.1:3102", "Use a local verification server");
+assert.ok(["http://127.0.0.1:3102", "http://localhost:3102"].includes(origin), "Use a local verification server");
 const playwright = process.argv[2] ? pathToFileURL(resolve(process.argv[2], "index.mjs")).href : "playwright";
 const { chromium } = await import(playwright);
 const output = resolve(process.argv[3] ?? "/private/tmp/henkaku-portal-home");
@@ -32,11 +32,11 @@ await context.route("**/*", (route) => {
 });
 try {
   await page.goto(origin);
-  await page.getByRole("button", { name: "イントロをスキップ", exact: true }).click();
-  const home = page.frameLocator('iframe[title="HENKAKU トップページ"]');
+  const home = page.locator(".pd-inline-gateway");
   const voices = home.locator('[data-gateway-section="02-voices-podcast"]');
+  await home.locator('[data-gateway-section="03-frequency"]').waitFor({ state: "attached" });
   assert.equal(await home.locator('[data-gateway-section="03-frequency"]').count(), 1);
-  assert.match(await home.locator('.frequency-disclaimer').innerText(), /ListenBrainz全体の公開ランキング/);
+  assert.match(await home.locator('.frequency-disclaimer').innerText(), /架空のサンプル/);
   await home.locator('.frequency-entry').nth(3).waitFor();
   assert.equal(await home.locator('.frequency-entry').count(), 4);
   assert.equal(await page.locator('.pd-demo-controls').count(), 0);
@@ -45,22 +45,23 @@ try {
       await page.setViewportSize({ width, height: 1000 });
       await page.getByRole("button", { name: theme === "light" ? "ライトモード" : "ダークモード", exact: true }).click();
       await voices.evaluate((element) => window.scrollTo(0, window.scrollY + element.getBoundingClientRect().top));
-      assert.equal(await voices.locator("iframe, [data-podcast-player], [data-podcast-toggle]").count(), 0);
+      assert.equal(await voices.locator("iframe, [data-podcast-link]").count(), 0);
+      assert.equal(await voices.locator("[data-podcast-toggle]").count(), 0);
       assert.equal(await voices.locator(".voices-scene").count(), 4);
       assert.equal(await home.locator('script[src*="podcast-preview"]').count(), 0);
       assert.equal(await voices.getByRole("link", { name: "公式サイトで番組を聴く ↗" }).getAttribute("href"), "https://joi.ito.com/podcast/");
       const policy = page.getByRole("contentinfo").getByRole("link", { name: "プライバシーポリシー", exact: true });
       assert.equal(await policy.getAttribute("href"), "https://henkaku-center.github.io/initiation/privacy-policy");
       await policy.focus();
-      assert.equal(await policy.evaluate((element) => element === document.activeElement), true);
+      assert.equal(await policy.evaluate((element) => element === element.getRootNode().activeElement), true);
       await page.keyboard.press("Tab");
-      assert.equal(await page.getByRole("button", { name: "素材・クレジット", exact: true }).evaluate((element) => element === document.activeElement), true);
+      assert.equal(await page.getByRole("button", { name: "素材・クレジット", exact: true }).evaluate((element) => element === element.getRootNode().activeElement), true);
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
       assert.equal(await voices.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
       await page.screenshot({ path: `${output}/${new URL(origin).port}-${width}-${theme}.png`, fullPage: true });
     }
   }
-  assert.deepEqual(playerRequests, [], "No YouTube player is requested");
+  assert.deepEqual(playerRequests, [], "No YouTube runtime or player loads");
   await page.setViewportSize({ width:1440, height:1000 });
   await page.goto(`${origin}/setup`);
   await page.locator('.pd-setup-grid').waitFor();
@@ -89,7 +90,7 @@ try {
         }
         for (const picture of await page.locator("img").all()) {
           await picture.evaluate((element) => element.scrollIntoView({ block:"center" }));
-          await picture.evaluate((element) => element.decode());
+          if (await picture.evaluate((element) => new URL(element.src).origin === location.origin)) await picture.evaluate((element) => element.decode());
         }
         await page.evaluate(() => window.scrollTo(0, 0));
         await page.screenshot({ path:`${output}/${route}-${width}-${theme}.png`, fullPage:true });
@@ -121,11 +122,11 @@ try {
     if (close === "Escape") await page.keyboard.press("Escape");
     else await dialog.getByRole("button", { name:"閉じる", exact:true }).click();
     await dialog.waitFor({ state:"hidden" });
-    assert.equal(await card.evaluate((element) => element === document.activeElement), true);
+    assert.equal(await card.evaluate((element) => element === element.getRootNode().activeElement), true);
   }
   assert.equal(await page.evaluate(() => localStorage.getItem("henkaku.portal-demo.v1")), retiredState);
   assert.deepEqual(errors, [], "No unhandled page error");
-  console.log(`Public portal passed: ${origin}, Chromium ${browser.version()}, 3 widths × 2 themes, no YouTube player, footer link and keyboard focus`);
+  console.log(`Public portal passed: ${origin}, Chromium ${browser.version()}, 3 widths × 2 themes, official YouTube scenes, footer link and keyboard focus`);
 } finally {
   await browser.close();
 }

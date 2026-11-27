@@ -1,0 +1,86 @@
+/* ABOUTME: 1122×1402 の作品面と文字単位の静止変形を定義する。 */
+/* ABOUTME: 描画ガイドと参照比較は開発時のみ表示する。 */
+:root { color-scheme: light; }
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body { background: #c5c5c5; font-family: Arial, sans-serif; }
+.stage { min-height: 100svh; display: grid; place-items: center; }
+.sheet {
+  position: relative;
+  width: min(100vw, 80.03svh);
+  aspect-ratio: 1122 / 1402;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 77% 58% at 52% 57%, #efefef 0%, #e8e8e8 42%, transparent 100%),
+    radial-gradient(ellipse 92% 79% at 49% 52%, #dedede 20%, #bababa 88%, #ababab 100%);
+
+}
+.sheet:focus-visible { outline: 2px solid #222; outline-offset: 4px; }
+#artwork, #artwork svg { display: block; width: 100%; height: 100%; }
+.henkaku-word { fill: #101010; font-family: "Times New Roman", "Baskerville", serif; font-weight: 400; letter-spacing: -.055em; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+.reference-overlay { position: absolute; inset: 0; pointer-events: none; display: none; background-size: 100% 100%; opacity: .5; }
+.reference-overlay.visible { display: block; }
+.sheet.show-frame { outline: 2px solid #e02235; outline-offset: -2px; }
+.guide { display: none; pointer-events: none; }
+.sheet.show-centerlines .guide-centerlines,
+.sheet.show-boxes .guide-boxes,
+.sheet.show-origins .guide-origins,
+.sheet.show-labels .guide-labels { display: inline; }
+.guide-centerlines path { fill: none; stroke: #e02235; stroke-width: 1.4; stroke-dasharray: 8 5; }
+.guide-boxes rect { fill: none; stroke: #0076ca; stroke-width: 1.5; }
+.guide-origins circle { fill: #e02235; }
+.guide-labels text { font: 14px Arial, sans-serif; fill: #0064ae; paint-order: stroke; stroke: #fff; stroke-width: 3px; }
+.debug-panel {
+  position: fixed; bottom: 12px; right: 12px; z-index: 5; width: 230px; padding: 14px;
+  background: #fffffff2; border: 1px solid #777; box-shadow: 0 5px 22px #0002;
+  color: #111; font-size: 12px; line-height: 1.4;
+}
+.debug-panel[hidden] { display: none; }
+.debug-panel strong { display: block; margin-bottom: 10px; }
+.debug-panel label { display: block; margin: 7px 0; }
+.debug-panel input[type="file"] { display: block; width: 100%; margin-top: 4px; font-size: 11px; }
+
+.debug-panel input[type="range"] { display:block; width:100%; }
+.comparison-modes { margin:12px 0; padding:6px; }
+.comparison-modes label { display:inline-block; margin-right:5px; font-size:10px; }
+.debug-panel output { float:right; font-variant-numeric:tabular-nums; }
+
+/* The outer wrapper moves each word without changing the seven glyph matrices. */
+.sheet { cursor: pointer; }
+.motion-node {
+  transform: translate(0px, 0px) rotate(0deg) scale(1);
+  opacity: 1;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform var(--duration, 900ms) cubic-bezier(.45,0,.2,1), opacity var(--duration, 900ms) ease;
+  transition-delay: var(--return-delay, 0ms);
+}
+.sheet.is-dispersed .motion-node {
+  transform: translate(var(--dx), var(--dy)) rotate(var(--turn)) scale(var(--scale));
+  opacity: var(--faded, .7);
+  transition-delay: var(--scatter-delay, 0ms);
+}
+/* Fade the drift amplitude instead of starting or cancelling a displaced transform. */
+@property --drift-weight {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+.float-node {
+  --drift-weight: 0;
+  animation: word-drift var(--float-duration, 5s) ease-in-out infinite alternate;
+  transition: --drift-weight 450ms ease-in-out;
+}
+.sheet.is-dispersed .float-node {
+  --drift-weight: 1;
+  transition-delay: var(--float-delay, 1600ms);
+}
+@keyframes word-drift {
+  from { transform: translate(0px, 0px); }
+  to { transform: translate(calc(var(--float-x, 0px) * var(--drift-weight)), calc(var(--float-y, 0px) * var(--drift-weight))); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .motion-node, .sheet.is-dispersed .motion-node { transition-duration: .01ms; transition-delay: 0ms; }
+  .float-node, .sheet.is-dispersed .float-node { animation: none; transition: none; }
+}

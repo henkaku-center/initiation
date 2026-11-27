@@ -127,19 +127,10 @@ async function replay(action, body = action.body) {
 
 try {
   await page.goto(origin);
-  await page.getByRole("button", { name: "イントロをスキップ", exact: true }).click();
-  await page.locator("dialog").waitFor({ state: "hidden" });
-  const home = page.frameLocator('iframe[title="HENKAKU トップページ"]');
+  const home = page.locator(".pd-inline-gateway");
   await visible(home.locator('a[href="/setup"]'));
-  await home.getByRole("button", { name: "イントロを再生", exact: true }).click();
-  await page.getByRole("button", { name: "暗号化＋泡", exact: true }).click();
-  const encrypted = page.frameLocator('iframe[title="暗号化と泡のイントロ（比較用）"]');
-  const portalLink = encrypted.locator('a[href="/"]').last();
-  await portalLink.focus();
-  await portalLink.click();
-  await page.locator("dialog").waitFor({ state: "hidden" });
   assert.equal(await home.locator("#frequency-title").count(), 1);
-  assert.match(await home.locator(".frequency-disclaimer").innerText(), /ListenBrainz全体の公開ランキング/);
+  assert.match(await home.locator(".frequency-disclaimer").innerText(), /架空のサンプル/);
   await screenshot("home-desktop");
   await screenshot("home-mobile-dark", 360, "dark");
   await page.setViewportSize({ width: 1440, height: 1000 });
