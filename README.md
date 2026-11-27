@@ -22,8 +22,8 @@ HENKAKUコミュニティへの参加を、ウォレット準備からInitiation
 
 ## 開発環境
 
-- Node.js 22.0.0 以上 / npm（開発時の確認は Node.js 24 系）。バージョン管理ツールは各自の好みで構いません
-  - `@supabase/supabase-js` などが `engines.node >=22.0.0` を要求します。Node.js 20 では `npm install` が `EBADENGINE` を出し、build・テストでも警告が出ます
+- Node.js 22.12.0 以上 / pnpm 10.34.5（開発時の確認は Node.js 24 系）。バージョン管理ツールは各自の好みで構いません
+  - Viteの実行にNode.js 22.12.0以上が必要です。pnpmが未導入なら `npm install --global pnpm@10.34.5` で準備してください。
 - Next.js App Router / TypeScript
 - wagmi + viem: ウォレット接続、Polygon切替、`wallet_watchAsset`
 - SIWE + iron-session: ウォレット署名認証とセッション
@@ -37,7 +37,7 @@ HENKAKUコミュニティへの参加を、ウォレット準備からInitiation
 ```bash
 git clone <repository-url>
 cd initiation
-npm install
+pnpm install --frozen-lockfile
 cp .env.example .env.local
 ```
 
@@ -82,7 +82,7 @@ npx supabase db reset
 ### 開発サーバー
 
 ```bash
-npm run dev -- --port 3000
+pnpm run dev --port 3000
 ```
 
 既存の開発サーバーがある場合は、同じポートに新しいプロセスを重ねて起動しないでください。
@@ -90,17 +90,17 @@ npm run dev -- --port 3000
 ## 検証コマンド
 
 ```bash
-npm test
-npm run lint
-npm run build
-npx tsc --noEmit
+pnpm test
+pnpm run lint
+pnpm run build
+pnpm exec tsc --noEmit
 ```
 
-クローン直後は `npm run build`（または `npm run dev`）を先に実行してください。Next.jsがビルド時に生成する型（`LayoutProps` など）ができるまで、`npx tsc --noEmit` は失敗します。
+クローン直後は `pnpm run build`（または `pnpm run dev`）を先に実行してください。Next.jsがビルド時に生成する型（`LayoutProps` など）ができるまで、`pnpm exec tsc --noEmit` は失敗します。
 
 コマンドごとの詳細と絞り込み方法は[検証コマンド一覧](https://henkaku-center.github.io/initiation/reference/commands)にあります。
 
-テストは `tests/unit/` と `tests/integration/` に分けています。Supabaseを使う統合テストの補助コードは `tests/support/` にあります。テスト対象は `tests/**/*.test.ts` です。統合テストは `.env.local` のSupabase設定を自動で読み込むため、ローカルSupabaseを起動し `.env.local` を設定した状態で `npm test` を実行してください。
+テストは `tests/unit/` と `tests/integration/` に分けています。Supabaseを使う統合テストの補助コードは `tests/support/` にあります。テスト対象は `tests/**/*.test.ts` です。統合テストは `.env.local` のSupabase設定を自動で読み込むため、ローカルSupabaseを起動し `.env.local` を設定した状態で `pnpm test` を実行してください。
 
 ## アーキテクチャの境界
 
@@ -118,7 +118,7 @@ npx tsc --noEmit
 
 1. Issueで目的と変更範囲を共有する
 2. `main` から作業ブランチを作る（例: `agent/navigation-readme`）
-3. テストを先に追加し、実装後に `npm test`・型チェック・lintを実行する（PR作成後はCIでも自動実行されます）
+3. テストを先に追加し、実装後に `pnpm test`・型チェック・lintを実行する（PR作成後はCIでも自動実行されます）
 4. 秘密情報や個人情報をコミットしない
 5. 変更理由、検証内容、未解決の判断をPull Requestに書く
 6. UI変更はスクリーンショットまたは手動確認手順を添える

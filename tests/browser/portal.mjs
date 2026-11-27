@@ -244,13 +244,26 @@ await page.getByRole("link", { name: "回答を見直す →", exact: true }).cl
 await page.waitForURL(`${origin}/initiation?edit=1`);
 await page.getByLabel("あなたを、なんとお呼びしたらいいですか？").waitFor();
 await page.getByRole("link", { name: "My passport ↗", exact: true }).click();
+  const applyButton = page.getByRole("button", { name: "申請する", exact: true });
+  await applyButton.click();
+  await page.getByRole("alert").filter({ hasText: "Discordのユーザー名を登録してください" }).waitFor();
+  assert.equal((await rows("applications", idA)).length, 0);
+
+  const discordField = page.getByLabel("DISCORD / 連絡先", { exact: true });
+  const discordUsername = "portal_test_traveller";
+  await discordField.fill(discordUsername);
+  await page.getByRole("button", { name: "Discord名を登録する", exact: true }).click();
+  await page.getByRole("button", { name: "Discord名を更新する", exact: true }).waitFor();
+  await page.reload();
+  assert.equal(await discordField.inputValue(), discordUsername);
+
   let applyAction;
   page.on("request", (request) => {
     if (request.url() === `${origin}/passport` && request.method() === "POST") applyAction = { url: request.url(), id: request.headers()["next-action"], body: request.postData() };
   });
-  await failedAction("/passport", page.getByRole("button", { name: "申請する", exact: true }), "申請結果を確認できませんでした");
+  await failedAction("/passport", applyButton, "申請結果を確認できませんでした");
   assert.equal((await rows("applications", idA)).length, 0);
-  await page.getByRole("button", { name: "申請する", exact: true }).click();
+  await applyButton.click();
   await textPresent("審査待ち");
   const applicationRequest = { ...applyAction };
   await replay(applicationRequest);
@@ -259,7 +272,7 @@ await page.getByRole("link", { name: "My passport ↗", exact: true }).click();
   await screenshot("passport-mobile-dark", 360, "dark");
   await page.goto(`${origin}/apply`);
   await textPresent("審査待ち");
-  console.log("PASS journey/passport: failure recovery, reload/resume, five versioned server entries and re-answer persistence, application and duplicate prevention");
+  console.log("PASS journey/passport: failure recovery, reload/resume, five versioned server entries and re-answer persistence, required Discord name and persistence, application and duplicate prevention");
 
   await page.getByRole("link", { name: "Community", exact: true }).click();
   let checkinAction;

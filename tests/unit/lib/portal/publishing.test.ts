@@ -10,7 +10,12 @@ describe("portal build policy", () => {
   });
   it("selects the normal build without changing the search indexing policy", () => {
     const config = JSON.parse(readFileSync("vercel.json", "utf8"));
-    expect(config.buildCommand).toBe("npm run build");
+    expect(config.installCommand).toBeUndefined();
+    expect(existsSync("pnpm-lock.yaml")).toBe(true);
+    expect(existsSync("package-lock.json")).toBe(false);
+    const { packageManager } = JSON.parse(readFileSync("package.json", "utf8"));
+    expect(packageManager).toMatch(/^pnpm@10\.\d+\.\d+$/);
+    expect(config.buildCommand).toBe("pnpm run build");
     expect(config.headers[0].headers).toContainEqual({ key: "X-Robots-Tag", value: "noindex, nofollow" });
   });
   it("offers one application build in package scripts and CI", () => {

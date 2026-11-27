@@ -8,7 +8,7 @@ Node 22以上、Ruby、Supabase CLI、Docker、PlaywrightとChromiumが必要で
 
 ## 専用サービスの準備
 
-実行先は `http://127.0.0.1:3102` と `http://127.0.0.1:65421` に固定しています。本番・ステージングの認証情報や既存開発DBは使いません。アプリ側も `.env.local` などを含まない隔離コピーを用意し、正しいlockfileで `npm ci` と `npm run build` を先に実行します。
+実行先は `http://127.0.0.1:3102` と `http://127.0.0.1:65421` に固定しています。本番・ステージングの認証情報や既存開発DBは使いません。アプリ側も `.env.local` などを含まない隔離コピーを用意し、`pnpm install --frozen-lockfile` と `pnpm run build` を先に実行します。
 
 以下をリポジトリのルートで実行すると、設定とmigrationだけを持つ一時サービスディレクトリができます。
 
@@ -34,13 +34,13 @@ supabase start --workdir "$PORTAL_SERVICE_DIR" -x realtime,storage-api,imgproxy,
 
 ```bash
 # ターミナル1: 通常buildを起動
-ruby tests/browser/local-env.rb "$PORTAL_SERVICE_DIR" "$PORTAL_APP_DIR" npm run start -- --hostname 127.0.0.1 --port 3102
+ruby tests/browser/local-env.rb "$PORTAL_SERVICE_DIR" "$PORTAL_APP_DIR" pnpm run start --hostname 127.0.0.1 --port 3102
 
 # ターミナル2: ブラウザ検証。Playwrightが通常のimportで見つからない場合はパスを指定
 ruby tests/browser/local-env.rb "$PORTAL_SERVICE_DIR" "$PORTAL_APP_DIR" node tests/browser/portal.mjs "$PORTAL_PLAYWRIGHT_DIR" "$PORTAL_ARTIFACT_DIR" "$PORTAL_CHROMIUM_PATH"
 
 # 統合テストも同じローカルサービスで実行できる（ブラウザ検証とは同時に行わない）
-ruby tests/browser/local-env.rb "$PORTAL_SERVICE_DIR" "$PORTAL_APP_DIR" npm test -- tests/integration
+ruby tests/browser/local-env.rb "$PORTAL_SERVICE_DIR" "$PORTAL_APP_DIR" pnpm exec vitest run tests/integration
 ```
 
 `portal.mjs`の引数はPlaywrightパッケージディレクトリ、スクリーンショット保存先、Chromium実行ファイルです。標準のPlaywright配置なら省略可能です。失敗時もスクリーンショットを残し、秘密鍵やCookieをログへ出しません。毎回ランダムなアカウントを作るため、過去の完走記録で成功することはありません。
@@ -50,6 +50,7 @@ ruby tests/browser/local-env.rb "$PORTAL_SERVICE_DIR" "$PORTAL_APP_DIR" npm test
 - 接続と認証の区別、Polygon切替、署名待ち・拒否、nonce/認証失敗と再試行。
 - 回答保存の通信失敗で入力が残ること、再読込後に未完了項目へ戻ること、5問の回答または明示スキップのサーバー記録と完走表示、完走後の再編集・再読込。
 - Initiationを開いた記録(`v2-opened`)が問いの行とは別に1行だけ残ること。回答保存が失敗しても残り、再読込・再編集で増えないこと。
+- 完走してもDiscord名が未登録なら申請が作られないこと。パスポートで登録したDiscord名が再読込後も残り、申請が審査待ちになること。
 - 申請とチェックインの通信失敗・重複操作、日本時間のサーバー日付、従来URL。
 - アカウント切替・切断、未認証と管理者権限不足、デモlocalStorageの改変、不明な質問ID、他人のmember IDを追加したリクエスト。
 - 直接URL、戻る・進む、キーボードによる本文スキップとダイアログ、ライト／ダーク、360/768/1440px、横はみ出し。
@@ -82,8 +83,8 @@ node tests/browser/community-pulse.mjs "$PORTAL_PLAYWRIGHT_DIR" "$PORTAL_ARTIFAC
 
 ブラウザの `/api/community-pulse` 応答をテストデータへ置き換え、GitHubへはアクセスしません。取得中、6件表示、古いデータ、0件、503、長いタイトルとHTMLを含むタイトル、最終取得時刻とIssue更新時刻、キーボード、360/768/1440pxのライト・ダーク、非同期カード追加後の演出、通常Homeのiframe内での表示を検証します。スクリーンショットは指定ディレクトリに保存します。
 
-取得・キャッシュは `npm test -- tests/unit/lib/communityPulse` で検証します。GitHub通信は置き換え、Next.jsの実際の `unstable_cache` をメモリ上の保存アダプターで動かし、1時間の再利用・バックグラウンド更新・失敗時の前回成功分保持・成功時刻・Retry-Afterを確認します。
+取得・キャッシュは `pnpm exec vitest run tests/unit/lib/communityPulse` で検証します。GitHub通信は置き換え、Next.jsの実際の `unstable_cache` をメモリ上の保存アダプターで動かし、1時間の再利用・バックグラウンド更新・失敗時の前回成功分保持・成功時刻・Retry-Afterを確認します。
 
-`npm run dev` でも通常のHome表示はData Cacheを再利用します。開発者ツールでキャッシュを無効にした場合や強制再読み込みで `Cache-Control: no-cache` が付いた場合は、Next.jsの開発時の仕様でData Cacheが無効になるため、再利用の確認はその設定を解除して行います。
+`pnpm run dev` でも通常のHome表示はData Cacheを再利用します。開発者ツールでキャッシュを無効にした場合や強制再読み込みで `Cache-Control: no-cache` が付いた場合は、Next.jsの開発時の仕様でData Cacheが無効になるため、再利用の確認はその設定を解除して行います。
 
 実接続はブラウザの置き換えを使わずHomeまたは `/api/community-pulse` を開いて確認できます。本家の `community-pulse` ラベル付きopen Issueが0件なら「掲載対象なし」が正常です。ラベル付与・Issue更新・クローズは運営の操作で行い、1時間経過後のアクセスが更新を開始すること、更新が完了した後のアクセスで新しい一覧と取得時刻になることを確認します。バックグラウンド更新が完了しても、開いたままの画面は自動更新しません。

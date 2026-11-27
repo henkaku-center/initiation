@@ -3,8 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@10.34.5",
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=22.12.0"
   },
   "scripts": {
     "dev": "node scripts/gateway/build-gateway.mjs && next dev",
@@ -18,32 +19,33 @@
     "docs:check": "tsx scripts/docs/check-translation.ts"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.118.0",
-    "@tanstack/react-query": "^5.104.3",
-    "iron-session": "^9.0.1",
-    "next": "16.4.2",
+    "@supabase/supabase-js": "^2.119.0",
+    "@tanstack/react-query": "^5.107.1",
+    "iron-session": "^9.1.0",
+    "next": "16.4.6",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "siwe": "^3.0.0",
-    "viem": "^2.57.7",
-    "wagmi": "^3.7.7"
+    "viem": "^2.57.19",
+    "wagmi": "^3.7.11"
   },
   "devDependencies": {
     "@eslint/compat": "^2.1.1",
-    "@tailwindcss/postcss": "^4.3.3",
+    "@tailwindcss/postcss": "^4.3.5",
     "@tonejs/midi": "^2.0.28",
     "@types/node": "^22.20.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@vitest/coverage-v8": "^5.0.3",
-    "dotenv": "^18.0.6",
+    "@vitest/coverage-v8": "^5.1.0",
+    "dotenv": "^18.0.10",
     "eslint": "^10",
-    "eslint-config-next": "16.4.0",
+    "eslint-config-next": "16.4.6",
     "tailwindcss": "^4.3.3",
     "tone": "^15.1.22",
     "tsx": "^4.23.15",
     "typescript": "6.0.3",
-    "vitepress": "^1.6.4",
+    "vite": "8.3.8",
+    "vitepress": "2.0.0-alpha.21",
     "vitest": "^5.0.0"
   }
 }

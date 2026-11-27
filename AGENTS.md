@@ -2,14 +2,13 @@
 
 HENKAKU Initiation。docs/development-plan.md が全体計画、docs/superpowers/plans/ が実装計画。
 
-- Node.js 22.0.0 以上 / npm(バージョン管理ツールは各自の好みで)
+- Node.js 22.12.0 以上 / pnpm 10.34.5(バージョン管理ツールは各自の好みで)
 - テストを先に書く。まず失敗するテストを追加し、それが落ちることを確かめてから実装する
-- テスト: `npm test`(Vitest)
+- テスト: `pnpm test`(Vitest)
 - 環境変数は .env.local(コミット禁止)。変数名一覧は .env.example
 - 決定事項は `docs/decisions/` に1決定1ファイルで記録。命名規則は `docs/decisions.md` を参照
 - CI: PRとmainへのpushで `.github/workflows/ci.yml` が検証コマンドを実行する
 - 依存更新: Dependabotの更新PRは、CIが緑でも自動マージしない。ウォレット・ブラウザ依存のフローはCIの対象外なので、`wagmi` / `viem` / `next` を含む更新は `/setup` の接続と署名を手で確認してからマージする(`docs/decisions/2026-08-10-dependency-updates.md`)
-- Dependabotのnpm更新で`npm ci`がlockfile不整合になった場合は、CIを緩めず`docs/decisions/2026-08-11-dependabot-lockfile-recovery.md`の一時復旧手順に従う
 
 ## 参照するドキュメント
 
@@ -17,7 +16,7 @@ HENKAKU Initiation。docs/development-plan.md が全体計画、docs/superpowers
 ルール本体は各ファイルにあり、ここへは複製しない(片方だけ更新されて食い違うため)。
 
 - `docs/guide/contributing.md` — 作業手順とPull Requestの書き方。着手前にIssueへコメントで宣言する、PR本文に「変更理由 / 検証内容 / 未解決の判断」を書く、UI変更にはスクリーンショットか確認手順を添える
-- `docs/guide/translating.md` — 英語版(`docs/en/`・`README.en.md`)への翻訳手順。翻訳を依頼されたら「AIへの手順」の節に従う。翻訳のみの変更ではテスト追加は不要で、検証は `npm run docs:check -- <訳文のパス>` と `npm run docs:build` を実行する。検査ツールや設定コードの変更は通常のテスト方針に従う。結果は依頼者へ日本語で報告する
+- `docs/guide/translating.md` — 英語版(`docs/en/`・`README.en.md`)への翻訳手順。翻訳を依頼されたら「AIへの手順」の節に従う。翻訳のみの変更ではテスト追加は不要で、検証は `pnpm run docs:check -- <訳文のパス>` と `pnpm run docs:build` を実行する。検査ツールや設定コードの変更は通常のテスト方針に従う。結果は依頼者へ日本語で報告する
 - `CONTRIBUTING.md` — ライセンスと素材の扱い。プロジェクトへ提供する創作物は CC BY 4.0 での利用・改変・再配布の許諾と帰属表示を確認し、`CREDITS.md` へ記録する。第三者素材は出典と元のライセンスを `CREDITS.md` へ記録し、リポジトリのライセンス区分との両立性を確認する。音源は作詞作曲と原盤の権利を両方確認する
 - `docs/guide/architecture.md` — 設計の意図と制約。DBアクセスはRepository経由のみ、ヘッダーで `cookies()` を読まない(全ページが動的になる)、レート制限は認可の直後・処理の前に消費する
 - `gotchas.md` — 実装中に踏むと時間を溶かす罠。wagmiのSSR設定、App Routerのページ配置、`wagmi/connectors` のbarrel import、さくらAIの環境変数
@@ -44,16 +43,16 @@ Before implementation, explain how the change advances the completion condition.
 
 ```bash
 # 開発サーバー(既存のプロセスを確認してから起動する)
-npm run dev -- --port 3000
+pnpm run dev --port 3000
 
 # 単体・統合テスト
-npm test
+pnpm test
 
 # 型チェック / lint / 本番build
 # クローン直後はbuildが生成する型ができるまでtscが失敗するため、build を先に実行する
-npm run build
-npx tsc --noEmit
-npm run lint
+pnpm run build
+pnpm exec tsc --noEmit
+pnpm run lint
 
 # ローカルSupabase
 npx supabase start

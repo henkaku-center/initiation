@@ -1,6 +1,6 @@
 # ポータルアプリ
 
-`npm run dev` / `npm run build` は、PR #102の画面・演出・構成を使い、既存の参加処理へ接続します。別の模擬アプリと「デモ操作」は[廃止しました](../decisions/2026-09-12-retire-portal-demo.md)。
+`pnpm run dev` / `pnpm run build` は、PR #102の画面・演出・構成を使い、既存の参加処理へ接続します。別の模擬アプリと「デモ操作」は[廃止しました](../decisions/2026-09-12-retire-portal-demo.md)。
 
 ## 画面と保存
 
@@ -68,17 +68,29 @@ APIキー・ユーザー名・ウォレットアドレス・Cookieは送信し�
 
 任意のウォレット表示追加は、ビルド時の `NEXT_PUBLIC_HENKAKU_TOKEN_ADDRESS`、必要に応じて `NEXT_PUBLIC_HENKAKU_TOKEN_SYMBOL` / `NEXT_PUBLIC_HENKAKU_TOKEN_DECIMALS` / `NEXT_PUBLIC_HENKAKU_TOKEN_LOGO_URL` を使います。保有照会や送金を実装する設定ではありません。
 
-今回の追加migrationはありません。既存の3つのmigration（コアテーブル、申請遷移、レート制限）が前提です。本番DBへの適用はこの作業には含みません。詳細は[アーキテクチャ](./architecture.md)と[開発環境のセットアップ](./setup.md)を参照してください。
+ポータルが使うDBには、`supabase/migrations/` の次の5本が必要です。公開前に、リリース対象コミットのファイルと対象DBの適用履歴を照合します。
+
+| migration | 用途 |
+| --- | --- |
+| `20260806000001_core_tables.sql` | メンバー、回答、申請、申請履歴、チェックインの基本テーブル |
+| `20260809000001_transition_application.sql` | 申請の状態を更新する関数 |
+| `20260810000001_rate_limits.sql` | 操作回数を制限するテーブルと関数 |
+| `20260920000001_member_discord_username.sql` | 申請に必要なDiscord名を保存する `members.discord_username` |
+| `20260920000002_checkin_note.sql` | チェックインのSignalを保存する `checkins.note` |
+
+テーブルの構成は[アーキテクチャ](./architecture.md)、ローカルDBの準備は[開発環境のセットアップ](./setup.md)を参照してください。
 
 ## 公開切替とロールバック
 
 1. 公開の明示的な許可を得て、対象コミットと利用する環境を確定します。現在のデプロイとBuild Commandをロールバック先として記録します。
 2. 対象環境の設定・既存スキーマを確認します。開発用テストに本番・ステージングの認証情報を持ち込まないでください。
-3. Node 22以上、Install Command `npm ci`、Build Command `npm run build`、Next.js標準出力を使います。リポジトリの `vercel.json` はこの通常buildを指定します。管理画面側に上書きがある場合は、実際のBuild Commandとビルドログを照合します。
-4. 以前の `build:demo` の上書きがある場合は `npm run build` へ変更し、不要になった `HENKAKU_DEMO_ONLY` を設定から除きます。このフラグはコードから削除されており、残っていても模擬モードへ切り替わりません。対象コミットを通常buildで再ビルドします。
-5. 許可された環境で認証→保存→再開→完走→申請→チェックインを確認します。実ウォレット署名、外部アカウント変更、Allowlist操作、送金、NFT発行はそれぞれ別途確認が必要です。
+3. Node 22.12.0以上、Build Command `pnpm run build`、Next.js標準出力を使います。VercelのInstall Commandは上書きせず、`pnpm-lock.yaml`から自動判定させます。プレビューのログでpnpmのバージョンを確認し、`package.json` と同じ版に固定する場合は、VercelのCorepack設定を使います。
+4. 以前の `build:demo` の上書きがある場合は `pnpm run build` へ変更し、不要になった `HENKAKU_DEMO_ONLY` を設定から除きます。このフラグはコードから削除されており、残っていても模擬モードへ切り替わりません。対象コミットを通常buildで再ビルドします。
+5. 許可された環境で認証→保存→再開→完走→Discord名登録→申請→チェックインを確認します。実ウォレット署名、外部アカウント変更、Allowlist操作、送金、NFT発行はそれぞれ別途確認が必要です。
 6. HTMLのrobotsとVercelの `X-Robots-Tag: noindex, nofollow` を維持します。`noindex` はアクセス制限ではなく、解除には別の公開方針の判断が必要です
 7. Firewallのレート制限ルールを2本作り、`/api/auth/` 以下と `/api/community-pulse` をそれぞれIP単位で60秒あたり100リクエストに制限します（Hobbyプランならルールは1本しか作れないため、`/api/` 以下の1本にまとめます）。最初は動作を Log にして観測し、分布を見てから **Default (429)** へ切り替えます。Deny は403を返すため選びません。切替時は上限を超える回数を送って応答が429であること、サインイン画面に待機メッセージが出ることを確認します（[未認証エンドポイントのレート制限](../decisions/2026-09-20-unauthenticated-rate-limits.md)）。
+
+DBへの到達確認には `GET /api/health/db` を使います。毎回、既存のサーバー用接続で `rate_limits` への行を返さない読み取りを1回行い、成功なら204、失敗または5秒のタイムアウトなら503を返します。本文は空で、`Cache-Control: no-store` を付け、エラーの詳細はサーバーログにだけ残します。同じインスタンスへ同時に届いたリクエストは1回の問い合わせを共有します。外部監視から叩く場合は間隔を1分程度にし、Firewallのルールが `/api/` 以下の1本でない場合はこのパスの扱いも決めます。
 
 ロールバックは記録した以前のデプロイへ戻します。現行コードには別のデモbuildはありません。戻すデプロイが模擬版なら実認証・保存・申請は利用できなくなるため、対象の動作を確認してください。DB記録は保持し、DB削除・逆migration・デモlocalStorageの移行は行いません。
 
@@ -89,13 +101,13 @@ APIキー・ユーザー名・ウォレットアドレス・Cookieは送信し�
 Homeは `assets/reference/gateway/` と `scripts/gateway/build-gateway.mjs`、イントロは `scripts/gateway/build-bubble-intro.mjs` を編集します。通常用の `public/demo-assets/gateway/app-*.html` とデモ用HTMLは生成物です。HTMLだけを直接変更せず、`node scripts/gateway/build-gateway.mjs` で再生成してください。
 
 ```bash
-npm ci
-npm run build
-npx tsc --noEmit
-npm run lint
-npx vitest run tests/unit
-npx vitest run tests/integration
-npm audit --omit=dev --audit-level=high
+pnpm install --frozen-lockfile
+pnpm run build
+pnpm exec tsc --noEmit
+pnpm run lint
+pnpm exec vitest run tests/unit
+pnpm exec vitest run tests/integration
+pnpm audit --prod --audit-level high
 ```
 
 統合テストはローカルSupabase専用です。通常サーバー・デモサーバー・buildは同じ `.next` を使うため、別コピーにするか順番に停止・実行します。ブラウザの自動確認は[テストの案内](https://github.com/henkaku-center/initiation/blob/main/tests/browser/README.md)を参照してください。実ウォレットの操作確認はこの自動テストとは別です。
