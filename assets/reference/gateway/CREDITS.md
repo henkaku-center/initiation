@@ -20,6 +20,6 @@ Weekly top recording metadata and aggregate listen counts / ListenBrainz, MetaBr
 
 ## Reference homepage restoration (2026-11-27)
 
-`podcast-preview.js`, `listening-history.js`, the episode/sample catalogue, and `podcast.css` / original HENKAKU portal implementation / Git revision `cca6e14^`, compared with https://sangraal-demo-initiation.vercel.app/#home / repository MIT code license, retaining the prototype attribution above. Adaptations: ShadowRoot selectors, actual iframe elements for the YouTube API, app-route teardown, and header-aware viewport math.
+`listening-history.js`, the episode/sample catalogue, and `podcast.css` / original HENKAKU portal implementation / Git revision `cca6e14^`, compared with https://sangraal-demo-initiation.vercel.app/#home / repository MIT code license, retaining the prototype attribution above. Adaptations: ShadowRoot selectors, static episode links, first-party artwork, and header-aware viewport math.
 
 Videos and thumbnails / Joi Ito and the respective rights holders / the six official VIDEO playlist URLs in `gateway-data.js` / externally embedded or linked YouTube content under its original rights and service terms; no video, audio or image files are redistributed or relicensed.

@@ -1,6 +1,7 @@
 // Assemble the requested source-based Gateway. No network requests at build time.
 import fs from "node:fs";
 import path from "node:path";
+import { runInNewContext } from "node:vm";
 import { fileURLToPath } from "node:url";
 import { buildBubbleIntro } from "./build-bubble-intro.mjs";
 import { buildEncryptedIntro } from "./build-encrypted-intro.mjs";
@@ -22,15 +23,17 @@ sections = sections.replace('href="/initiation"', 'href="/#journey" target="_top
 sections = sections.replace('第2段階で、最近動いているプロジェクト、投稿、クエスト、Check-in を短いカードとして順に現れる構成へ差し替えます。', 'コミュニティの入口を、みんなでつくる。');
 sections = sections.replace('第2段階で、権利確認前の抽象プレースホルダーを使い、3〜5曲の再生ログを個人情報なしで表示します。', 'コミュニティの誰かが聴いた対話から、次の一回に出会う。');
 sections = sections.replace('aria-label="Community Pulse placeholder"', 'aria-label="最近のプロジェクト、投稿、クエスト、Check-in"');
-sections = sections.replace('縦スクロールの途中で、場面だけが横へ流れる比較用セクションです。音声の自動再生は行いません。', 'Joi Itoとゲストの対話。気になる回をこの画面で再生できます。');
+sections = sections.replace('縦スクロールの途中で、場面だけが横へ流れる比較用セクションです。音声の自動再生は行いません。', 'Joi Itoとゲストの対話。気になる回をYouTubeで視聴できます。');
 sections = sections.replace('<div class="voices-photo-stage" aria-label="Voices horizontal scene strip">', '<div class="voices-photo-stage" aria-label="Joi Itoのポッドキャスト動画">');
-const previewScenes = Array.from({ length: 4 }, (_, index) => `
+const catalogue = { window: {} };
+runInNewContext(read("assets/reference/gateway/gateway-data.js"), catalogue, { timeout: 1000 });
+const escapeHtml = (value) => value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+const previewScenes = catalogue.window.gatewayContent.episodes.slice(0, 4).map((episode, index) => `
                 <figure class="voices-scene podcast-scene" data-podcast-scene aria-label="ポッドキャストの場面 ${index + 1}">
-                  <div class="podcast-screen"><div data-podcast-player></div></div>
+                  <div class="podcast-screen" aria-hidden="true"><div>JOI ITO’S PODCAST / 0${index + 1}</div></div>
                   <figcaption>
-                    <p class="podcast-scene-label" data-podcast-label>JOI ITO’S PODCAST</p>
-                    <a data-podcast-link href="https://www.youtube.com/@joiito/podcasts" target="_blank" rel="noopener noreferrer">YouTubeでこの回を見る ↗</a>
-                    <p class="podcast-status" data-podcast-status></p>
+                    <p class="podcast-scene-label">${escapeHtml(episode.guest)}</p>
+                    <a data-podcast-link href="https://www.youtube.com/watch?v=${encodeURIComponent(episode.id)}" target="_blank" rel="noopener noreferrer">${escapeHtml(episode.title)} — YouTubeで見る ↗</a>
                   </figcaption>
                 </figure>`).join("");
 sections = sections.replace(/(<div class="voices-photo-track" data-photo-strip>)[\s\S]*?(?=\n              <\/div>\n            <\/div>)/, `$1${previewScenes}`);
@@ -82,6 +85,7 @@ window.addEventListener('message', (event) => {
 });
 if (window.parent !== window) window.parent.postMessage({ type:'henkaku:podcast:ready' }, location.origin);
 document.addEventListener('click', (event) => {
+  if (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
   const link = event.target.closest?.('a[target="_top"]');
   if (!link || window.parent === window || !portalListening) return;
   const url = new URL(link.href, location.href);
@@ -134,13 +138,11 @@ const html = `<!doctype html>
 <main aria-label="HENKAKU トップページ">${sections}</main>
 <script type="module" src="./gateway-v1-claude-decrypt.js"></script>
 <script src="./gateway-data.js"></script><script>${scrollCode}
-</script><script src="./community-pulse.js"></script><script src="./listening-history.js"></script><script src="./podcast-preview.js"></script></body></html>`;
+</script><script src="./community-pulse.js"></script><script src="./listening-history.js"></script></body></html>`;
 fs.writeFileSync(path.join(root,"public/demo-assets/gateway/community-pulse.js"), read("assets/reference/gateway/community-pulse.js"));
 fs.writeFileSync(path.join(root,"public/demo-assets/gateway/frequency.js"), read("assets/reference/gateway/frequency.js"));
 fs.writeFileSync(path.join(root,"public/demo-assets/gateway/gateway-data.js"), read("assets/reference/gateway/gateway-data.js"));
-for (const file of ["listening-history.js", "podcast-preview.js"]) {
-  fs.writeFileSync(path.join(root, "public/demo-assets/gateway", file), read(`assets/reference/gateway/${file}`));
-}
+fs.writeFileSync(path.join(root, "public/demo-assets/gateway/listening-history.js"), read("assets/reference/gateway/listening-history.js"));
 // Adapt the source artwork to directly addressable application routes.
 // Frequency displays fixed reference samples and never reads a member's viewing history.
 const applicationRoutes = { home: "/", setup: "/setup", journey: "/initiation", community: "/community", passport: "/passport" };

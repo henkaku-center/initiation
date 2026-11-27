@@ -17,7 +17,6 @@ const podcast = {
 type DecryptWindow = Window & { henkakuArmGatewayDecrypt?: (root: ShadowRoot) => void | (() => void) };
 type MediaWindow = Window & {
   henkakuRenderListeningHistory?: (root: ShadowRoot) => void;
-  henkakuStartPodcast?: (root: ShadowRoot, signal: AbortSignal) => (() => void) | undefined;
 };
 const mediaScripts = new Map<string, Promise<void>>();
 function loadMediaScript(name: string): Promise<void> {
@@ -271,20 +270,23 @@ export function GatewaySurface({ onNavigate }: { onNavigate: (screen: PortalScre
       // older Gateway documents. The reference edition uses fixed sample plays.
       if (!shadow.querySelector('[data-frequency-mode="sample"]')) loadFrequency(shadow, controller.signal);
       void loadMediaScript("gateway-data")
-        .then(() => Promise.all([loadMediaScript("listening-history"), loadMediaScript("podcast-preview")]))
+        .then(() => loadMediaScript("listening-history"))
         .then(() => {
           if (controller.signal.aborted) return;
           const media = window as MediaWindow;
           if (shadow.querySelector('[data-frequency-mode="sample"]')) media.henkakuRenderListeningHistory?.(shadow);
-          media.henkakuStartPodcast?.(shadow, controller.signal);
           motion.request();
         }).catch(() => {
           if (controller.signal.aborted) return;
-          shadow.querySelectorAll("[data-podcast-status]").forEach((status) => {
-            status.textContent = "映像を読み込めません。公式動画からご覧ください。";
-          });
+          const list = shadow.querySelector('[data-frequency-mode="sample"]');
+          if (list) {
+            const message = document.createElement("li");
+            message.textContent = "サンプルの再生履歴を読み込めませんでした。";
+            list.replaceChildren(message);
+          }
         });
       shadow.addEventListener("click", (event) => {
+        if (!(event instanceof MouseEvent) || event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
         const target = event.target as Element | null;
         const link = target?.closest?.('a[target="_top"]');
         if (!(link instanceof HTMLAnchorElement)) return;

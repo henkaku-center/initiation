@@ -1104,7 +1104,7 @@ html[data-theme="dark"] .voices-fragment,html[data-theme="dark"] .voices-observe
   .placeholder-section,.placeholder-section[data-gateway-section="01-community-pulse"],.voices-sticky-wrap,.threshold-section { min-height:auto;margin-top:0; }
   .placeholder-panel { position:static;min-height:auto; }.voices-scene { min-height:280px; }
 }
-</style><style>/* The official player stays unobscured; the title and link sit below it. */
+</style><style>/* First-party artwork; each episode links to YouTube. */
 .podcast-scene a:focus-visible,.frequency-link:focus-visible { outline:3px solid #f58442;outline-offset:4px; }
 .voices-sticky-panel .chapter { padding-top:24px; }
 .voices-sticky-panel .chapter-body { padding-top:18px; }
@@ -1115,7 +1115,7 @@ html[data-theme="dark"] .voices-fragment,html[data-theme="dark"] .voices-observe
 .podcast-scene { --podcast-max-width:min(72vw,760px);margin:0;min-height:0;flex:0 0 clamp(280px,calc((100svh - 400px) * 16 / 9),var(--podcast-max-width));transform:none; }
 .podcast-scene::before,.podcast-scene::after { display:none; }
 .podcast-screen { width:100%;aspect-ratio:16/9;min-height:200px;background:#101116; }
-.podcast-screen > div,.podcast-screen iframe { display:block;width:100%;height:100%;min-height:200px;border:0; }
+.podcast-screen > div { display:block;width:100%;height:100%;min-height:200px;border:0; }
 .podcast-screen > div { display:grid;place-items:center;color:#d5d9e2; }
 .podcast-screen > img { display:block;width:100%;height:100%;object-fit:contain; }
 .podcast-scene figcaption { padding-top:15px; }
@@ -1150,7 +1150,7 @@ html[data-theme="dark"] .voices-fragment,html[data-theme="dark"] .voices-observe
 .frequency-avatar[data-avatar="anonymous"] .frequency-avatar-shape::after { content:"";width:20px;height:11px;top:13px;left:-6.5px;border:1.5px solid currentColor;border-radius:12px 12px 4px 4px; }
 .frequency-link { display:grid;grid-template-columns:112px minmax(0,1fr);align-items:start;gap:16px;padding:16px 0 22px;min-width:0;color:var(--ink);text-decoration:none; }
 .frequency-link:hover .frequency-title { color:var(--blue); }
-.frequency-art { aspect-ratio:16/9;background:var(--surface-subtle);overflow:hidden; }
+.frequency-art { display:grid;place-items:center;color:var(--muted);aspect-ratio:16/9;background:var(--surface-subtle);overflow:hidden; }
 .frequency-art img { display:block;width:100%;height:100%;object-fit:cover; }
 .frequency-art img[hidden] { display:none; }
 .frequency-copy { min-width:0;display:grid;gap:7px; }
@@ -1217,41 +1217,37 @@ html[data-theme="dark"] .voices-fragment,html[data-theme="dark"] .voices-observe
           <div class="chapter-body">
             <p class="kicker">Voices / Podcast</p>
             <h2 class="section-title" id="voices-title">VOICES / PODCAST</h2>
-            <p class="microcopy">Joi Itoとゲストの対話。気になる回をこの画面で再生できます。</p>
+            <p class="microcopy">Joi Itoとゲストの対話。気になる回をYouTubeで視聴できます。</p>
             </div>
         </div>
         <div class="voices-photo-stage" aria-label="Joi Itoのポッドキャスト動画">
               <div class="voices-photo-track" data-photo-strip>
                 <figure class="voices-scene podcast-scene" data-podcast-scene aria-label="ポッドキャストの場面 1">
-                  <div class="podcast-screen"><div data-podcast-player></div></div>
+                  <div class="podcast-screen" aria-hidden="true"><div>JOI ITO’S PODCAST / 01</div></div>
                   <figcaption>
-                    <p class="podcast-scene-label" data-podcast-label>JOI ITO’S PODCAST</p>
-                    <a data-podcast-link href="https://www.youtube.com/@joiito/podcasts" target="_blank" rel="noopener noreferrer">YouTubeでこの回を見る ↗</a>
-                    <p class="podcast-status" data-podcast-status></p>
+                    <p class="podcast-scene-label">伊藤穰一 × 隈研吾</p>
+                    <a data-podcast-link href="https://www.youtube.com/watch?v=eUV1f-xfL4U" target="_blank" rel="noopener noreferrer">メタボリズムからデジタル建築へ — YouTubeで見る ↗</a>
                   </figcaption>
                 </figure>
                 <figure class="voices-scene podcast-scene" data-podcast-scene aria-label="ポッドキャストの場面 2">
-                  <div class="podcast-screen"><div data-podcast-player></div></div>
+                  <div class="podcast-screen" aria-hidden="true"><div>JOI ITO’S PODCAST / 02</div></div>
                   <figcaption>
-                    <p class="podcast-scene-label" data-podcast-label>JOI ITO’S PODCAST</p>
-                    <a data-podcast-link href="https://www.youtube.com/@joiito/podcasts" target="_blank" rel="noopener noreferrer">YouTubeでこの回を見る ↗</a>
-                    <p class="podcast-status" data-podcast-status></p>
+                    <p class="podcast-scene-label">伊藤穰一 × 為末大</p>
+                    <a data-podcast-link href="https://www.youtube.com/watch?v=eXbZntTHGJ4" target="_blank" rel="noopener noreferrer">世界陸上メダリストと語る「進化論と遊び」 — YouTubeで見る ↗</a>
                   </figcaption>
                 </figure>
                 <figure class="voices-scene podcast-scene" data-podcast-scene aria-label="ポッドキャストの場面 3">
-                  <div class="podcast-screen"><div data-podcast-player></div></div>
+                  <div class="podcast-screen" aria-hidden="true"><div>JOI ITO’S PODCAST / 03</div></div>
                   <figcaption>
-                    <p class="podcast-scene-label" data-podcast-label>JOI ITO’S PODCAST</p>
-                    <a data-podcast-link href="https://www.youtube.com/@joiito/podcasts" target="_blank" rel="noopener noreferrer">YouTubeでこの回を見る ↗</a>
-                    <p class="podcast-status" data-podcast-status></p>
+                    <p class="podcast-scene-label">伊藤穰一 × 宮口あや</p>
+                    <a data-podcast-link href="https://www.youtube.com/watch?v=JMlXLzUEPnI" target="_blank" rel="noopener noreferrer">巨大ブロックチェーンを静かに支える日本の力 — YouTubeで見る ↗</a>
                   </figcaption>
                 </figure>
                 <figure class="voices-scene podcast-scene" data-podcast-scene aria-label="ポッドキャストの場面 4">
-                  <div class="podcast-screen"><div data-podcast-player></div></div>
+                  <div class="podcast-screen" aria-hidden="true"><div>JOI ITO’S PODCAST / 04</div></div>
                   <figcaption>
-                    <p class="podcast-scene-label" data-podcast-label>JOI ITO’S PODCAST</p>
-                    <a data-podcast-link href="https://www.youtube.com/@joiito/podcasts" target="_blank" rel="noopener noreferrer">YouTubeでこの回を見る ↗</a>
-                    <p class="podcast-status" data-podcast-status></p>
+                    <p class="podcast-scene-label">伊藤穰一 × 伊藤瑞子</p>
+                    <a data-podcast-link href="https://www.youtube.com/watch?v=Bb0X-OU11CI" target="_blank" rel="noopener noreferrer">インターネットと教育 — YouTubeで見る ↗</a>
                   </figcaption>
                 </figure>
               </div>
@@ -1451,6 +1447,7 @@ window.addEventListener('message', (event) => {
 });
 if (window.parent !== window) window.parent.postMessage({ type:'henkaku:podcast:ready' }, location.origin);
 document.addEventListener('click', (event) => {
+  if (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
   const link = event.target.closest?.('a[target="_top"]');
   if (!link || window.parent === window || !portalListening) return;
   const url = new URL(link.href, location.href);
@@ -1461,4 +1458,4 @@ document.addEventListener('click', (event) => {
   window.parent.postMessage({ type:'henkaku:home:navigate', screen:destination }, location.origin);
 });
 
-</script><script src="./community-pulse.js"></script><script src="./listening-history.js"></script><script src="./podcast-preview.js"></script></body></html>
+</script><script src="./community-pulse.js"></script><script src="./listening-history.js"></script></body></html>

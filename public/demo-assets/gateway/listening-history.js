@@ -28,14 +28,8 @@
     link.target = "_blank";
     link.rel = "noopener noreferrer";
     const art = make("div", "frequency-art");
-    const thumbnail = make("img", "");
-    thumbnail.src = `https://i.ytimg.com/vi/${episode.id}/mqdefault.jpg`;
-    thumbnail.alt = "";
-    thumbnail.loading = "lazy";
-    thumbnail.width = 320;
-    thumbnail.height = 180;
-    thumbnail.addEventListener("error", () => { thumbnail.hidden = true; });
-    art.append(thumbnail);
+    art.setAttribute("aria-hidden", "true");
+    art.textContent = "♪";
     const copy = make("div", "frequency-copy");
     copy.append(make("strong", "frequency-title", episode.title), make("span", "frequency-guest", episode.guest), make("span", "frequency-meta", "この回をYouTubeで聴く ↗"));
     link.append(art, copy);

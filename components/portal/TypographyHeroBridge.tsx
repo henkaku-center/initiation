@@ -149,8 +149,17 @@ export function TypographyHeroBridge() {
       // Leave editing and the native activation keys of controls alone.
       if (target?.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"])')) return;
       if (event.key === " " && target?.closest('button, [role="button"]')) return;
-      const down = ["ArrowDown", "PageDown", "End"].includes(event.key) || (event.key === " " && !event.shiftKey);
-      const up = ["ArrowUp", "PageUp", "Home"].includes(event.key) || (event.key === " " && event.shiftKey);
+      if (event.key === "Home" || event.key === "End") {
+        stopMotion();
+        // Inside the iframe, the browser would jump in the child document, not the portal.
+        if (target && target.ownerDocument !== document) {
+          event.preventDefault();
+          window.scrollTo({ top: event.key === "Home" ? 0 : document.documentElement.scrollHeight, behavior: "instant" });
+        }
+        return;
+      }
+      const down = ["ArrowDown", "PageDown"].includes(event.key) || (event.key === " " && !event.shiftKey);
+      const up = ["ArrowUp", "PageUp"].includes(event.key) || (event.key === " " && event.shiftKey);
       const distance = event.key.startsWith("Arrow") ? 48 : innerHeight * .85;
       if ((down || up) && move(down ? distance : -distance)) event.preventDefault();
     };
