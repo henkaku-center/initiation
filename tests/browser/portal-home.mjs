@@ -45,7 +45,7 @@ try {
       await page.setViewportSize({ width, height: 1000 });
       await page.getByRole("button", { name: theme === "light" ? "ライトモード" : "ダークモード", exact: true }).click();
       await voices.evaluate((element) => window.scrollTo(0, window.scrollY + element.getBoundingClientRect().top));
-      assert.equal(await voices.locator("[data-podcast-scene]").count(), 4);
+      assert.equal(await voices.locator("iframe, [data-podcast-link]").count(), 0);
       assert.equal(await voices.locator("[data-podcast-toggle]").count(), 0);
       assert.equal(await voices.locator(".voices-scene").count(), 4);
       assert.equal(await home.locator('script[src*="podcast-preview"]').count(), 0);
@@ -61,7 +61,7 @@ try {
       await page.screenshot({ path: `${output}/${new URL(origin).port}-${width}-${theme}.png`, fullPage: true });
     }
   }
-  assert.ok(playerRequests.some((url) => url.includes("youtube.com/iframe_api")), "Loads the official YouTube runtime near the scenes");
+  assert.deepEqual(playerRequests, [], "No YouTube runtime or player loads");
   await page.setViewportSize({ width:1440, height:1000 });
   await page.goto(`${origin}/setup`);
   await page.locator('.pd-setup-grid').waitFor();

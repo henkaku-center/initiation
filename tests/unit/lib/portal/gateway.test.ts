@@ -103,22 +103,15 @@ describe("application Gateway generation", () => {
     expect(html).not.toContain("イントロを再生");
     expect(html).not.toContain("home-replay");
   });
-  it("restores four official video scenes and the podcast introduction", () => {
+  it("retains the four production abstract Voices scenes and official show link", () => {
     const html = read("index.html");
     expect(html).toContain("VOICES / PODCAST");
     expect(html).toContain('href="https://joi.ito.com/podcast/"');
-    expect(html.match(/data-podcast-scene /g)).toHaveLength(4);
-    const links = [...html.matchAll(/<a\b[^>]*data-podcast-link[^>]*href="([^"]+)"[^>]*>/g)];
-    expect(links.map(([, href]) => new URL(href).searchParams.get("v"))).toEqual([
-      "eUV1f-xfL4U", "eXbZntTHGJ4", "JMlXLzUEPnI", "Bb0X-OU11CI",
-    ]);
-    expect(links.every(([tag]) => tag.includes('target="_blank"') && tag.includes('rel="noopener noreferrer"'))).toBe(true);
-    expect(html).not.toContain('src="./podcast-preview.js"');
+    expect([...html.matchAll(/class="voices-scene-title">([^<]+)/g)].map(([, title]) => title)).toEqual(["LISTENING ROOM", "FRAGMENTS", "OBSERVED", "ENTER"]);
+    expect(html).not.toContain("data-podcast-link");
     expect(html).not.toContain("data-podcast-player");
-    expect(html).not.toContain("data-podcast-toggle");
-    expect(html).not.toContain("SOUND OFF");
-    expect(html).not.toContain("映像は無音で流れます");
-    expect(html).not.toContain("LISTENING ROOM");
+    expect(html).not.toContain('src="./podcast-preview.js"');
+    expect(html).toContain('src="/demo-assets/gateway/thumbs/hero.png"');
   });
   it.each(["bubble-multi.html", "intro.html"])("uses normal URL fallbacks in %s", (file) => {
     const html = read(file);
@@ -147,7 +140,7 @@ describe("application Gateway generation", () => {
     expect(read("gateway-data.js")).toContain("episodes:");
     expect(existsSync("public/demo-assets/gateway/listening-history.js")).toBe(true);
     expect(existsSync("public/demo-assets/gateway/podcast-preview.js")).toBe(false);
-    expect(read("listening-history.js")).not.toContain("ytimg.com");
+    expect(read("listening-history.js")).toContain("i.ytimg.com/vi/");
   });
   it("asks the portal to answer as soon as the embedded home runs", () => {
     const { posted } = loadHomeLinkScript(read("index.html"));

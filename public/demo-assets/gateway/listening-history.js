@@ -30,6 +30,18 @@
     const art = make("div", "frequency-art");
     art.setAttribute("aria-hidden", "true");
     art.textContent = "♪";
+    if (/^[A-Za-z0-9_-]{11}$/.test(episode.id)) {
+      const thumbnail = make("img", "");
+      thumbnail.alt = "";
+      thumbnail.loading = "lazy";
+      thumbnail.decoding = "async";
+      thumbnail.referrerPolicy = "no-referrer";
+      thumbnail.width = 320;
+      thumbnail.height = 180;
+      thumbnail.addEventListener("error", () => { thumbnail.hidden = true; }, { once: true });
+      thumbnail.src = `https://i.ytimg.com/vi/${episode.id}/mqdefault.jpg`;
+      art.append(thumbnail);
+    }
     const copy = make("div", "frequency-copy");
     copy.append(make("strong", "frequency-title", episode.title), make("span", "frequency-guest", episode.guest), make("span", "frequency-meta", "この回をYouTubeで聴く ↗"));
     link.append(art, copy);

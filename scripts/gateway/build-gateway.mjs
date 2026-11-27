@@ -1,7 +1,6 @@
 // Assemble the requested source-based Gateway. No network requests at build time.
 import fs from "node:fs";
 import path from "node:path";
-import { runInNewContext } from "node:vm";
 import { fileURLToPath } from "node:url";
 import { buildBubbleIntro } from "./build-bubble-intro.mjs";
 import { buildEncryptedIntro } from "./build-encrypted-intro.mjs";
@@ -23,22 +22,9 @@ sections = sections.replace('href="/initiation"', 'href="/#journey" target="_top
 sections = sections.replace('第2段階で、最近動いているプロジェクト、投稿、クエスト、Check-in を短いカードとして順に現れる構成へ差し替えます。', 'コミュニティの入口を、みんなでつくる。');
 sections = sections.replace('第2段階で、権利確認前の抽象プレースホルダーを使い、3〜5曲の再生ログを個人情報なしで表示します。', 'コミュニティの誰かが聴いた対話から、次の一回に出会う。');
 sections = sections.replace('aria-label="Community Pulse placeholder"', 'aria-label="最近のプロジェクト、投稿、クエスト、Check-in"');
-sections = sections.replace('縦スクロールの途中で、場面だけが横へ流れる比較用セクションです。音声の自動再生は行いません。', 'Joi Itoとゲストの対話。気になる回をYouTubeで視聴できます。');
-sections = sections.replace('<div class="voices-photo-stage" aria-label="Voices horizontal scene strip">', '<div class="voices-photo-stage" aria-label="Joi Itoのポッドキャスト動画">');
-const catalogue = { window: {} };
-runInNewContext(read("assets/reference/gateway/gateway-data.js"), catalogue, { timeout: 1000 });
-const escapeHtml = (value) => value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
-const previewScenes = catalogue.window.gatewayContent.episodes.slice(0, 4).map((episode, index) => `
-                <figure class="voices-scene podcast-scene" data-podcast-scene aria-label="ポッドキャストの場面 ${index + 1}">
-                  <div class="podcast-screen" aria-hidden="true"><div>JOI ITO’S PODCAST / 0${index + 1}</div></div>
-                  <figcaption>
-                    <p class="podcast-scene-label">${escapeHtml(episode.guest)}</p>
-                    <a data-podcast-link href="https://www.youtube.com/watch?v=${encodeURIComponent(episode.id)}" target="_blank" rel="noopener noreferrer">${escapeHtml(episode.title)} — YouTubeで見る ↗</a>
-                  </figcaption>
-                </figure>`).join("");
-sections = sections.replace(/(<div class="voices-photo-track" data-photo-strip>)[\s\S]*?(?=\n              <\/div>\n            <\/div>)/, `$1${previewScenes}`);
-// The moving strip belongs to the full-width panel, outside the text column.
-sections = sections.replace(/(<div class="voices-photo-stage"[^>]*>[\s\S]*?\n              <\/div>\n            <\/div>)\n          <\/div>\n        <\/div>/, '</div>\n        </div>\n        $1');
+sections = sections.replace(/[ \t]*<p class="microcopy">縦スクロールの途中で、場面だけが横へ流れる比較用セクションです。音声の自動再生は行いません。<\/p>\n/, '');
+// The same local illustrations work in the standalone page and the inlined Gateway.
+sections = sections.replaceAll('src="thumbs/', 'src="/demo-assets/gateway/thumbs/');
 sections = sections.replace(/<div class="placeholder-grid" aria-label="Recently played placeholder">[\s\S]*?<div class="placeholder-list" data-track-list><\/div>\s*<\/div>/, `<p class="frequency-summary">みんなの最近のプレイ履歴 <span>COMMUNITY PLAYS / MOCK</span></p>
           <ol class="frequency-list" data-track-list data-frequency-mode="sample" aria-label="コミュニティ全体の最近のプレイ履歴"></ol>
           <p class="frequency-disclaimer">リスナー・アイコン・再生時刻は架空のサンプルです。実際の視聴履歴ではありません。</p>`);

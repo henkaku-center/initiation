@@ -1,4 +1,4 @@
-// Reference-content integration: external episode links and no external media requests.
+// Reference-content integration: production sections and Frequency thumbnail success/failure.
 import assert from 'node:assert/strict';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
@@ -7,10 +7,15 @@ const browser = await chromium.launch({ headless: true, executablePath: process.
 const origin = process.env.REFERENCE_HOME_ORIGIN || 'http://localhost:3102';
 const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
 const requests = [], errors = [];
+const thumbnailIds = ['eUV1f-xfL4U', 'Bb0X-OU11CI', 'eXbZntTHGJ4', 'kKPgC9EubwM'];
 context.on('request', req => requests.push(req.url()));
 await context.route('**/*', route => {
   const url = new URL(route.request().url());
   if (url.pathname === '/api/community-pulse') return route.fulfill({ json: { status: 'fresh', issues: [{number: 46, title: 'Initiationの質問とゲーム体験を決める', updatedAt: '2026-09-14T02:00:00Z', url: 'https://github.com/henkaku-center/initiation/issues/46'}], lastSuccessAt: '2026-09-14T03:00:00Z' } });
+  if (url.hostname === 'i.ytimg.com') {
+    if (url.pathname.includes(thumbnailIds[0])) return route.abort();
+    return route.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180"/>' });
+  }
   if (url.pathname === '/api/auth/me') return route.fulfill({ status: 401, json: {} });
   return url.origin === origin ? route.continue() : route.abort();
 });
@@ -46,13 +51,27 @@ try {
     await scrollSection('[data-voices-scroll]', 80);
     await page.waitForFunction(() => { const el = document.querySelector('.pd-inline-gateway').shadowRoot.querySelector('.voices-sticky-panel'); return Math.abs(el.getBoundingClientRect().top - document.querySelector('.pd-header').getBoundingClientRect().bottom) < 2; });
     assert.ok(await page.locator('.voices-sticky-panel').evaluate(el => Math.abs(el.getBoundingClientRect().top - document.querySelector('.pd-header').getBoundingClientRect().bottom) < 2), 'Voices pins beneath the header');
-    assert.equal(await page.locator('[data-podcast-scene] iframe').count(), 0);
-    assert.equal(await page.locator('[data-podcast-link]').count(), 4);
-    for (const link of await page.locator('[data-podcast-link], .frequency-link').all()) {
-      assert.equal(new URL(await link.getAttribute('href')).hostname, 'www.youtube.com');
-      assert.equal(await link.getAttribute('target'), '_blank');
-    }
+    assert.deepEqual(await page.locator('.voices-scene-title').allTextContents(), ['LISTENING ROOM', 'FRAGMENTS', 'OBSERVED', 'ENTER']);
+    assert.equal(await page.locator('[data-gateway-section="02-voices-podcast"] iframe, [data-podcast-link]').count(), 0);
+    assert.equal(await page.locator('.podcast-source a').getAttribute('href'), 'https://joi.ito.com/podcast/');
+    assert.match(await page.locator('[data-pulse-list] a').textContent(), /Initiationの質問とゲーム体験/);
+    assert.match(await page.locator('[data-pulse-time]').textContent(), /最終取得/);
     await scrollSection('[data-gateway-section="03-frequency"]');
+    for (const [index, id] of thumbnailIds.entries()) {
+      const link = page.locator('.frequency-link').nth(index);
+      await link.scrollIntoViewIfNeeded();
+      assert.equal(await link.getAttribute('href'), `https://www.youtube.com/watch?v=${id}&list=PLdwOpF5thM-7Q5OILxkZpRnUnrt0w7US2`);
+      assert.equal(await link.getAttribute('target'), '_blank');
+      const img = link.locator('img');
+      assert.equal(await img.getAttribute('src'), `https://i.ytimg.com/vi/${id}/mqdefault.jpg`);
+      assert.equal(await img.getAttribute('loading'), 'lazy');
+      assert.equal(await img.getAttribute('referrerpolicy'), 'no-referrer');
+      await page.waitForFunction(({ index }) => {
+        const image = document.querySelector('.pd-inline-gateway').shadowRoot.querySelectorAll('.frequency-art img')[index];
+        return index === 0 ? image.hidden : image.naturalWidth === 320;
+      }, { index });
+      if (index === 0) assert.match(await link.locator('.frequency-art').innerText(), /♪/);
+    }
     assert.equal(await page.locator('[data-gateway-section="03-frequency"] > .gateway-panel').evaluate(el => getComputedStyle(el).top), '0px', 'The non-sticky Frequency panel must not receive the header offset');
     assert.match(await page.locator('.frequency-disclaimer').textContent(), /実際の視聴履歴ではありません/);
     assert.equal(await page.locator('.frequency-listener').count(), 4);
@@ -63,7 +82,8 @@ try {
   }
   assert.deepEqual(await page.evaluate(() => Object.keys(localStorage).filter(key => key !== 'henkaku.appearance.v1')), storageKeys, 'No viewing-history storage');
   assert.equal(requests.some(url => /listenbrainz|breeze-zero/.test(url)), false);
-  assert.equal(requests.some(url => /(?:youtube(?:-nocookie)?\.com|ytimg\.com)/.test(new URL(url).hostname)), false);
+  assert.equal(requests.some(url => /(?:youtube(?:-nocookie)?\.com)$/.test(new URL(url).hostname)), false);
+  assert.deepEqual([...new Set(requests.filter(url => new URL(url).hostname === 'i.ytimg.com'))].sort(), thumbnailIds.map(id => `https://i.ytimg.com/vi/${id}/mqdefault.jpg`).sort());
   const [setupTab] = await Promise.all([
     context.waitForEvent('page'),
     page.locator('.button-primary').click({ modifiers: ['Control'] }),
