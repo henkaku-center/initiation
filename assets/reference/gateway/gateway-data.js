@@ -1,5 +1,4 @@
-// ABOUTME: Provide the public podcast introduction for the Gateway.
-// ABOUTME: This content contains no member activity, listening history, or simulated state.
+// Videos are from @joiito's official VIDEO playlist; histories are fictional.
 window.gatewayContent = {
   podcast: {
     date:"FEATURED PODCAST / JOI ITO",
@@ -7,4 +6,19 @@ window.gatewayContent = {
     summary:"伊藤穰一が多彩なゲストとの対話を通じて、テクノロジーと社会、文化のつながりを探る番組。AIやデジタル社会の変化から、茶の湯、ものづくり、受け継がれる知恵まで、分野を越えて考えます。公式サイトには各回の関連キーワードや視聴先の案内もあり、気になるテーマから聴き進められます。",
     href:"https://joi.ito.com/podcast/",
   },
+  episodes: [
+    { id:"eUV1f-xfL4U", episode:"VIDEO PODCAST", title:"メタボリズムからデジタル建築へ", guest:"伊藤穰一 × 隈研吾", source:"https://www.youtube.com/watch?v=eUV1f-xfL4U&list=PLdwOpF5thM-7Q5OILxkZpRnUnrt0w7US2" },
+    { id:"eXbZntTHGJ4", episode:"VIDEO PODCAST", title:"世界陸上メダリストと語る「進化論と遊び」", guest:"伊藤穰一 × 為末大", source:"https://www.youtube.com/watch?v=eXbZntTHGJ4&list=PLdwOpF5thM-7Q5OILxkZpRnUnrt0w7US2" },
+    { id:"JMlXLzUEPnI", episode:"VIDEO PODCAST", title:"巨大ブロックチェーンを静かに支える日本の力", guest:"伊藤穰一 × 宮口あや", source:"https://www.youtube.com/watch?v=JMlXLzUEPnI&list=PLdwOpF5thM-7Q5OILxkZpRnUnrt0w7US2" },
+    { id:"Bb0X-OU11CI", episode:"VIDEO PODCAST", title:"インターネットと教育", guest:"伊藤穰一 × 伊藤瑞子", source:"https://www.youtube.com/watch?v=Bb0X-OU11CI&list=PLdwOpF5thM-7Q5OILxkZpRnUnrt0w7US2" },
+    { id:"kKPgC9EubwM", episode:"VIDEO PODCAST", title:"Emily Yangと考えるweb3時代のアニメ", guest:"伊藤穰一 × Emily Yang（Pplpleasr）", source:"https://www.youtube.com/watch?v=kKPgC9EubwM&list=PLdwOpF5thM-7Q5OILxkZpRnUnrt0w7US2" },
+    { id:"IM4MfKdc2VE", episode:"VIDEO PODCAST", title:"ローレンス・レッシグと考えるスマートコントラクト", guest:"伊藤穰一 × ローレンス・レッシグ", source:"https://www.youtube.com/watch?v=IM4MfKdc2VE&list=PLdwOpF5thM-7Q5OILxkZpRnUnrt0w7US2" },
+  ],
+  // Shared fictional play events, newest first. No browser/user identification.
+  communityPlays: [
+    { episodeId:"eUV1f-xfL4U", listener:"Listener 01", avatar:"orbit", playedAt:"5分前" },
+    { episodeId:"Bb0X-OU11CI", listener:"Listener 02", avatar:"mosaic", playedAt:"18分前" },
+    { episodeId:"eXbZntTHGJ4", listener:"匿名リスナー", avatar:"anonymous", playedAt:"42分前" },
+    { episodeId:"kKPgC9EubwM", listener:"Listener 03", avatar:"spark", playedAt:"1時間前" },
+  ],
 };

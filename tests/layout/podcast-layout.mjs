@@ -1,4 +1,4 @@
-// ABOUTME: Audit the source's abstract podcast scenes and public music chart geometry.
+// ABOUTME: Audit the source's official podcast scenes and fictional sample history geometry.
 // ABOUTME: Run in the home iframe after the chart is ready.
 export function auditPodcastLayout(body) {
   const doc = body.ownerDocument;
@@ -17,14 +17,14 @@ export function auditPodcastLayout(body) {
   const heading = panel?.querySelector(".section-title")?.getBoundingClientRect();
   const description = panel?.querySelector(".microcopy")?.getBoundingClientRect();
   if (heading && description && heading.bottom + 6 > description.top) issues.push("Podcast heading overlaps its description");
-  if (scenes.length !== 4) issues.push("Four abstract podcast scenes are missing");
+  if (scenes.length !== 4) issues.push("Four official podcast scenes are missing");
 for (const scene of scenes) {
-  if (scene.querySelector('iframe, [data-podcast-player], [data-podcast-toggle]')) issues.push('An embedded player is present');
+  if (!scene.querySelector('iframe, [data-podcast-player], [data-podcast-fallback]')) issues.push('An official video or fallback is missing');
   const bounds = scene.getBoundingClientRect();
   if (bounds.width <= 0 || bounds.height <= 0) issues.push('Podcast scene is not visible');
 }
   const frequency = doc.querySelector(".frequency-list");
-  if (!frequency || frequency.querySelectorAll(".frequency-entry").length !== 4) issues.push("Four public music tracks are missing");
+  if (!frequency || frequency.querySelectorAll(".frequency-entry").length !== 4) issues.push("Four sample plays are missing");
   for (const element of doc.querySelectorAll(".frequency-summary, .frequency-entry, .pulse-development-note")) {
     const box = element.getBoundingClientRect();
     if (box.left < -1 || box.right > view.innerWidth + 1) issues.push("Music chart exceeds the viewport");

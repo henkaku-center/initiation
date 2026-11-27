@@ -5,6 +5,9 @@ import { describe, expect, it } from "vitest";
 import nextConfig from "@/next.config";
 
 describe("portal build policy", () => {
+  it("hides the development indicator during local demos", () => {
+    expect(nextConfig.devIndicators).toBe(false);
+  });
   it("selects the normal build without changing the search indexing policy", () => {
     const config = JSON.parse(readFileSync("vercel.json", "utf8"));
     expect(config.buildCommand).toBe("npm run build");

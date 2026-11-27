@@ -15,6 +15,25 @@ const podcast = {
 };
 
 type DecryptWindow = Window & { henkakuArmGatewayDecrypt?: (root: ShadowRoot) => void | (() => void) };
+type MediaWindow = Window & {
+  henkakuRenderListeningHistory?: (root: ShadowRoot) => void;
+  henkakuStartPodcast?: (root: ShadowRoot, signal: AbortSignal) => (() => void) | undefined;
+};
+const mediaScripts = new Map<string, Promise<void>>();
+function loadMediaScript(name: string): Promise<void> {
+  let pending = mediaScripts.get(name);
+  if (!pending) {
+    pending = new Promise<void>((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = `/demo-assets/gateway/${name}.js`;
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error(`Gateway media unavailable: ${name}`));
+      document.head.append(script);
+    });
+    mediaScripts.set(name, pending);
+  }
+  return pending;
+}
 let decryptScript: Promise<void> | null = null;
 function loadDecryptScript() {
   if (!decryptScript) decryptScript = new Promise<void>((resolve, reject) => {
@@ -52,10 +71,12 @@ function startGatewayMotion(root: ShadowRoot, signal: AbortSignal) {
   const photoStrip = root.querySelector<HTMLElement>("[data-photo-strip]");
   const pulse = root.querySelector<HTMLElement>('[data-gateway-section="01-community-pulse"]');
   const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+  const headerHeight = () => parseFloat((root.host as HTMLElement).style.getPropertyValue("--portal-header-height")) || 0;
   const progressFor = (section: HTMLElement | null) => {
     if (!section) return 0;
     const rect = section.getBoundingClientRect();
-    return Math.min(1, Math.max(0, -rect.top / Math.max(1, rect.height - innerHeight)));
+    const inset = headerHeight();
+    return Math.min(1, Math.max(0, (inset - rect.top) / Math.max(1, rect.height - (innerHeight - inset))));
   };
   let frame = 0;
   const update = () => {
@@ -102,7 +123,7 @@ async function loadPulse(root: ShadowRoot, signal: AbortSignal, update: () => vo
   };
   list.setAttribute("aria-busy", "true");
   try {
-    const response = await fetch("/api/community-pulse", { credentials: "omit", signal });
+    const response = await fetch("/api/community-pulse", { credentials: "omit", signal: AbortSignal.any([signal, AbortSignal.timeout(10000)]) });
     if (!response.ok) throw new Error("Feed unavailable");
     const data = await response.json();
     if (!data || !["fresh", "stale"].includes(data.status) || !validTime(data.lastSuccessAt) || !Array.isArray(data.issues) || data.issues.length > 6) throw new Error("Invalid feed");
@@ -164,7 +185,7 @@ function loadFrequency(root: ShadowRoot, signal: AbortSignal) {
     list.replaceChildren();
     list.setAttribute("aria-busy", "true");
     try {
-      const response = await fetch(api, { credentials: "omit", referrerPolicy: "no-referrer", signal });
+      const response = await fetch(api, { credentials: "omit", referrerPolicy: "no-referrer", signal: AbortSignal.any([signal, AbortSignal.timeout(8000)]) });
       if (!response.ok) throw new Error("Ranking unavailable");
       if (response.status === 204) { status.textContent = "公開ランキングはまだありません。"; return; }
       const data = (await response.json())?.payload;
@@ -213,10 +234,15 @@ export function GatewaySurface({ onNavigate }: { onNavigate: (screen: PortalScre
     const controller = new AbortController();
     const shadow = element.shadowRoot ?? element.attachShadow({ mode: "open" });
     const header = document.querySelector<HTMLElement>(".pd-reference-home .pd-header");
-    const measureHeader = () => element.style.setProperty("--portal-header-height", `${header?.getBoundingClientRect().height ?? 99}px`);
+    const measureHeader = () => {
+      const height = header?.getBoundingClientRect().height ?? 99;
+      element.style.setProperty("--portal-header-height", `${height}px`);
+      element.style.setProperty("--gateway-viewport-height", `${Math.max(1, innerHeight - height)}px`);
+    };
     const headerObserver = new ResizeObserver(measureHeader);
     if (header) headerObserver.observe(header);
     measureHeader();
+    window.addEventListener("resize", measureHeader, { signal: controller.signal });
     let disposeMotion = () => {};
     let disposeDecrypt = () => {};
     const mount = async () => {
@@ -228,7 +254,7 @@ export function GatewaySurface({ onNavigate }: { onNavigate: (screen: PortalScre
       const main = parsed.querySelector("main");
       if (!intro || !main) throw new Error("Gateway chapters missing");
       const style = document.createElement("style");
-      style.textContent = scopeGatewayStyles([...parsed.querySelectorAll("style")].map((item) => item.textContent ?? "").join("\n")) + "\n:host { display:block; } .gateway-panel { top:var(--portal-header-height,99px);min-height:calc(100svh - var(--portal-header-height,99px)); }";
+      style.textContent = scopeGatewayStyles([...parsed.querySelectorAll("style")].map((item) => item.textContent ?? "").join("\n")) + "\n:host { display:block; } .gateway-root { overflow-x:clip;overflow-y:visible; } .gateway-panel { top:var(--portal-header-height,99px);min-height:var(--gateway-viewport-height); } [data-gateway-section='03-frequency'] > .gateway-panel { top:0; }";
       const page = document.createElement("div");
       page.className = "gateway-root";
       page.innerHTML = intro.outerHTML + main.outerHTML;
@@ -241,7 +267,23 @@ export function GatewaySurface({ onNavigate }: { onNavigate: (screen: PortalScre
         disposeDecrypt = (window as DecryptWindow).henkakuArmGatewayDecrypt?.(shadow) ?? (() => {});
       }).catch(() => { /* The original text remains readable without its animation. */ });
       void loadPulse(shadow, controller.signal, motion.request);
-      loadFrequency(shadow, controller.signal);
+      // Keep the previous chart adapter (and its 8s deadline) compatible with
+      // older Gateway documents. The reference edition uses fixed sample plays.
+      if (!shadow.querySelector('[data-frequency-mode="sample"]')) loadFrequency(shadow, controller.signal);
+      void loadMediaScript("gateway-data")
+        .then(() => Promise.all([loadMediaScript("listening-history"), loadMediaScript("podcast-preview")]))
+        .then(() => {
+          if (controller.signal.aborted) return;
+          const media = window as MediaWindow;
+          if (shadow.querySelector('[data-frequency-mode="sample"]')) media.henkakuRenderListeningHistory?.(shadow);
+          media.henkakuStartPodcast?.(shadow, controller.signal);
+          motion.request();
+        }).catch(() => {
+          if (controller.signal.aborted) return;
+          shadow.querySelectorAll("[data-podcast-status]").forEach((status) => {
+            status.textContent = "映像を読み込めません。公式動画からご覧ください。";
+          });
+        });
       shadow.addEventListener("click", (event) => {
         const target = event.target as Element | null;
         const link = target?.closest?.('a[target="_top"]');
@@ -253,7 +295,13 @@ export function GatewaySurface({ onNavigate }: { onNavigate: (screen: PortalScre
         onNavigate(destination);
       }, { signal: controller.signal });
     };
-    void mount().catch(() => { if (!controller.signal.aborted) element.textContent = "Gatewayを読み込めませんでした。ページを更新してください。"; });
+    void mount().catch(() => {
+      if (controller.signal.aborted) return;
+      const message = document.createElement("p");
+      message.setAttribute("role", "alert");
+      message.textContent = "Gatewayを読み込めませんでした。ページを更新してください。";
+      shadow.replaceChildren(message);
+    });
     return () => { controller.abort(); headerObserver.disconnect(); disposeMotion(); disposeDecrypt(); shadow.replaceChildren(); };
   }, [onNavigate]);
   return <div ref={host} className="pd-inline-gateway" data-theme={theme} aria-label="HENKAKU トップページ" />;

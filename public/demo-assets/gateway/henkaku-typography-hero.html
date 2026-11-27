@@ -173,6 +173,12 @@
         return false;
       };
       window.addEventListener('wheel', event => {
+        if (event.ctrlKey || event.defaultPrevented) return;
+        if (window.frameElement && typeof window.parent.henkakuGatewayMoveIntent === 'function') {
+          const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? window.parent.innerHeight : 1;
+          if (window.parent.henkakuGatewayMoveIntent(event.deltaY * unit)) event.preventDefault();
+          return;
+        }
         if (event.deltaY < 0) {
           if (!window.frameElement || window.parent.henkakuGatewayReverseIntent?.()) disperse();
           return;
@@ -187,6 +193,11 @@
       }, { passive: true });
       window.addEventListener('touchmove', event => {
         const nextY = event.touches[0]?.clientY ?? null;
+        if (nextY !== null && touchY !== null && window.frameElement && typeof window.parent.henkakuGatewayMoveIntent === 'function') {
+          if (window.parent.henkakuGatewayMoveIntent(touchY - nextY)) event.preventDefault();
+          touchY = nextY;
+          return;
+        }
         if (nextY !== null && touchY !== null && nextY < touchY) {
           if (forwardScroll()) event.preventDefault();
           assemble();
